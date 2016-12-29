@@ -1,0 +1,31 @@
+1.Win32的库用于32为，x64的库用于64位
+2.使用时链接CEOP.lib，用如下语句声明使用的函数
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 外部封的函数库,主要用于J2000到WGS84的相互转化
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 设置EOP文件路径
+	extern "C" int  _stdcall SetEopPath(char* EopPath);
+
+	// 从格里高利历到约化儒略日的转化
+	extern "C" int  _stdcall Cal2JD(int year, int month, int day,double fracday, double *jd0, double *mjd);  
+	// 从约化儒略日到格里高利历的转化
+	extern "C" int  _stdcall JD2Cal(double jd0, double mjd, int *year, int *month, int *day,double *fracday); 
+
+	// IAU 2000A, 基于CIO方式,从惯性系转化到非惯性系
+	extern "C" void _stdcall IAU2000ABaseCIOCelToTer(int year,int month,int day, int hour,int minute,double second,
+		char* EOP_path, int order, double *R=NULL,double *Pos=NULL,double *Vel=NULL);
+	// IAU 2000A, 基于CIO方式,从非惯性系转化到惯性系
+	extern "C" void _stdcall IAU2000ABaseCIOTerToCel(int year,int month,int day, int hour,int minute,double second,
+		char* EOP_path, int order, double *R=NULL,double *Pos=NULL,double *Vel=NULL);
+	// IAU 2000A, 基于春分点方式,从惯性系转化到非惯性系
+	extern "C" void _stdcall IAU2000ABaseEquinoxCelToTer(int year,int month,int day, int hour,int minute,double second,
+		char* EOP_path, int order, double *R=NULL,double *Pos=NULL,double *Vel=NULL);
+	// IAU 2000A, 基于春分点方式,从非惯性系转化到惯性系
+	extern "C" void _stdcall IAU2000ABaseEquinoxTerToCel(int year,int month,int day, int hour,int minute,double second,
+		char* EOP_path, int order, double *R=NULL,double *Pos=NULL,double *Vel=NULL);
+3.上述函数使用方法
+	//    year,month,day,hour,minute,second：年月日时分秒
+	//    EOP_path：EOP00.txt文件路径
+	//    R：      	计算出来从惯性系到非惯性系(或者从非惯性系到惯性系)的旋转矩阵，此项为输出项，必须输出，大小3*3
+	//    Pos:      大小3*1轨道，此项为输入输出项，默认值为NULL，当为NULL，则不进行计算，否则对输入的轨道自动转化并输出
+	//    Vel:      大小3*1速度，此项为输入输出项，默认值为NULL，当为NULL，则不进行计算，否则对输入的速度自动转化并输出
