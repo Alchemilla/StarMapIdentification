@@ -26,10 +26,12 @@ public:
 	StarIdentify(void);
 	~StarIdentify(void);
 	bool Load_Star_Data(string StarCatelog);
-	double Create_Spherical_Polygon_Candidate_Set(double optical_axis[3], double fov_radius);
-	double Identify_Basis_Pair(vector<strStar> obs);
+	double Create_Spherical_Polygon_Candidate_Set();
+	double Identify_Basis_Pair();
 	double Match_Stars_Relative_To_Basis_Pair();
-	double candidate_radius, match_tolerance;	
+	double candidate_radius, match_tolerance, fov_radius;
+	double optical_axis[3];
+	vector<strStar> obs;
 private: ;
 	//升序降序函数
 	bool static LessSort (vector<double> a,vector<double> b);
@@ -38,6 +40,8 @@ private: ;
 	vector<catelog> catalog_xaxis, catalog_yaxis, catalog_zaxis;
 	vector<k_vector> k_vec;
 	vector<vector<double>> candidate_set;
+	vector<vector<double>> basis_pair;
+	vector<vector<double>> id_list;
 public:
 	//一些基本的算法
 	bool norm(vector<double>&a);

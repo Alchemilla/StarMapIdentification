@@ -75,7 +75,7 @@ bool StarIdentify::Load_Star_Data(string StarCatelog)
 // 2006.10.12 Created as part of StarID Release 0.99
 // 2016.12.27 Modified by GuanZhichao
 /////////////////////////////////////////////////////////////
-double StarIdentify::Create_Spherical_Polygon_Candidate_Set(double optical_axis[3], double fov_radius)
+double StarIdentify::Create_Spherical_Polygon_Candidate_Set()
 {
 	double x = optical_axis[0];
 	double y = optical_axis[1];
@@ -200,9 +200,6 @@ double StarIdentify::Create_Spherical_Polygon_Candidate_Set(double optical_axis[
 	return 0;
 }
 
-
-
-
 /////////////////////////////////////////////////////////////
 // Input
 // 1) obs
@@ -224,9 +221,9 @@ double StarIdentify::Create_Spherical_Polygon_Candidate_Set(double optical_axis[
 //
 // History
 // 2006.10.12 Created as part of StarID Release 0.99
-// 2016.12.27 Modified by GuanZhichao
+// 2016.12.27 Start to transform it to C++ by Guanzhichao
 /////////////////////////////////////////////////////////////
-double StarIdentify::Identify_Basis_Pair(vector<strStar> obs)
+double StarIdentify::Identify_Basis_Pair()
 {
 	int c1,c2;
 	vector<vector<double>> candidate_set_stars;
@@ -262,19 +259,19 @@ double StarIdentify::Identify_Basis_Pair(vector<strStar> obs)
 		}
 	}
 
-	sort(candidate_set.begin(),candidate_set.end(),StarIdentify::LessSort);//这个算法太慢了
+	sort(candidate_set.begin(),candidate_set.end(),StarIdentify::LessSort);//这个算法太慢了,21.784s
 	int m = candidate_set.size();
 	double candidate_set_1 = candidate_set[0][0];
 	double candidate_set_m = candidate_set[m-1][0];
 	double d = (candidate_set_m - candidate_set_1)/(m -1);
-	double a1 = m*d/(m-1);
-	double a0 = candidate_set_1 - a1 - d/2;
+	double aa1 = m*d/(m-1);
+	double a0 = candidate_set_1 - aa1 - d/2;
 	vector<int> k_vec_tmp(m);
 	k_vec_tmp[0] = 0;
 	c1 = 1;
 	for (c2=1; c2<m; c2++)
 	{
-		double fitline = a1*(c2 + 1) + a0;
+		double fitline = aa1*(c2 + 1) + a0;
 		int go = 1;
 		c1 = c1 - 1;
 		while(c1<m-1&&go==1)
@@ -298,9 +295,9 @@ double StarIdentify::Identify_Basis_Pair(vector<strStar> obs)
 			if (primaryobs == secondaryobs)
 				continue;
 			double theta = acos(obs_dotproducts_matrix[primaryobs][secondaryobs]);
-			double lbot = floor((cos(theta + candidate_radius) - a0)/a1);
-			double ltop = ceil((cos(theta - candidate_radius) - a0)/a1);
-			if (lbot<0 || lbot>m-1 || ltop>m-1)
+			double lbot = floor((cos(theta + candidate_radius) - a0)/aa1);
+			double ltop = ceil((cos(theta - candidate_radius) - a0)/aa1);
+			if (lbot<1 || lbot>m || ltop>m)
 				continue;
 			int kstart = k_vec_tmp[lbot - 1] + 1;
 			int kend = k_vec_tmp[ltop - 1];
@@ -338,8 +335,8 @@ double StarIdentify::Identify_Basis_Pair(vector<strStar> obs)
 			{
 				count++;
 			}
-		}		
-		sort(trial_id_occurences_count.begin(),trial_id_occurences_count.end(),StarIdentify::GreaterSort);//倒过来排序
+		}
+		sort(trial_id_occurences_count.begin(),trial_id_occurences_count.end(),StarIdentify::GreaterSort);//再根据第一个排序
 
 		double temp1[4] ={obs.at(primaryobs).x,obs.at(primaryobs).y,obs.at(primaryobs).z,obs.at(primaryobs).Mag};
 		vector<double>trial_ids_tmp(temp1,temp1+4);
@@ -349,11 +346,11 @@ double StarIdentify::Identify_Basis_Pair(vector<strStar> obs)
 		trial_ids_tmp2.insert(trial_ids_tmp2.end(),trial_id_occurences_count.at(1).begin(),trial_id_occurences_count.at(1).end());
 		trial_ids.push_back(trial_ids_tmp2);
 	}
-	sort(trial_ids.begin(),trial_ids.end(),StarIdentify::GreaterSort5);//根据第5个元素排序
+	sort(trial_ids.begin(),trial_ids.end(),StarIdentify::GreaterSort5);//再根据第5个元素排序
 
 	int trial_id1, trial_id2;
 	vector<vector<double>> residuals;
-	for (trial_id1=0; trial_id1<trial_ids.size(); trial_id1++)
+	for (trial_id1=0; trial_id1<trial_ids.size()-1; trial_id1++)
 	{
 		for (trial_id2=trial_id1; trial_id2<trial_ids.size(); trial_id2++)
 		{
@@ -461,30 +458,269 @@ double StarIdentify::Identify_Basis_Pair(vector<strStar> obs)
 			count++;
 		}
 		previous_line[0] = count;
-		previous_line.insert(previous_line.end(),residuals.at(c1).begin(),residuals.at(c1).begin()+2);
+		previous_line[1] = residuals[c1][0];
+		previous_line[2] = residuals[c1][1];
 	}
 	sort(residuals_count.begin(),residuals_count.end(),StarIdentify::GreaterSort);
 	vector<double>basis_pair_tmp;
-	basis_pair_tmp.assign(trial_ids.at(residuals_count[0][1]).begin(), trial_ids.at(residuals_count[0][1]).end());
-	vector<vector<double>> basis_pair;
+	basis_pair_tmp.assign(trial_ids.at(residuals_count[0][1]-1).begin(), trial_ids.at(residuals_count[0][1]-1).end());
 	basis_pair.push_back(basis_pair_tmp);
-	basis_pair_tmp.assign(trial_ids.at(residuals_count[0][2]).begin(), trial_ids.at(residuals_count[0][2]).end());
+	basis_pair_tmp.assign(trial_ids.at(residuals_count[0][2]-1).begin(), trial_ids.at(residuals_count[0][2]-1).end());
 	basis_pair.push_back(basis_pair_tmp);
 
 	return 0;
 }
-
+/////////////////////////////////////////////////////////////
+//Match_Stars_Relative_To_Basis_Pair 
+//
+// Input
+// 1) obs
+// 2) basis_pair
+// 3) match_tolerance
+// 4) fov_radius
+// 5) catalog_xaxis, catalog_yaxis, catalog_zaxis
+// 6) k_vector_xaxis, k_vector_yaxis, k_vector_zaxis
+//
+// Output
+// 1) id_list
+//
+// There are two major parts in this function.
+// 1) Spherical Polygon Search Candidate Stars About Basis Pair
+// 2) Match Candidate Set To Obs In Basis Pair Coordinate Frame
+//
+// Author
+// Noah Smith, Center for Space Research, University of Texas at Austin
+//
+// History
+// 2006.10.12 Created as part of StarID Release 0.99
+// 2016.12.28 Start to transform it to C++ by Guanzhichao
+/////////////////////////////////////////////////////////////
 double StarIdentify::Match_Stars_Relative_To_Basis_Pair()
 {
+	double x = basis_pair[0][6];
+	double y = basis_pair[0][7];
+	double z = basis_pair[0][8];
+	double h_beta = 2 * fov_radius;
+	int n = catalog_xaxis.size();
+	double a0 = -n*(n + 1) / (n - 1.) / (n - 1.);
+	double a1 = 2 * n / (n - 1.) / (n - 1.);
+
+	double xmin, xmax;
+	if (x >= cos(h_beta))
+	{
+		xmin = x*cos(h_beta) - sqrt(1 - x*x)*sin(h_beta);
+		xmax = 1;
+	}
+	else if (x <= -cos(h_beta))
+	{
+		xmin = -1;
+		xmax = x*cos(h_beta) + sqrt(1 - x*x)*sin(h_beta);
+	}
+	else
+	{
+		xmin = x*cos(h_beta) - sqrt(1 - x*x)*sin(h_beta);
+		xmax = x*cos(h_beta) + sqrt(1 - x*x)*sin(h_beta);
+	}
+	double ymin, ymax;
+	if (y >= cos(h_beta))
+	{
+		ymin = y*cos(h_beta) - sqrt(1 - y*y)*sin(h_beta);
+		ymax = 1;
+	}
+	else if (y <= -cos(h_beta))
+	{
+		ymin = -1;
+		ymax = y*cos(h_beta) + sqrt(1 - y*y)*sin(h_beta);
+	}
+	else
+	{
+		ymin = y*cos(h_beta) - sqrt(1 - y*y)*sin(h_beta);
+		ymax = y*cos(h_beta) + sqrt(1 - y*y)*sin(h_beta);
+	}
+	double zmin, zmax;
+	if (z >= cos(h_beta))
+	{
+		zmin = z*cos(h_beta) - sqrt(1 - z*z)*sin(h_beta);
+		zmax = 1;
+	}
+	else if (z <= -cos(h_beta))
+	{
+		zmin = -1;
+		zmax = z*cos(h_beta) + sqrt(1 - z*z)*sin(h_beta);
+	}
+	else
+	{
+		zmin = z*cos(h_beta) - sqrt(1 - z*z)*sin(h_beta);
+		zmax = z*cos(h_beta) + sqrt(1 - z*z)*sin(h_beta);
+	}
+
+	double kx1 = k_vec.at(floor((xmin - a0) / a1 + 1) - 1).xaxis;
+	double kx2 = k_vec.at(ceil((xmax - a0) / a1) - 1).xaxis;
+	vector<catelog>::iterator i1 = catalog_xaxis.begin() + kx1, i2 = catalog_xaxis.begin() + kx2;
+	vector<catelog> xcone(i1 - 1, i2);
+	double ky1 = k_vec.at(floor((ymin - a0) / a1 + 1) - 1).yaxis;
+	double ky2 = k_vec.at(ceil((ymax - a0) / a1) - 1).yaxis;
+	i1 = catalog_yaxis.begin() + ky1, i2 = catalog_yaxis.begin() + ky2;
+	vector<catelog> ycone(i1 - 1, i2);
+	double kz1 = k_vec.at(floor((zmin - a0) / a1 + 1) - 1).zaxis;
+	double kz2 = k_vec.at(ceil((zmax - a0) / a1) - 1).zaxis;
+	i1 = catalog_zaxis.begin() + kz1, i2 = catalog_zaxis.begin() + kz2;
+	vector<catelog> zcone(i1 - 1, i2);
+
+	int i, j;
+	vector<vector<double>> xy;
+	double *xytmp = new double[4];
+	for (i = 0; i<xcone.size(); i++)
+	{
+		for (j = 0; j<ycone.size(); j++)
+		{
+			if (xcone.at(i).id == ycone.at(j).id)
+			{
+				xytmp[0] = xcone.at(i).id;
+				xytmp[1] = xcone.at(i).Pos;
+				xytmp[2] = ycone.at(j).Pos;
+				xytmp[3] = xcone.at(i).Mag;
+				xy.push_back(vector<double>(xytmp, xytmp + 4));//将数组传入vector中
+			}
+		}
+	}
+	int k, tmp;
+	vector<vector<double>> xyz;
+	double *xyztmp = new double[5];
+	for (tmp = 0; tmp<xy.size(); tmp++)
+	{
+		for (k = 0; k<zcone.size(); k++)
+		{
+			if (xy.at(tmp).at(0) == zcone.at(k).id)
+			{
+				xyztmp[0] = xy.at(tmp).at(0);
+				xyztmp[1] = xy.at(tmp).at(1);
+				xyztmp[2] = xy.at(tmp).at(2);
+				xyztmp[3] = zcone.at(k).Pos;
+				xyztmp[4] = xy.at(tmp).at(3);
+				xyz.push_back(vector<double>(xyztmp, xyztmp + 5));
+			}
+		}
+	}
+	vector<vector<double>> candidate_stars(xyz);
+
+	vector<double>x1(3);
+	x1[0] = basis_pair[1][0] - basis_pair[0][0];
+	x1[1] = basis_pair[1][1] - basis_pair[0][1];
+	x1[2] = basis_pair[1][2] - basis_pair[0][2];
+	norm(x1);
+	vector<double>x3(basis_pair.at(0).begin(), basis_pair.at(0).begin() + 3);
+	vector<double>x2(x1);
+	cross(x3, x2);
+	norm(x2);
+	vector<double>x3tmp(x3);
+	cross(x2, x3tmp);
+	x1 = x3tmp;
+	
+	vector<double>y1(3);
+	y1[0] = basis_pair[1][6] - basis_pair[0][6];
+	y1[1] = basis_pair[1][7] - basis_pair[0][7];
+	y1[2] = basis_pair[1][8] - basis_pair[0][8];
+	norm(y1);
+	vector<double>y3(basis_pair.at(0).begin()+6, basis_pair.at(0).begin() + 9);
+	vector<double>y2(y1);
+	cross(y3, y2);
+	norm(y2);
+	vector<double>y3tmp(y3);
+	cross(y2, y3tmp);
+	y1 = y3tmp;
+
+	vector<vector<double>> new_obs;
+	int c1, c2;
+	for (c1 = 0; c1<obs.size(); c1++)
+	{
+		double dotobs[3];
+		dotobs[0] = obs.at(c1).x; dotobs[1] = obs.at(c1).y; dotobs[2] = obs.at(c1).z;
+		vector<double>obsc1(dotobs, dotobs + 3);
+		dotobs[0] = dot(obsc1, x1); dotobs[1] = dot(obsc1, x2); dotobs[2] = dot(obsc1, x3);
+		vector<double>vec(dotobs, dotobs + 3);
+		norm(vec);
+		vector<double>new_obs_tmp(vec);
+		new_obs_tmp.insert(new_obs_tmp.end(), obs.at(c1).Mag);//只插入一个值
+		new_obs.push_back(new_obs_tmp);
+	}
+
+	vector<vector<double>> new_candidate_stars;
+	for (c1 = 0; c1<candidate_stars.size(); c1++)
+	{
+		double set_stars[3];
+		set_stars[0] = candidate_stars.at(c1).at(1);
+		set_stars[1] = candidate_stars.at(c1).at(2);
+		set_stars[2] = candidate_stars.at(c1).at(3);
+		vector<double>set_stars_c1(set_stars, set_stars + 3);
+		set_stars[0] = dot(set_stars_c1, y1);
+		set_stars[1] = dot(set_stars_c1, y2);
+		set_stars[2] = dot(set_stars_c1, y3);
+		vector<double>vec(set_stars, set_stars + 3);
+		norm(vec);
+		vector<double>new_candidate_stars_tmp(vec);
+		new_candidate_stars_tmp.insert(new_candidate_stars_tmp.begin(), candidate_stars.at(c1).at(0));
+		new_candidate_stars_tmp.insert(new_candidate_stars_tmp.end(), candidate_stars.at(c1).at(4));
+		new_candidate_stars.push_back(new_candidate_stars_tmp);
+	}
+
+	for (c1 = 0; c1 < new_obs.size(); c1++)
+	{
+		for (c2 = 0; c2 < new_candidate_stars.size(); c2++)
+		{
+			vector<double> dot_new_obs(3), dot_candidate_stars(3);
+			dot_new_obs.assign(new_obs.at(c1).begin(), new_obs.at(c1).begin() + 3);
+			dot_candidate_stars.assign(new_candidate_stars.at(c2).begin() + 1, new_candidate_stars.at(c2).begin() + 4);
+			double residual = acos(dot(dot_new_obs, dot_candidate_stars));
+			if (residual<match_tolerance)
+			{
+				vector<double> id_list_tmp(9);
+				id_list_tmp[0] = obs[c1].x; 
+				id_list_tmp[1] = obs[c1].y; 
+				id_list_tmp[2] = obs[c1].z;
+				id_list_tmp[3] = obs[c1].Mag;
+				copy(candidate_stars.at(c2).begin(), candidate_stars.at(c2).end(),id_list_tmp.begin()+4);
+				id_list.push_back(id_list_tmp);
+			}
+		}
+	}
 	return 0;
 }
 
-//定义升序降序排列的函数
+
+////////////////////////////////////////
+//基本算法部分：
+////////////////////////////////////////
+
+/////////////////////////////////////////
+//定义升序降序排列的函数，从小到大
+////////////////////////////////////////
 bool StarIdentify::LessSort (vector<double> a,vector<double> b) { return a[0]<b[0]; }
-bool StarIdentify::GreaterSort (vector<double> a,vector<double> b) { return a[0]>b[0]; }
+/////////////////////////////////////////
+//定义升序降序排列的函数，从大到小
+////////////////////////////////////////
+bool StarIdentify::GreaterSort (vector<double> a,vector<double> b) 
+{ 
+	if(a[0] != b[0])
+		return a[0] > b[0];//首先判断第一列，大的在前
+	else if(a[1]!=b[1])
+	{
+		return a[1] < b[1];//然后判断第二列，matlab 中是小的在前
+	}
+	else
+	{
+		return a[2] < b[2];//然后判断第三列，matlab 中是小的在前
+	}
+}
+/////////////////////////////////////////
+//定义升序降序排列的函数，从大到小
+////////////////////////////////////////
 bool StarIdentify::GreaterSort5 (vector<double> a,vector<double> b) { return a[4]>b[4]; }
 
-//基本算法
+
+/////////////////////////////////////////
+//向量的单位化，输入返回a
+////////////////////////////////////////
 bool StarIdentify::norm(vector<double>&a)
 {
 	int m =a.size(),i;
@@ -500,7 +736,9 @@ bool StarIdentify::norm(vector<double>&a)
 	}
 	return true;
 }
-//输入b，返回也是b
+/////////////////////////////////////////
+//叉积公式，输入b，返回也是b
+////////////////////////////////////////
 bool StarIdentify::cross(vector<double>&a,vector<double>&b)
 {
 	if (a.size()!=3||b.size()!=3)
