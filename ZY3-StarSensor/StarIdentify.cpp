@@ -1,7 +1,9 @@
 #include "StarIdentify.h"
+#include <iostream>
 #include <Eigen/Dense>
 #include <algorithm>
 #include <functional>
+using namespace Eigen;
 
 StarIdentify::StarIdentify(void)
 {
@@ -687,6 +689,45 @@ double StarIdentify::Match_Stars_Relative_To_Basis_Pair()
 	return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//功能：q_Method定姿方式
+//输入：vector<vector<double>> id_list;
+//输出：四元数Q
+//注意：采用Eigen库进行编写
+//作者：GZC
+//日期：2016.12.30
+//////////////////////////////////////////////////////////////////////////
+bool StarIdentify::Q_Method()
+{
+	MatrixXd obs_in_startrackerframe(id_list.size(),3), stars_in_celestialframeV(id_list.size(), 3);
+	for (int i = 0; i < id_list.size(); i++)
+	{
+		obs_in_startrackerframe.row(i) << id_list[i][0], id_list[i][1], id_list[i][2];
+		stars_in_celestialframeV.row(i) << id_list[i][5], id_list[i][6], id_list[i][7];
+	}
+	MatrixXd W(3,id_list.size()), V(3, id_list.size());
+	W = obs_in_startrackerframe.transpose();
+	V = stars_in_celestialframeV.transpose();
+	Matrix3d B,S;
+	B = W*V.transpose();
+	S = B + B.transpose();
+	Vector3d Z;
+	Z << B(1, 2) - B(2, 1), B(2, 0) - B(0, 2), B(0, 1) - B(1, 0);
+	double SIGMA = B.trace();
+	Matrix<double, 4, 4>K;
+	K << S - MatrixXd::Identity(3, 3)*SIGMA, Z, Z.transpose(), SIGMA;
+	EigenSolver<Matrix<double, 4, 4>> es(K);
+	MatrixXcd evecs = es.eigenvectors();
+	MatrixXcd evals = es.eigenvalues();
+	MatrixXd evalsReal;
+	evalsReal=evals.real();
+	cout << evalsReal << endl;
+	MatrixXf::Index evalsMax;
+	evalsReal.rowwise().sum().maxCoeff(&evalsMax);
+	Vector4d q;
+	q << evecs.real()(0, evalsMax), evecs.real()(1, evalsMax), evecs.real()(2, evalsMax), evecs.real()(3, evalsMax);
+	return 0;
+}
 
 ////////////////////////////////////////
 //基本算法部分：

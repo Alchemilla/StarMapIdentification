@@ -29,9 +29,11 @@ public:
 	double Create_Spherical_Polygon_Candidate_Set();
 	double Identify_Basis_Pair();
 	double Match_Stars_Relative_To_Basis_Pair();
+	bool Q_Method();
 	double candidate_radius, match_tolerance, fov_radius;
 	double optical_axis[3];
 	vector<strStar> obs;
+	vector<vector<double>> id_list;
 private: ;
 	//升序降序函数
 	bool static LessSort (vector<double> a,vector<double> b);
@@ -41,7 +43,6 @@ private: ;
 	vector<k_vector> k_vec;
 	vector<vector<double>> candidate_set;
 	vector<vector<double>> basis_pair;
-	vector<vector<double>> id_list;
 public:
 	//一些基本的算法
 	bool norm(vector<double>&a);
