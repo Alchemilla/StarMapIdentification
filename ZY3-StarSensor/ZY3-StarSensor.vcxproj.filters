@@ -1,22 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="1-StarMap">
+    <Filter Include="1-星点提取">
+      <UniqueIdentifier>{055ca950-9a7f-4558-bf23-79d6bbfc8a79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2-星图识别">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StarIdentify.h">
-      <Filter>1-StarMap</Filter>
+      <Filter>2-星图识别</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoReadImage.h">
+      <Filter>1-星点提取</Filter>
+    </ClInclude>
+    <ClInclude Include="StarExtract.h">
+      <Filter>1-星点提取</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseFunc.h">
+      <Filter>1-星点提取</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>1-StarMap</Filter>
+      <Filter>2-星图识别</Filter>
     </ClCompile>
     <ClCompile Include="StarIdentify.cpp">
-      <Filter>1-StarMap</Filter>
+      <Filter>2-星图识别</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoReadImage.cpp">
+      <Filter>1-星点提取</Filter>
+    </ClCompile>
+    <ClCompile Include="StarExtract.cpp">
+      <Filter>1-星点提取</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseFunc.cpp">
+      <Filter>1-星点提取</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

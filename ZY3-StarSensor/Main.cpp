@@ -1,7 +1,12 @@
 #include "StarIdentify.h"
+#include "StarExtract.h"
 
 int main(int argc, char* argv[])
 {
+	StarExtract ZY3_STMap;
+	ZY3_STMap.workpath = "D:\\2_ImageData\\ZY3-02\\–«Õº¥¶¿Ì\\1010\\2023-0000000989\\";
+	ZY3_STMap.StarPointExtraction();
+
 	StarIdentify ZY3_ST;
 	/*double array[] = { -0.00414330123660008, -0.0811396492167516, 0.996694130804353, 3.70000000000000, 10366, -0.531404221740299, -0.804297837296644, 0.265922060078752,	3.62000000000000,
 		0.166822334948948, -0.160419053405453,	0.972849441520464,	3.90000000000000,	10330, -0.505400115551280, -0.740484871360861,	0.443004377502573,	3.83000000000000,
@@ -14,7 +19,7 @@ int main(int argc, char* argv[])
 	}
 	ZY3_ST.Q_Method();*/
 
-	ZY3_ST.Load_Star_Data(argv[1]);
+	/*ZY3_ST.Load_Star_Data(argv[1]);
 	double Optical_axistmp[] = {-0.59551143828591213, -0.76970238188778783, 0.23005297256699414};
 	memcpy(ZY3_ST.optical_axis,Optical_axistmp,sizeof(double)*3);
 	double star_tracker_output[6][3] = { -397,	11,		2.8,
@@ -44,6 +49,6 @@ int main(int argc, char* argv[])
 	ZY3_ST.Identify_Basis_Pair();
 	ZY3_ST.match_tolerance = 500 * 5e-6;
 	ZY3_ST.Match_Stars_Relative_To_Basis_Pair();
-	ZY3_ST.Q_Method();
+	ZY3_ST.Q_Method();*/
 	return 0;
 }

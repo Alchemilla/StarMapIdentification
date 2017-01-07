@@ -1,6 +1,11 @@
 #pragma once
-#define PI 3.1415926535897932384626433832795
+#include <iostream>
+#include <Eigen/Dense>
+//#include <algorithm>
+#include <set>
 #include <vector>
+#define PI 3.1415926535897932384626433832795
+using namespace Eigen;
 using namespace std;
 
 //

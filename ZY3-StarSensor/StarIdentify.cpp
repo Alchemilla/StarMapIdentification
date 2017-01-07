@@ -1,9 +1,4 @@
 #include "StarIdentify.h"
-#include <iostream>
-#include <Eigen/Dense>
-#include <algorithm>
-#include <functional>
-using namespace Eigen;
 
 StarIdentify::StarIdentify(void)
 {
@@ -152,9 +147,9 @@ double StarIdentify::Create_Spherical_Polygon_Candidate_Set()
 	int i, j;
 	vector<vector<double>> xy;
 	double *xytmp = new double[4];
-	for (i=0; i<xcone.size(); i++)
+	for (i = 0; i<xcone.size(); i++)
 	{
-		for (j=0; j<ycone.size(); j++)
+		for (j = 0; j<ycone.size(); j++)
 		{
 			if (xcone.at(i).id == ycone.at(j).id)
 			{
@@ -162,10 +157,26 @@ double StarIdentify::Create_Spherical_Polygon_Candidate_Set()
 				xytmp[1] = xcone.at(i).Pos;
 				xytmp[2] = ycone.at(j).Pos;
 				xytmp[3] = xcone.at(i).Mag;
-				xy.push_back(vector<double>(xytmp,xytmp+4));//将数组传入vector中
+				xy.push_back(vector<double>(xytmp, xytmp + 4));//将数组传入vector中
 			}
 		}
 	}
+	//使用迭代器，似乎更慢
+	//for (vector<catelog>::iterator iter=xcone.begin(); iter !=xcone.end(); ++iter)
+	//{
+	//	for (vector<catelog>::iterator jter = ycone.begin(); jter != ycone.end(); ++jter)
+	//	{
+	//		if ((*iter).id == (*jter).id)
+	//		{
+	//			//xy.emplace_back((*iter).id, (*iter).Pos, (*jter).Pos, (*iter).Mag);
+	//			xytmp[0] = (*iter).id;
+	//			xytmp[1] = (*iter).Pos;
+	//			xytmp[2] = (*jter).Pos;
+	//			xytmp[3] = (*iter).Mag;
+	//			xy.push_back(vector<double>(xytmp,xytmp+4));//将数组传入vector中
+	//		}
+	//	}
+	//}
 	int k, tmp;
 	vector<vector<double>> xyz;
 	double *xyztmp = new double[5];
@@ -186,6 +197,7 @@ double StarIdentify::Create_Spherical_Polygon_Candidate_Set()
 	}
 	
 	int c1, c2;
+	multiset<vector<double>>candidate_set_2;
 	for (c1=0; c1<xyz.size()-1; c1++)
 	{
 		for (c2=c1+1; c2<xyz.size(); c2++)
@@ -195,10 +207,11 @@ double StarIdentify::Create_Spherical_Polygon_Candidate_Set()
 			vector<double> vcandidate_set_tmp(1,angdot);
 			vcandidate_set_tmp.insert(vcandidate_set_tmp.end(),xyz.at(c1).begin(),xyz.at(c1).end());
 			vcandidate_set_tmp.insert(vcandidate_set_tmp.end(),xyz.at(c2).begin(),xyz.at(c2).end());
-			candidate_set.push_back(vcandidate_set_tmp);
+			candidate_set_2.insert(vcandidate_set_tmp);//插入值的同时，进行了排序
 		}
 	}
-
+	candidate_set.assign(candidate_set_2.begin(), candidate_set_2.end());
+	//candidate_set.insert(candidate_set.end(), candidate_set_2.begin(), candidate_set_2.end());
 	return 0;
 }
 
@@ -251,8 +264,7 @@ double StarIdentify::Identify_Basis_Pair()
 			candidate_set_stars.push_back(candidate_set_stars_tmp);
 		}
 	}
-
-	vector<vector<double>>obs_dotproducts_matrix(obs.size(),vector<double>(obs.size()));
+	vector<vector<double>>obs_dotproducts_matrix(obs.size(), vector<double>(obs.size()));
 	for (c1=0; c1<obs.size(); c1++)
 	{
 		for (c2=0; c2<obs.size(); c2++)
@@ -261,7 +273,7 @@ double StarIdentify::Identify_Basis_Pair()
 		}
 	}
 
-	sort(candidate_set.begin(),candidate_set.end(),StarIdentify::LessSort);//这个算法太慢了,21.784s
+	//sort(candidate_set.begin(),candidate_set.end(),StarIdentify::LessSort);//这个算法太慢了,21.784s
 	int m = candidate_set.size();
 	double candidate_set_1 = candidate_set[0][0];
 	double candidate_set_m = candidate_set[m-1][0];
@@ -721,7 +733,7 @@ bool StarIdentify::Q_Method()
 	MatrixXcd evals = es.eigenvalues();
 	MatrixXd evalsReal;
 	evalsReal=evals.real();
-	cout << evalsReal << endl;
+	//cout << evalsReal << endl;
 	MatrixXf::Index evalsMax;
 	evalsReal.rowwise().sum().maxCoeff(&evalsMax);
 	Vector4d q;
@@ -736,11 +748,11 @@ bool StarIdentify::Q_Method()
 /////////////////////////////////////////
 //定义升序降序排列的函数，从小到大
 ////////////////////////////////////////
-bool StarIdentify::LessSort (vector<double> a,vector<double> b) { return a[0]<b[0]; }
+inline bool StarIdentify::LessSort (vector<double> a,vector<double> b) { return a[0]<b[0]; }
 /////////////////////////////////////////
 //定义升序降序排列的函数，从大到小
 ////////////////////////////////////////
-bool StarIdentify::GreaterSort (vector<double> a,vector<double> b) 
+inline bool StarIdentify::GreaterSort (vector<double> a,vector<double> b)
 { 
 	if(a[0] != b[0])
 		return a[0] > b[0];//首先判断第一列，大的在前
@@ -756,13 +768,13 @@ bool StarIdentify::GreaterSort (vector<double> a,vector<double> b)
 /////////////////////////////////////////
 //定义升序降序排列的函数，从大到小
 ////////////////////////////////////////
-bool StarIdentify::GreaterSort5 (vector<double> a,vector<double> b) { return a[4]>b[4]; }
+inline bool StarIdentify::GreaterSort5 (vector<double> a,vector<double> b) { return a[4]>b[4]; }
 
 
 /////////////////////////////////////////
 //向量的单位化，输入返回a
 ////////////////////////////////////////
-bool StarIdentify::norm(vector<double>&a)
+inline bool StarIdentify::norm(vector<double>&a)
 {
 	int m =a.size(),i;
 	double x = 0;
@@ -780,7 +792,7 @@ bool StarIdentify::norm(vector<double>&a)
 /////////////////////////////////////////
 //叉积公式，输入b，返回也是b
 ////////////////////////////////////////
-bool StarIdentify::cross(vector<double>&a,vector<double>&b)
+inline bool StarIdentify::cross(vector<double>&a,vector<double>&b)
 {
 	if (a.size()!=3||b.size()!=3)
 	{
@@ -795,7 +807,7 @@ bool StarIdentify::cross(vector<double>&a,vector<double>&b)
 	return true;
 }
 
-double StarIdentify::dot(vector<double>&a,vector<double>&b)
+inline double StarIdentify::dot(vector<double>&a,vector<double>&b)
 {
 	double c = 0, i;
 	for (i=0; i<3; i++)
