@@ -9,25 +9,26 @@ using namespace Eigen;
 using namespace std;
 
 //
-struct strStar
-{
-	double x,y,z;
-	double Mag;
-};
-struct catelog 
-{
-	int id;
-	double Pos;
-	double Mag;
-};
-struct k_vector
-{
-	int xaxis, yaxis,zaxis;
-};
 
 class StarIdentify
 {
 public:
+	struct strStar
+	{
+		double x, y, z;
+		double Mag;
+	};
+	struct catelog
+	{
+		int id;
+		double Pos;
+		double Mag;
+	};
+	struct k_vector
+	{
+		int xaxis, yaxis, zaxis;
+	};
+
 	StarIdentify(void);
 	~StarIdentify(void);
 	bool Load_Star_Data(string StarCatelog);

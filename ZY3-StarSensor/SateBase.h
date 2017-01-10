@@ -7,7 +7,7 @@
 using namespace Eigen;
 using namespace std;
 //the struct for orbit;
-typedef struct 
+struct Orbit_Ep
 {
 	double X;
 	double Y;
@@ -16,48 +16,48 @@ typedef struct
 	double Yv;
 	double Zv;
 	double UTC;
-} Orbit_Ep;
+} ;
 
 //the struct for attitude;
-typedef struct 
+struct Attitude
 {
 	double UTC;
 	double Yaw,Pitch,Roll,vYaw,vPitch,vRoll;
 	double Q1,Q2,Q3,Q0;
 	bool isEuler;
-} Attitude;
+} ;
 
 //the struct for quaternion
-typedef struct
+struct Quat
 {
 	double Q1,Q2,Q3,Q0;
 	double UTC;
-}Quat;
+};
 
 //the struct for Euler
-typedef struct
+struct SateEuler
 {
 	double R,P,Y;
 	double UTC;
-}SateEuler;
+};
 
 //struct for scan time;
-typedef struct
+struct LineScanTime
 {
 	int lineNumber;	
 	double lineTimeUT;
 	double integralTime;
-}LineScanTime;
+};
 
-typedef struct
+struct clockInfo
 {
 	int timeIndex;
 	int intUTC;
 	int clockFreq;
-}clockInfo;
+};
 
 //struct for frame data of ZY302
-typedef struct
+struct FrameData_ZY302
 {
 	//vector<Orbit_Ep> frame_Ep;
 	//vector<Attitude> frame_Att;
@@ -71,21 +71,21 @@ typedef struct
 	int frame_lineIndex[15];
 	bool isgpsValid;
 
-}FrameData_ZY302;
+};
 
 //struct for STG data of ZY302
-struct
+struct STGData
 {
 	Quat StarA,StarB,StarC;
 	double utgyro,g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12;
 	double bx,by,bz;
-}STGData;
+};
 
 //struct for Gyro data
-typedef struct
+struct Gyro
 {
 	double UTC;
 	double x,y,z;
-}Gyro;
+};
 
 #endif

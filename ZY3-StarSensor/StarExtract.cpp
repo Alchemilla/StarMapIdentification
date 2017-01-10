@@ -9,6 +9,14 @@ StarExtract::~StarExtract()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////
+//功能：提取星点坐标
+//输入：在主函数中输入工作路径
+//输出：在工作路径下输出星点提取文件
+//注意：函数中GeoReadImage的对象需要用引用
+//作者：GZC
+//日期：2017.01.06
+//////////////////////////////////////////////////////////////////////////
 void StarExtract::StarPointExtraction()
 {
 	GeoReadImage ImgStarMap;
@@ -19,11 +27,11 @@ void StarExtract::StarPointExtraction()
 	height = ImgStarMap.m_yRasterSize;
 	ImgStarMap.ReadBlock(0, 0, width, height, 0, ImgStarMap.pBuffer[0]);
 		
-	path = workpath + "背景噪声16bit.tiff";
+	path = workpath + "背底噪声.tiff";
 	ImgBackground.Open(path, GA_ReadOnly);
 	ImgBackground.ReadBlock(0, 0, 1024, 1024, 0, ImgBackground.pBuffer[0]);
 
-	path = workpath + "星点提取结果.tiff";
+	path = workpath + "星点提取结果 (1).tiff";
 	ImgBW.New(path, "GTiff", ImgStarMap.m_BandType, width, height, 1);
 	ImgBW.Destroy();
 	ImgBW.Open(path, GA_Update);
@@ -40,17 +48,18 @@ void StarExtract::StarPointExtraction()
 			BackgrounDN = ImgBackground.GetDataValue(j, i, 0, 0);
 			if ((StarMapDN - BackgrounDN) > 3)
 			{
-				ImgBW.SetDataValue(i, j, 255, 0);
+				ImgBW.SetDataValue(j, i, 255, 0);
 			}
 			else
 			{
-				ImgBW.SetDataValue(i, j, 0, 0);
+				ImgBW.SetDataValue(j, i, 0, 0);
 			}
 		}
 	}
+	ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
+
 	bwlabel(ImgBW, ImgStarMap);
 
-	//ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
 	ImgStarMap.Destroy();
 	ImgBackground.Destroy();
 	ImgBW.Destroy();
@@ -75,6 +84,7 @@ void StarExtract::bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap)
 
 	vector<double>plot_x(equaListsize);
 	vector<double>plot_y(equaListsize);
+	vector<double>StarMag(equaListsize);
 	double *areaNum = new double[equaListsize];
 	memset(areaNum, 0, sizeof(double)*equaListsize);
 	for (int k = 1; k <= equaListsize; k++)
@@ -87,31 +97,52 @@ void StarExtract::bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap)
 				for (long col = stRun[i]; col <= enRun[i]; col++)
 				{
 					double DN = ImgStarMap.GetDataValue(col, long(rowRun[i]),  0, 0);
-					sum_x += (rowRun[i]+1) *DN*DN;//这里x定义为沿轨向
-					sum_y += (col + 1)*DN*DN;//这里y定义为垂轨向
-					area += DN*DN;
+					sum_x += (rowRun[i]+1) *DN*DN*DN;//这里x定义为沿轨向
+					sum_y += (col + 1)*DN*DN*DN;//这里y定义为垂轨向
+					area += DN*DN*DN;
 					areaNum[k-1]++;
 				}
 			}
 		}
 		plot_x[k - 1] = sum_x / area;
 		plot_y[k - 1] = sum_y / area;
+		double DNall[9] = { ImgStarMap.GetDataValue(plot_x[k - 1]-1, plot_y[k - 1]-1, 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1]-1, 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1]+1, plot_y[k - 1]-1, 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1]-1, plot_y[k - 1], 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1], 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1]+1, plot_y[k - 1], 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1]-1, plot_y[k - 1]+1, 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1] + 1, 0, 0, 1),
+										ImgStarMap.GetDataValue(plot_x[k - 1]+1, plot_y[k - 1]+1, 0, 0, 1)};		
+		double DN = *(max_element(DNall,DNall+9));//C++ STL中算法		
+		StarMag[k - 1] = pow((DN - 65), -0.213)*9.234;
+		/*double DN = ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1], 0, 0, 1);
+		StarMag[k - 1] = 2.2 - 5 * log((DN - 65) / 166) / log(100);*/
 	}
 
-	vector<double>plot_xFIT(equaListsize);
-	vector<double>plot_yFIT(equaListsize);
-	for (int i = 0; i < equaListsize; i++)
-	{				
-			GetPreciseXYbyFitting(plot_y[i], plot_x[i], plot_yFIT[i], plot_xFIT[i], 7, ImgStarMap);
-	}
-	string path = workpath + "星点提取结果2.txt";
+	
+	string path = workpath + "星点提取结果.txt";
 	FILE *fp = fopen(path.c_str(), "w");
 	for (int i = 0; i < equaListsize; i++)
 	{
-		fprintf(fp, "%.5f\t%.5f\n", plot_xFIT[i], plot_yFIT[i]);
+		if (areaNum[i]>9)
+		{
+			fprintf(fp, "%.5f\t%.5f\t%.2f\n", plot_x[i], plot_y[i], StarMag[i]);
+		}
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+//功能：以下三个函数是对连通区域进行标记的小函数
+//			 采用逐行数连续亮点，然后对不同行相关亮点进行连接的方式
+//输入：ImgBW：二值影像，NumberOfRuns：连续亮点数，
+//			 stRun：连续亮点起始列，enRun：连续亮点终止列，rowRun：所在行
+//输出：runLabels：独立的标签个数，equivalence：等价的标签
+//注意：函数中GeoReadImage的对象需要用引用
+//作者：GZC
+//日期：2017.01.06
+//////////////////////////////////////////////////////////////////////////
 void StarExtract::fillRunVectors(GeoReadImage &ImgBW, int& NumberOfRuns, vector<int>& stRun, vector<int>& enRun, vector<int>& rowRun)
 {
 
@@ -148,7 +179,6 @@ void StarExtract::fillRunVectors(GeoReadImage &ImgBW, int& NumberOfRuns, vector<
 		}
 	}
 }
-
 // 把run理解一行图像上的一个连续的 白色像素条
 void StarExtract::firstPass(vector<int>& stRun, vector<int>& enRun, vector<int>& rowRun, int NumberOfRuns,
 	vector<int>& runLabels, vector<pair<int, int>>& equivalences, int offset)
@@ -188,7 +218,6 @@ void StarExtract::firstPass(vector<int>& stRun, vector<int>& enRun, vector<int>&
 
 	}
 }
-
 void StarExtract::replaceSameLabel(vector<int>& runLabels, vector<pair<int, int>>&equivalence, int &equaListsize)
 {
 	int maxLabel = *max_element(runLabels.begin(), runLabels.end());
@@ -234,7 +263,16 @@ void StarExtract::replaceSameLabel(vector<int>& runLabels, vector<pair<int, int>
 	}
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//功能：根据曲面拟合星点坐标
+//输入：预测星点坐标：m_sample，m_line；
+//			 影像数据：IMAGEFILE
+//输出：精化后星点坐标：fm_sample，fm_line；
+//			 窗口大小：num
+//注意：来自SAR相关软件
+//作者：原：ZRS；改写：GZC
+//日期：2017.01.06
+//////////////////////////////////////////////////////////////////////////
 bool StarExtract::GetPreciseXYbyFitting(double m_sample, double m_line, double &fm_sample,
 	double &fm_line, int num, GeoReadImage &IMAGEFILE)
 {	

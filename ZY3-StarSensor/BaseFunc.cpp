@@ -135,10 +135,193 @@ void BaseFunc::Inv(double *A, double *C, int m)
 	delete B;		B = NULL;
 }
 
+// 求m1的逆矩阵C 
+int BaseFunc::invers_matrix(double *m1, int n)
+{
+	int *is, *js;
+
+	int i, j, k, l, u, v;
+
+	double temp, max_v;
+
+	is = (int *)malloc(n * sizeof(int));
+
+	js = (int *)malloc(n * sizeof(int));
+
+	if (is == NULL || js == NULL)
+	{
+
+		printf("out of memory!\n");
+
+		return(0);
+
+	}
+
+	for (k = 0; k<n; k++) {
+		max_v = 0.0;
+		for (i = k; i<n; i++)
+			for (j = k; j<n; j++) {
+				temp = fabs(m1[i*n + j]);
+				if (temp>max_v) {
+					max_v = temp; is[k] = i; js[k] = j;
+				}
+			}
+		if (max_v == 0.0) {
+			free(is); free(js);
+			printf("invers is not availble!\n");
+			return(0);
+		}
+		if (is[k] != k)
+			for (j = 0; j<n; j++) {
+				u = k*n + j; v = is[k] * n + j;
+				temp = m1[u]; m1[u] = m1[v]; m1[v] = temp;
+			}
+		if (js[k] != k)
+			for (i = 0; i<n; i++) {
+				u = i*n + k; v = i*n + js[k];
+				temp = m1[u]; m1[u] = m1[v]; m1[v] = temp;
+			}
+		l = k*n + k;
+		m1[l] = 1.0 / m1[l];
+		for (j = 0; j<n; j++)
+			if (j != k) {
+				u = k*n + j;
+				m1[u] *= m1[l];
+			}
+		for (i = 0; i<n; i++)
+			if (i != k)
+				for (j = 0; j<n; j++)
+					if (j != k) {
+						u = i*n + j;
+						m1[u] -= m1[i*n + k] * m1[k*n + j];
+					}
+		for (i = 0; i<n; i++)
+			if (i != k) {
+				u = i*n + k;
+				m1[u] *= -m1[l];
+			}
+	}
+	for (k = n - 1; k >= 0; k--) {
+		if (js[k] != k)
+			for (j = 0; j<n; j++) {
+				u = k*n + j; v = js[k] * n + j;
+				temp = m1[u]; m1[u] = m1[v]; m1[v] = temp;
+			}
+		if (is[k] != k)
+			for (i = 0; i<n; i++) {
+				u = i*n + k; v = i*n + is[k];
+				temp = m1[u]; m1[u] = m1[v]; m1[v] = temp;
+			}
+	}
+	free(is); free(js);
+	return(1);
+}
+
 // 求矩阵转置，形参m为行，n为列,A转置后存为B 
 void BaseFunc::Transpose(double *A, double *B, int m, int n)
 {
 	for (int i = 0; i<n; i++)
 		for (int j = 0; j<m; j++)
 			B[i*m + j] = A[j*n + i];
+}
+
+double BaseFunc::RevDouble(unsigned char a[])
+{
+	union Tpacket
+	{
+		unsigned char a[8];
+		double b;
+	}p;
+	for (int i = 0; i<8; i++)
+	{
+		p.a[i] = a[7 - i];
+	}
+	double y = p.b;
+	return y;
+}
+
+float BaseFunc::ReverseQ(long Qtemp)
+{
+	float Q;
+	long Qt;
+	Qt = (((Qtemp&(0xff000000)) >> 24) | ((Qtemp&(0x00ff0000)) >> 8) |
+		((Qtemp&(0x0000ff00)) << 8) | ((Qtemp&(0x000000ff)) << 24));
+	Q = Qt / 1073741824.0;
+	return Q;
+}
+
+float BaseFunc::Reverse2(long Qtemp)
+{
+	float Q;
+	long Qt;
+	Qt = (((Qtemp&(0xff000000)) >> 24) | ((Qtemp&(0x00ff0000)) >> 8) |
+		((Qtemp&(0x0000ff00)) << 8) | ((Qtemp&(0x000000ff)) << 24));
+	Q = (float&)Qt;
+	return Q;
+}
+
+void BaseFunc::quat2matrix(double q1, double q2, double q3, double q0, double *R)
+{
+	R[0] = q1*q1 - q2*q2 - q3*q3 + q0*q0;
+	R[1] = 2 * (q1*q2 + q3*q0);
+	R[2] = 2 * (q1*q3 - q2*q0);
+
+	R[3] = 2 * (q1*q2 - q3*q0);
+	R[4] = -q1*q1 + q2*q2 - q3*q3 + q0*q0;
+	R[5] = 2 * (q2*q3 + q1*q0);
+
+	R[6] = 2 * (q1*q3 + q2*q0);
+	R[7] = 2 * (q2*q3 - q1*q0);
+	R[8] = -q1*q1 - q2*q2 + q3*q3 + q0*q0;
+
+	return;
+}
+
+void BaseFunc::QuatInterpolation(Quat *Att, int AttNum, double *UTC, int interNum, Quat *&m_att)
+{
+	if (AttNum<2) { printf("QuatInterpolation Error：AttNum is less than 2, can't interpolation!\n");	return; }
+	// 寻找临近的两个点(对分查找)
+	Quat attleft, attright, att;
+	long posstart, posend, pos;
+	for (int i = 0; i<interNum; i++)
+	{
+		posstart = 0, posend = AttNum - 1, pos = 0;
+		while (posstart<posend)
+		{
+			pos = (posstart + posend) / 2;
+			if (pos == posstart) break;	// 记得加上这句判断,否则会陷入死循环
+			if ((Att[pos].UTC <= UTC[i]) && (Att[pos + 1].UTC>UTC[i]))
+				break;
+			if (Att[pos].UTC <= UTC[i])
+				posstart = pos;
+			else
+				posend = pos;
+		}
+		if (pos < 0)	pos = 0;
+		if (pos >= AttNum - 1)		pos = AttNum - 2;
+		attleft = Att[pos];		attright = Att[pos + 1];
+
+		// 进行内插
+		double sp, sq;
+		double t = (UTC[i] - attleft.UTC) / (attright.UTC - attleft.UTC);
+		double cosa = attleft.Q0*attright.Q0 + attleft.Q1*attright.Q1 + attleft.Q2*attright.Q2 + attleft.Q3*attright.Q3;
+		// 这个错误需要注意了,防止邻近两个值互为反号的情况,需要确保length>0
+		if (cosa<0)
+		{
+			cosa = -cosa;
+			attright.Q0 = -attright.Q0;	attright.Q1 = -attright.Q1;	attright.Q2 = -attright.Q2;	attright.Q3 = -attright.Q3;
+		}
+		if (cosa>0.9999f)
+		{
+			sp = 1.0 - t;	sq = t;
+		}
+		else
+		{
+			double sina = sqrt(1.0 - pow(cosa, 2));	double a = atan2(sina, cosa);	double invSina = 1.0 / sina;
+			sp = sin((1.0 - t)*a)*invSina;			sq = sin(t*a)*invSina;
+		}
+		m_att[i].Q0 = sp*attleft.Q0 + sq*attright.Q0;	m_att[i].Q1 = sp*attleft.Q1 + sq*attright.Q1;
+		m_att[i].Q2 = sp*attleft.Q2 + sq*attright.Q2;	m_att[i].Q3 = sp*attleft.Q3 + sq*attright.Q3;
+		m_att[i].UTC = UTC[i];
+	}
 }
