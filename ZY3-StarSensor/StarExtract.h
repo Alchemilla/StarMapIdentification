@@ -11,8 +11,9 @@ class StarExtract
 public:
 	StarExtract();
 	~StarExtract();
+	void StarPointExtraction(int index);
 	BaseFunc mbase;
-	void StarPointExtraction();
+	//void StarPointExtraction();
 	//连通区域标记函数
 	void bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap);
 	void fillRunVectors(GeoReadImage &ImgBW, int& NumberOfRuns, vector<int>& stRun, vector<int>& enRun, vector<int>& rowRun);
@@ -23,6 +24,7 @@ public:
 	bool GetPreciseXYbyFitting(double m_sample, double m_line, double &fm_sample,
 		double &fm_line, int num, GeoReadImage &IMAGEFILE);
 	string workpath;
+	vector<StarPoint> StarPointExtract;
 private:
 	long width, height;
 };

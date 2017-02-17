@@ -158,6 +158,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="APScalibration.h" />
+    <ClInclude Include="AttDetermination.h" />
     <ClInclude Include="BaseFunc.h" />
     <ClInclude Include="DateTime.h" />
     <ClInclude Include="GeoReadImage.h" />
@@ -167,6 +169,8 @@
     <ClInclude Include="StarIdentify.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="APScalibration.cpp" />
+    <ClCompile Include="AttDetermination.cpp" />
     <ClCompile Include="BaseFunc.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="GeoReadImage.cpp" />

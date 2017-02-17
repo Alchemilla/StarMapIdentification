@@ -17,21 +17,24 @@ StarExtract::~StarExtract()
 //作者：GZC
 //日期：2017.01.06
 //////////////////////////////////////////////////////////////////////////
-void StarExtract::StarPointExtraction()
+void StarExtract::StarPointExtraction(int index)
 {
 	GeoReadImage ImgStarMap;
 	GeoReadImage ImgBackground, ImgBW, ImgStarPoint;
-	string path = workpath + "星图 (1).tiff";
+	char pathtmp[512];
+	sprintf(pathtmp, "星图 (%d).tiff", index);
+	string path = workpath + string(pathtmp);
 	ImgStarMap.Open(path, GA_ReadOnly);
 	width = ImgStarMap.m_xRasterSize;
 	height = ImgStarMap.m_yRasterSize;
 	ImgStarMap.ReadBlock(0, 0, width, height, 0, ImgStarMap.pBuffer[0]);
 		
-	path = workpath + "背底噪声.tiff";
+	path = workpath + "背底噪声新3.tiff";
 	ImgBackground.Open(path, GA_ReadOnly);
 	ImgBackground.ReadBlock(0, 0, 1024, 1024, 0, ImgBackground.pBuffer[0]);
 
-	path = workpath + "星点提取结果 (1).tiff";
+	sprintf(pathtmp, "星点提取结果 (%d).tiff", index);
+	path = workpath + (string)pathtmp;
 	ImgBW.New(path, "GTiff", ImgStarMap.m_BandType, width, height, 1);
 	ImgBW.Destroy();
 	ImgBW.Open(path, GA_Update);
@@ -46,7 +49,7 @@ void StarExtract::StarPointExtraction()
 			StarMapDN = ImgStarMap.GetDataValue(j, i, 0, 0);
 			if (StarMapDN > 255) StarMapDN = 255;
 			BackgrounDN = ImgBackground.GetDataValue(j, i, 0, 0);
-			if ((StarMapDN - BackgrounDN) > 3)
+			if ((StarMapDN - BackgrounDN) > 3)//阈值选择
 			{
 				ImgBW.SetDataValue(j, i, 255, 0);
 			}
@@ -56,7 +59,7 @@ void StarExtract::StarPointExtraction()
 			}
 		}
 	}
-	ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
+	//ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
 
 	bwlabel(ImgBW, ImgStarMap);
 
@@ -68,7 +71,7 @@ void StarExtract::StarPointExtraction()
 //////////////////////////////////////////////////////////////////////////
 //功能：对二值图像连通域进行标记
 //输入：GeoReadImage &ImgBW：读取二值影像
-//输出：
+//输出：类成员参数StarPointExtract：星点提取vector结构体
 //注意：函数中GeoReadImage的对象需要用引用
 //作者：GZC
 //日期：2017.01.06
@@ -106,23 +109,45 @@ void StarExtract::bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap)
 		}
 		plot_x[k - 1] = sum_x / area;
 		plot_y[k - 1] = sum_y / area;
-		double DNall[9] = { ImgStarMap.GetDataValue(plot_x[k - 1]-1, plot_y[k - 1]-1, 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1]-1, 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1]+1, plot_y[k - 1]-1, 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1]-1, plot_y[k - 1], 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1], 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1]+1, plot_y[k - 1], 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1]-1, plot_y[k - 1]+1, 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1] + 1, 0, 0, 1),
-										ImgStarMap.GetDataValue(plot_x[k - 1]+1, plot_y[k - 1]+1, 0, 0, 1)};		
-		double DN = *(max_element(DNall,DNall+9));//C++ STL中算法		
-		StarMag[k - 1] = pow((DN - 65), -0.213)*9.234;
+		double DN;
+		//避免取到边界以外的值
+		if ((plot_x[k - 1])>1&& (plot_x[k - 1])<1023&&(plot_y[k - 1])>1&& (plot_y[k - 1])<1023)
+		{
+				double DNall[9] = { ImgStarMap.GetDataValue(plot_x[k - 1] - 1, plot_y[k - 1] - 1, 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1] - 1, 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1] + 1, plot_y[k - 1] - 1, 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1] - 1, plot_y[k - 1], 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1], 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1] + 1, plot_y[k - 1], 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1] - 1, plot_y[k - 1] + 1, 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1] + 1, 0, 0, 1),
+				ImgStarMap.GetDataValue(plot_x[k - 1] + 1, plot_y[k - 1] + 1, 0, 0, 1) };
+				DN = *(max_element(DNall, DNall + 9));//C++ STL中算法		
+				StarMag[k - 1] = pow((DN - 65), -0.213)*9.234;
+		}				
+		else
+		{
+			DN = ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1], 0, 0, 1);
+			StarMag[k - 1] = pow((DN - 65), -0.213)*9.234;
+		}
 		/*double DN = ImgStarMap.GetDataValue(plot_x[k - 1], plot_y[k - 1], 0, 0, 1);
 		StarMag[k - 1] = 2.2 - 5 * log((DN - 65) / 166) / log(100);*/
 	}
-
 	
-	string path = workpath + "星点提取结果.txt";
+	//筛选多于9个像素的星点
+	for (int i = 0; i < equaListsize; i++)
+	{
+		if (areaNum[i]>9)
+		{
+			StarPoint StarPointExtractTmp;
+			StarPointExtractTmp.x = plot_x[i];
+			StarPointExtractTmp.y = plot_y[i];
+			StarPointExtractTmp.Mag = StarMag[i];
+			StarPointExtract.push_back(StarPointExtractTmp);			
+		}
+	}
+
+	/*string path = workpath + "星点提取结果.txt";
 	FILE *fp = fopen(path.c_str(), "w");
 	for (int i = 0; i < equaListsize; i++)
 	{
@@ -131,6 +156,7 @@ void StarExtract::bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap)
 			fprintf(fp, "%.5f\t%.5f\t%.2f\n", plot_x[i], plot_y[i], StarMag[i]);
 		}
 	}
+	fclose(fp);*/
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -232,7 +258,7 @@ void StarExtract::replaceSameLabel(vector<int>& runLabels, vector<pair<int, int>
 	vector<int> labelFlag(maxLabel, 0);
 	vector<vector<int>> equaList;
 	vector<int> tempList;
-	cout << maxLabel << endl;
+	//cout << maxLabel << endl;
 	for (int i = 1; i <= maxLabel; i++)
 	{
 		if (labelFlag[i - 1])
@@ -255,7 +281,7 @@ void StarExtract::replaceSameLabel(vector<int>& runLabels, vector<pair<int, int>
 		equaList.push_back(tempList);
 		tempList.clear();
 	}
-	cout << equaList.size() << endl;
+	//cout << equaList.size() << endl;
 	equaListsize = equaList.size();
 	for (vector<int>::size_type i = 0; i != runLabels.size(); i++)
 	{

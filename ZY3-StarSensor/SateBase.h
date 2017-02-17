@@ -88,4 +88,27 @@ struct Gyro
 	double x,y,z;
 };
 
+//恒星星表结构体
+struct Star
+{
+	int ID, DN;//恒星编号和亮度换算DN值
+	double phiX, phiY, mag;//赤经赤纬和亮度
+	double V[3];//J2000系下的XYZ坐标
+};
+
+//存储星点的结构体
+//当xy在像方时表示像面坐标
+//当xy在天球时表示赤经赤纬
+struct StarPoint
+{
+	double x, y;
+	double Mag;
+};
+
+//星点控制点
+struct StarGCP
+{
+	double x, y;
+	double V[3];
+};
 #endif

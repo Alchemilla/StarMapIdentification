@@ -14,16 +14,13 @@ class ParseSTG
 {
 public:
 	BaseFunc mBase;
-	struct Star
-	{
-		int ID, DN;//恒星编号和亮度换算DN值
-		double phiX, phiY, mag;//赤经赤纬和亮度
-		double V[3];//J2000系下的XYZ坐标
-	};
-
+	//星敏各种解析
 	void ParseZY302_STG(string STGpath,vector<STGData> &ZY3_02STGdata);
 	bool ParseZY302_STI(string STIpath);
+	bool ParseZY302_STItime(string STIpath);
+	//仿真星图
 	void StarMap(vector<STGData> ZY3_02STGdata);
+	//
 	void FromLL2XY(Star starCatlog, double *R, double &x, double &y);
 	void StarIDComp(vector<STGData> ZY3_02STGdata,string IDpath);
 	void StarAngleAPS_B_C(vector<STGData> ZY3_02STGdata,int StarTag);

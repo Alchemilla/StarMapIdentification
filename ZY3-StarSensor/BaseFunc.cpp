@@ -23,6 +23,38 @@ void BaseFunc::pNormal(double *a, int n, double b, double *aa, double *ab, doubl
 	}
 }
 
+//王新洲等，谱修正迭代法及其在测量数据处理中的应用
+void BaseFunc::GaussExt(double *ATA, double *ATL, double *x, int n)
+{
+	double *ATAinv = new double[n*n];
+	long i;
+	int num = 0;
+	for (int i = 0; i<n; i++)
+	{
+		ATA[i*n + i] += 1;
+	}
+	Inv(ATA, ATAinv, n);
+	double *temp = new double[n];
+	double *temp1 = new double[n];
+	double dx0 = 1e10, dx = 1e10, dxx = 0;
+	do
+	{
+		dx0 = dx;
+		memcpy(temp1, x, sizeof(double)*n);
+		for (i = 0; i<n; i++)
+			temp[i] = ATL[i] + x[i];
+		Multi(ATAinv, temp, x, n, n, 1);
+		dx = 0;
+		for (i = 0; i<n; i++)
+		{
+			dx += (x[i] - temp1[i])*(x[i] - temp1[i]);
+		}
+		num++;
+	} while (num<10000 && dx<dx0);;
+	delete[]temp;		temp = NULL;
+	delete[]temp1;		temp1 = NULL;
+	delete[]ATAinv;	ATAinv = NULL;
+}
 int BaseFunc::Gauss(double *ATA, double *ATL, int n)
 {
 	double *ATAinv = new double[n*n];
@@ -217,6 +249,26 @@ int BaseFunc::invers_matrix(double *m1, int n)
 	return(1);
 }
 
+// 求取向量的模
+double BaseFunc::Norm(double *R, int num)
+{
+	double retVal = 0.0;
+	for (int i = 0; i<num; i++)
+		retVal += pow(R[i], 2);
+	return sqrt(retVal);
+}
+
+// 对向量进行归一化
+void BaseFunc::NormVector(double *R, int num)
+{
+	double retVal = 0.0;
+	for (int i = 0; i < num; i++)
+		retVal += pow(R[i], 2);
+	retVal = sqrt(retVal);
+	for (int i = 0; i < num; i++)
+		R[i] /= retVal;
+}
+
 // 求矩阵转置，形参m为行，n为列,A转置后存为B 
 void BaseFunc::Transpose(double *A, double *B, int m, int n)
 {
@@ -324,4 +376,102 @@ void BaseFunc::QuatInterpolation(Quat *Att, int AttNum, double *UTC, int interNu
 		m_att[i].Q2 = sp*attleft.Q2 + sq*attright.Q2;	m_att[i].Q3 = sp*attleft.Q3 + sq*attright.Q3;
 		m_att[i].UTC = UTC[i];
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：产生一个符合正态分布的随机数
+//输入：mean:均值，sigma:方差
+//输出：函数分布图
+//注意：
+//日期：2016.10.12 by HWC
+//////////////////////////////////////////////////////////////////////////
+double BaseFunc::GaussRand(double mean, double sigma, int &phase)
+{
+	static double v1, v2, s;
+	double x;
+	if (0 == phase)
+	{
+		do
+		{
+			double u1 = (double)rand() / RAND_MAX;
+			double u2 = (double)rand() / RAND_MAX;
+			v1 = 2 * u1 - 1;
+			v2 = 2 * u2 - 1;
+			s = v1 * v1 + v2 * v2;
+		} while (1 <= s || 0 == s);
+		x = v1 * sqrt(-2 * log(s) / s);
+	}
+	else
+	{
+		x = v2 * sqrt(-2 * log(s) / s);
+	}
+	phase = 1 - phase;
+	return (x*sigma + mean);    // 注意要加括号,否则返回值就是sigma了
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：产生一组符合正态分布的随机数
+//输入：mean:均值，sigma:方差，n:随机数量，randCount:输入0每组随机数不一样
+//输出：a:生成n组随机数组a
+//注意：randCount一般为0
+//日期：2016.10.12 by HWC
+//////////////////////////////////////////////////////////////////////////
+double BaseFunc::RandomDistribution(double mean, double sigma, int n, long randCount, double *a)
+{
+	if (n <= 0)
+		return !0;
+	static int phase1 = 0;
+	int phase2 = 0;
+	static unsigned int timetemp = 0;
+	// 产生每次都不同的随机数
+	if (randCount == 0)
+	{
+		double min = mean - 3 * sigma;
+		double max = mean + 3 * sigma;
+		// 注意要使用time(NULL),而不是GetTickcount
+		// GetTickcount函数：它返回从操作系统启动到当前所经过的毫秒数，
+		// 常常用来判断某个方法执行的时间，其函数原型是DWORD GetTickCount(void)，
+		// 返回值以32位的双字类型DWORD存储，因此可以存储的最大值是2^32 ms约为49.71天，
+		// 因此若系统运行时间超过49.71天时，这个数就会归0，MSDN中也明确的提到了:
+		// "Retrieves the number of milliseconds that have elapsed since the 
+		// system was started, up to 49.7 days."。因此，如果是编写服务器端程序，
+		// 此处一定要万分注意，避免引起意外的状况。
+		srand(time(NULL) + timetemp);
+		// 产生随机数
+		for (int i = 0; i<n; i++)
+		{
+			a[i] = GaussRand(mean, sigma, phase1);
+			if ((a[i]<min) || (a[i]>max))
+				i--;
+		}
+		timetemp = (unsigned int)fabs(a[0]);
+	}
+	// 产生每次都相同的随机数,比如稳定度就需要用到
+	else
+	{
+		double min = mean - sigma;
+		double max = mean + sigma;
+		srand(randCount);
+		// 产生随机数
+		for (int i = 0; i<n; i++)
+		{
+			a[i] = GaussRand(mean, sigma, phase2);
+			if ((a[i]<min) || (a[i]>max))
+				i--;
+		}
+	}
+	// 个数太少就不进行
+	if (n>3)
+	{
+		// 求取平均值
+		double meantemp = 0;
+		for (int i = 0; i<n; i++)
+			meantemp += a[i];
+		meantemp /= n;
+		// 对平均值进行修正
+		double div = meantemp - mean;
+		for (int i = 0; i<n; i++)
+			a[i] -= div;
+	}
+	return 0;
 }

@@ -14,7 +14,10 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="4-姿态确定">
+    <Filter Include="4-星敏定标">
+      <UniqueIdentifier>{ca08f537-208e-4cf2-ab48-cc0121d5e219}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="5-姿态确定">
       <UniqueIdentifier>{228e2dd9-daeb-4ef2-ab76-2414e746357d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -40,6 +43,12 @@
     <ClInclude Include="SateBase.h">
       <Filter>0-基本函数</Filter>
     </ClInclude>
+    <ClInclude Include="APScalibration.h">
+      <Filter>4-星敏定标</Filter>
+    </ClInclude>
+    <ClInclude Include="AttDetermination.h">
+      <Filter>5-姿态确定</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StarIdentify.cpp">
@@ -58,10 +67,16 @@
       <Filter>1-底层数据</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
-      <Filter>4-姿态确定</Filter>
+      <Filter>5-姿态确定</Filter>
     </ClCompile>
     <ClCompile Include="DateTime.cpp">
       <Filter>0-基本函数</Filter>
+    </ClCompile>
+    <ClCompile Include="APScalibration.cpp">
+      <Filter>4-星敏定标</Filter>
+    </ClCompile>
+    <ClCompile Include="AttDetermination.cpp">
+      <Filter>5-姿态确定</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

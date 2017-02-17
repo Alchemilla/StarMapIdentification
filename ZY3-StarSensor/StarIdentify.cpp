@@ -741,11 +741,91 @@ bool StarIdentify::Q_Method()
 	return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//功能：获取星点控制
+//输入：ZY3_02STGdata，解析后存储的星敏STG数据
+//			 StarPointExtract，星点提取结果
+//输出：getCCP：控制点vector
+//注意：本方法还未依赖星图识别
+//作者：GZC
+//日期：2017.01.11
+//////////////////////////////////////////////////////////////////////////
+void StarIdentify::GetStarGCP(	vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract,int index)
+{
+	//打开星表文件
+	string starCatlogpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\星表\\导航星表矢量.txt";
+	FILE *fp;
+	fp = fopen(starCatlogpath.c_str(), "r");
+	if (fp == NULL)
+	{
+		printf("打开%s文件失败,请确认文件路径是否正确!\n", starCatlogpath.c_str());
+		return;
+	}
+	int i, n;
+	fscanf(fp, "%d", &n);//读取星表数据
+	Star *starCatlog = new Star[n];
+	for (i = 0; i < n; i++)
+	{
+		fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &starCatlog[i].ID, &starCatlog[i].phiX,
+			&starCatlog[i].phiY, &starCatlog[i].mag, &starCatlog[i].V[0], &starCatlog[i].V[1], &starCatlog[i].V[2]);
+	}
+	fclose(fp);
+	int j, m = StarPointExtract.size();
+	double R[9];
+	double x, y;
+	char GCPpathtmp[100];
+	sprintf(GCPpathtmp, "控制点\\GCP(%d).pts", index);
+	string GCPpath = workpath + GCPpathtmp;
+	FILE *fp2 = fopen(GCPpath.c_str(), "w");
+
+	string str1 = "; ENVI Image to Image GCP File";
+	string str2 = "; base file : D:\\2_ImageData\\ZY3 - 02\\星图处理\\0830\\星图\\星图(1).tiff";
+	string str3 = "; warp file : D:\\2_ImageData\\ZY3 - 02\\星图处理\\0830\\星图\\星图(1).tiff";
+	string str4 = "; Base Image(x, y), Warp Image(x, y)";
+	fprintf(fp2, "%s\n%s\n%s\n%s\n", str1.c_str(), str2.c_str(), str3.c_str(), str4.c_str());
+
+	//第一景对应第三个姿态
+	index = 2 * index;
+	mBase.quat2matrix(ZY3_02STGdata[index].StarA.Q1, ZY3_02STGdata[index].StarA.Q2,
+		ZY3_02STGdata[index].StarA.Q3, ZY3_02STGdata[index].StarA.Q0, R);//Crj
+	for (j = 0; j < n; j++)
+	{
+		mSTGfunc.FromLL2XY(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
+		if (x > 0 && x < 1024 && y>0 && y < 1024)
+		{			
+			for (int k = 0; k < m; k++)
+			{
+				int xPixel = int(y + 0.5);
+				int yPixel = 1024 - int(x + 0.5);
+				/*int xPixel = int(x+0.5);
+				int yPixel = int(y+0.5);*/
+				StarGCP getGCPtmp;
+				if ((StarPointExtract[k].x - xPixel > 5) && (StarPointExtract[k].x - xPixel < 15)
+					&& (StarPointExtract[k].y - yPixel > -25) && (StarPointExtract[k].y - yPixel < -15))
+				{
+					getGCPtmp.x = StarPointExtract[k].x;
+					getGCPtmp.y = StarPointExtract[k].y;
+					getGCPtmp.V[0] = starCatlog[j].V[0];
+					getGCPtmp.V[1] = starCatlog[j].V[1];
+					getGCPtmp.V[2] = starCatlog[j].V[2];
+					getGCP.push_back(getGCPtmp);
+				}
+				if ((StarPointExtract[k].x - xPixel >  5 ) && (StarPointExtract[k].x - xPixel < 15)
+					&& (StarPointExtract[k].y - yPixel > -25) && (StarPointExtract[k].y - yPixel < -15))
+				{
+					fprintf(fp2, "%.9f\t%.9f\t%d\t%d\n", StarPointExtract[k].x, StarPointExtract[k].y, xPixel, yPixel);
+				}
+			}
+		}
+	}
+	fclose(fp2);
+}
+
 ////////////////////////////////////////
 //基本算法部分：
 ////////////////////////////////////////
 
-/////////////////////////////////////////
+	/////////////////////////////////////////
 //定义升序降序排列的函数，从小到大
 ////////////////////////////////////////
 inline bool StarIdentify::LessSort (vector<double> a,vector<double> b) { return a[0]<b[0]; }

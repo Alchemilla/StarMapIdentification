@@ -147,7 +147,7 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 	path = path.substr(0, path.rfind('.'));
 	string strpath = path + "_STG_parse.txt";
 	FILE *fpres = fopen(strpath.c_str(), "w");
-	fprintf(fpres,"%d\t",nSize);
+	fprintf(fpres,"%d\n",nSize);
 	for (i = 0; i < nSize; i++)
 	{
 		fprintf(fpres, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t", ZY_3Data[i].StarA.UTC, ZY_3Data[i].StarA.Q0, ZY_3Data[i].StarA.Q1, ZY_3Data[i].StarA.Q2, ZY_3Data[i].StarA.Q3);
@@ -193,7 +193,7 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 	long width = 1024, height = 1024;// 影像的宽度和高度
 	unsigned short *pFred = new unsigned short[width * height];	     //像素值
 	int nSizeFred = nSize / 1310736;   //帧数
-	nSizeFred = 1;//先生产10景再说
+	nSizeFred = 300;//先生产10景再说
 	vector<vector<double>>pUnitData(nSizeFred, vector<double>(1024 * 1024));//用二维vector来定义多景影像
 
 	// 累计秒从2009年1月1日0时开始计数
@@ -223,7 +223,7 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 	//仿射变换
 	double minx = 0, maxy = 1024, resolution = 1;
 	double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-	for (int i = 0; i < nSizeFred; i++)
+	for (int i = 100; i < nSizeFred; i++)
 	{
 		//星时
 		//整秒
@@ -271,8 +271,8 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 		sprintf(tempath, "星图 (%d).tiff", i + 1);
 		string imgpath = workpath + "星图\\" + tempath;
 		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);
-		m_out.poDataset->SetProjection(tarProject.c_str());
-		m_out.poDataset->SetGeoTransform(adfGeoTransform);
+		//m_out.poDataset->SetProjection(tarProject.c_str());
+		//m_out.poDataset->SetGeoTransform(adfGeoTransform);
 
 		//更新方式打开影像
 		m_out.Open(imgpath, GA_Update);
@@ -308,206 +308,82 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 	}
 	if (pFred != NULL)		delete[]pFred;       pFred = NULL;
 	if (pData != NULL)		delete[]pData;		 pData = NULL;
+	return true;
+}
 
-	//printf("\n******************************************************************************\nstep2:影像输出\n");
-	////////////////////////////////////////////////
-	////2、内存中pUnitData数据，输出到影像
-	////////////////////////////////////////////////
-	//// 输出影像参数
-	//string outdriver = "GTiff";	    //也可以存为bmp
-	//GeoReadImage *m_out = new GeoReadImage[nSizeFred + 1];
-	////投影
-	//string tarProject;
-	//tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
-	////仿射变换
-	//double minx = 0, maxy = 1024, resolution = 1;
-	//double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-	//for (int k = 0; k < nSizeFred; k++)
-	//{
-	//	//创建影像
-	//	char tempath[100];
-	//	//sprintf(tempath, "原始星图%02d_UT%.4lf.tiff", k + 1, UT[k]);
-	//	sprintf(tempath, "星图 (%02d).tiff", k + 1);
-	//	string imgpath = workpath + "星图\\" + tempath;
-	//	m_out[k].New(imgpath, outdriver, GDT_Byte, width, height, 1);
-	//	m_out[k].poDataset->SetProjection(tarProject.c_str());
-	//	m_out[k].poDataset->SetGeoTransform(adfGeoTransform);
-	//	//更新方式打开影像
-	//	m_out[k].Open(imgpath, GA_Update);
-	//	if (m_out[k].m_isopen == true)
-	//		printf("\rUpdate Img (%s)", imgpath.c_str());
-	//	else
-	//	{
-	//		printf("\rUpdate Img (%s) Failed", imgpath.c_str());
-	//		return 0;
-	//	}
-	//	//建立out数据区
-	//	m_out[k].SetBuffer(0, 0, width, height, m_out[k].pBuffer[0]);
-	//	double gray;
-	//	for (long y = 0; y < height; y++)       //y坐标
-	//	{
-	//		for (long x = 0; x < width; x++)   //x坐标
-	//		{
-	//			//读入数据
-	//			gray = pUnitData[k][y*width + x];
-	//			if (gray > 255)gray = 255;
-	//			//输出图像坐标系顺时针90度转为星敏像平面坐标系
-	//			m_out[k].SetDataValue(x, y, gray, 0);    //赋值
-	//		}
-	//	}
-	//	//写入数据
-	//	bool iswrite = true;
-	//	iswrite *= m_out[k].WriteBlock(0, 0, width, height, 0, m_out[k].pBuffer[0]);
-	//	//关闭影像
-	//	m_out[k].Destroy();
-	//}
-	//fclose(ftime);  ftime = NULL;
-	//pUnitData.empty();
+//////////////////////////////////////////////////////////////////////////
+//功能：解析STI文件中的星图
+//输入：STIpath，STI文件路径
+//输出：输出到星敏目录
+//注意：该星敏为APS星敏数据
+//日期：2017.01.08
+//////////////////////////////////////////////////////////////////////////
+bool ParseSTG::ParseZY302_STItime(string STIpath)
+{
+	FILE *fp = fopen(STIpath.c_str(), "rb");
+	if (!fp)
+	{
+		printf("Failed to open the RAW File(%s)\n", STIpath.c_str());
+		return false;
+	}
 
-	//printf("\n*******************************************************************************\nstep3:提取噪底\n");
-	//unsigned short *pNoise = new unsigned short[width * height];	 //天空背景（噪底)
-	//GeoReadImage mNoise;	
-	//string Noisepath = workpath + "星图\\背底噪声.tiff";
-	//mNoise.New(Noisepath, outdriver, GDT_Byte, width, height, 1);
-	//mNoise.Open(Noisepath, GA_Update);
-	////建立数据区
-	//mNoise.SetBuffer(0, 0, width, height, mNoise.pBuffer[0]);
-	//for (int y = 0; y < height; y++)       //y坐标
-	//{
-	//	for (int x = 0; x < width; x++)   //x坐标
-	//	{
-	//		int sum = 0;
-	//		//序列影像灰度值
-	//		for (int k = 0; k < nSizeFred; k++)
-	//		{
-	//			int gray = pUnitData[k][y*width + x];
-	//			sum += gray;
-	//		}
-	//		pNoise[y*width + x] = sum / nSizeFred;
-	//		mNoise.SetDataValue(x, y, pNoise[y*width + x], 0);    //赋值
-	//		 //写入数据
-	//		bool iswrite = true;
-	//		iswrite *= mNoise.WriteBlock(0, 0, width, height, 0, mNoise.pBuffer[0]);			
-	//	}
-	//	//进度输出
-	//	int rate = 100 * y / height;
-	//	printf("\rProcessed:%d%%", rate);
-	//}
-	////关闭影像
-	//mNoise.Destroy();
+	//一次将文件全部读入内存pData
+	_fseeki64(fp, 0, SEEK_END);
+	__int64 nSize = _ftelli64(fp);
+	_fseeki64(fp, 0, SEEK_SET);
+	byte *pData = new byte[nSize];
+	if (fread(pData, sizeof(byte), nSize, fp) != nSize)
+	{
+		fclose(fp);
+		return false;
+	}
+	fclose(fp);	fp = NULL;
 
-	//printf("\n*******************************************************************************\nstep3:提取星点\n");
-	////////////////////////////////////////////////
-	////3、step3:提取星点
-	////////////////////////////////////////////////
-	//unsigned short *pNoise = new unsigned short[width * height];	 //天空背景（噪底)
-	//sprintf(outpath, "E:\\02横向项目\\05天基空间目标监视\\10接口数据\\资源三号02星图\\提取星点\\序列影像灰度值.txt");
-	//FILE *fgray = fopen(outpath, "w");
-	//if (!fgray)
-	//{
-	//	printf("Failed to open the RAW File(%s)\n", outpath);
-	//	return false;
-	//}
-	//sprintf(outpath, "E:\\02横向项目\\05天基空间目标监视\\10接口数据\\资源三号02星图\\提取星点\\星点坐标.txt");
-	//FILE *fstar = fopen(outpath, "w");
-	//if (!fgray)
-	//{
-	//	printf("Failed to open the RAW File(%s)\n", outpath);
-	//	return false;
-	//}
-	//fprintf(fstar, "帧号\tx\ty\tgray\tnoise\n");
-	//for (int y = 0; y < height; y++)       //y坐标
-	//{
-	//	for (int x = 0; x < width; x++)   //x坐标
-	//	{
-	//		int sum = 0;
-	//		//序列影像灰度值
-	//		fprintf(fgray, "(%4d,%4d)\t", x, y);
-	//		for (int k = 0; k < nSizeFred; k++)
-	//		{
-	//			int gray = pUnitData[k].imgdata[y*width + x];
-	//			fprintf(fgray, "%3d\t", gray);
-	//			sum += gray;
-	//		}
-	//		fprintf(fgray, "\n");
-	//		//星点坐标
-	//		pNoise[y*width + x] = sum / nSizeFred;
-	//		for (int k = 0; k < nSizeFred; k++)
-	//		{
-	//			int gray = pUnitData[k].imgdata[y*width + x];
-	//			if (gray - pNoise[y*width + x] < 5)
-	//			{
-	//				pUnitData[k].imgdata[y*width + x] = 0;
-	//			}
-	//			else
-	//			{
-	//				fprintf(fstar, "%4d\t%4d\t%4d\t%3d\t%3d\n", k, x, y, gray, pNoise[y*width + x]);
-	//			}
-	//		}
-	//		//进度输出
-	//		int rate = 100 * (y*width + x) / width / height;
-	//		printf("\rProncessing(%4d,%4d);  Processed:%d%%", x, y, rate);
-	//	}
-	//}
-	//fclose(ftime);  ftime = NULL;
-	//fclose(fstar);  fstar = NULL;
-	//fclose(fgray);  fgray = NULL;
-
-	//printf("*******************************************************************************\nstep4:星点影像输出\n");
-	////////////////////////////////////////////////
-	////4、星点影像输出
-	////////////////////////////////////////////////
-	//// 输出影像参数
-	////string outdriver = "GTiff";
-	////GeoReadImage *m_out = new GeoReadImage[nSizeFred];
-	//////投影
-	////string tarProject;
-	////tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
-	//////仿射变换
-	////double minx = 0, maxy = 1024, resolution = 1;
-	////double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-	//for (int k = 0; k < nSizeFred + 1; k++)
-	//{
-	//	//创建影像
-	//	sprintf(outpath, "E:\\02横向项目\\05天基空间目标监视\\10接口数据\\资源三号02星图\\提取星点\\星点影像%02d.tif", k + 1);
-	//	if (k == nSizeFred)sprintf(outpath, "E:\\02横向项目\\05天基空间目标监视\\10接口数据\\资源三号02星图\\噪底.tif");
-	//	m_out[k].New(outpath, outdriver, GDT_Byte, width, height, 1);
-	//	//m_out[k].poDataset->SetProjection(tarProject.c_str());
-	//	//m_out[k].poDataset->SetGeoTransform(adfGeoTransform);
-	//	//更新方式打开影像
-	//	m_out[k].Open(outpath, GA_Update, false);
-	//	if (m_out[k].m_isopen == true)
-	//		printf("\rUpdate Img (%s)", outpath);
-	//	else
-	//	{
-	//		printf("\rUpdate Img (%s) Failed", outpath);
-	//		return 0;
-	//	}
-	//	//建立out数据区
-	//	m_out[k].SetBuffer(0, 0, width, height, m_out[k].pBuffer[0]);
-	//	double gray;
-	//	int Xm, Ym;
-	//	for (int y = 0; y < height; y++)       //y坐标
-	//	{
-	//		for (int x = 0; x < width; x++)   //x坐标
-	//		{
-	//			//读入数据
-	//			if (k < nSizeFred)gray = pUnitData[k].imgdata[y*width + x];
-	//			else gray = pNoise[y*width + x];
-	//			if (gray > 255)gray = 255;
-	//			//输出图像坐标系顺时针90度转为星敏像平面坐标系
-	//			Xm = y, Ym = 1024 - x;
-	//			m_out[k].SetDataValue(Xm, Ym, gray, 0);    //赋值
-	//		}
-	//	}
-	//	//写入数据
-	//	bool iswrite = true;
-	//	iswrite *= m_out[k].WriteBlock(0, 0, width, height, 0, m_out[k].pBuffer[0]);
-	//	//关闭影像
-	//	m_out[k].Destroy();
-	//}
-	//if (pNoise != NULL)		delete[]pNoise, pNoise = NULL;
-	//if (pUnitData != NULL)		delete[]pUnitData, pUnitData = NULL;
+	int nSizeFred = nSize / 1310736;   //帧数
+	// 累计秒从2009年1月1日0时开始计数
+	double jd0, refMJD;
+	Cal2JD(2009, 1, 1, 0, &jd0, &refMJD);
+	string outpath = workpath + "星时.txt";
+	FILE *ftime = fopen(outpath.c_str(), "w");
+	if (!ftime)
+	{
+		printf("Failed to open the RAW File(%s)\n", outpath);
+		return false;
+	}
+	fprintf(ftime, "帧号\t 星时1(累计秒，与姿态轨道文件对应)\t星时2（YYYY:MM:DD）\n");
+	bitset<8> bit8;
+	string str;
+	unsigned int tmp, tmps = 0, tmpms = 0;
+	double  second;
+	double *UT = new double[nSizeFred];
+	int year, month, day, hour, minute;
+	for (int i = 0; i < nSizeFred; i++)
+	{
+		//星时
+		//整秒
+		memcpy(&bit8, pData + i * 1310736 + 4, sizeof(byte));
+		tmps = pow(2, 24)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 5, sizeof(byte));
+		tmps += pow(2, 16)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 6, sizeof(byte));
+		tmps += pow(2, 8)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 7, sizeof(byte));
+		tmps += pow(2, 0)* bit8.to_ulong();
+		//微妙
+		memcpy(&bit8, pData + i * 1310736 + 8, sizeof(byte));
+		tmpms = pow(2, 16)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 9, sizeof(byte));
+		tmpms += pow(2, 8)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 10, sizeof(byte));
+		tmpms += pow(2, 0)* bit8.to_ulong();
+		//累计秒
+		UT[i] = tmps + tmpms / 1000000.0;
+		//历书时
+		FromSecondtoYMD(refMJD, UT[i], year, month, day, hour, minute, second);
+		fprintf(ftime, "%3d\t%16.6lf\n", i + 1, UT[i]);
+		//fprintf(ftime, "%04d:%02d:%02d:%02d:%02d:%06.3lf\n", year, month, day, hour, minute, second);		
+	}
+	fclose(ftime);
 	return true;
 }
 
@@ -527,12 +403,18 @@ void ParseSTG::FromLL2XY(Star starCatlog, double *R, double &x, double &y)
 	//x0=y0=512,f=43.3mm,像元大小0.015mm
 	if (W[2] > 0)
 	{
-		x = (512 * 0.015 - W[0] / W[2] * 43.3) / 0.015;
-		y = (512 * 0.015 - W[1] / W[2] * 43.3) / 0.015;
+		x = (512 - W[0] / W[2] * 43.3/0.015) ;
+		y = (512 - W[1] / W[2] * 43.3/0.015) ;
 	}
+	//if (W[2] > 0)
+	//{
+	//	x = (W[0] / W[2] * 43.3 + 512 * 0.015) / 0.015;//X-X0;
+	//	y = (W[1] / W[2] * 43.3 + 512 * 0.015) / 0.015;//Y-Y0;
+	//}
 	else
 	{
-		x = -1, y = -1;
+		//x = -1, y = -1;
+		x = -513, y = -513;
 	}//这个是用来判断是否和星敏指向的半球方向一致
 }
 
@@ -559,7 +441,7 @@ int ParseSTG::Mag2DN(double Mag)
 void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 {
 	//打开星表文件
-	string starCatlogpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\star1";
+	string starCatlogpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\星表\\star1";
 	FILE *fp;
 	fp = fopen(starCatlogpath.c_str(), "r");
 	if (fp == NULL)
@@ -592,25 +474,26 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 	FILE *fptxt = fopen(imgtxt.c_str(), "w");
 
 	//给出第一帧的星像点坐标和亮度	
-	mBase.quat2matrix(ZY3_02STGdata[0].StarA.Q1, ZY3_02STGdata[0].StarA.Q2,
-		ZY3_02STGdata[0].StarA.Q3, ZY3_02STGdata[0].StarA.Q0, R);//Crj
-	for (j = 0; j < n; j++)
-	{
-		FromLL2XY(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
-		if (x > 0 && x < 1024 && y>0 && y < 1024)
-		{
-			/*int xPixel = int(x + 0.5);
-			int yPixel = int(y + 0.5);*/
-			int xPixel = int(y + 0.5);
-			int yPixel = 1024 - int(x + 0.5);
-			UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
-			fprintf(fptxt, "%d\t%d\t%.1f\n", xPixel, yPixel, starCatlog[j].mag);
-		}
-	}
-	fclose(fptxt);
+	//int aa = 2;
+	//mBase.quat2matrix(ZY3_02STGdata[aa].StarA.Q1, ZY3_02STGdata[aa].StarA.Q2,
+	//	ZY3_02STGdata[aa].StarA.Q3, ZY3_02STGdata[aa].StarA.Q0, R);//Crj
+	//for (j = 0; j < n; j++)
+	//{
+	//	FromLL2XY(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
+	//	if (x > 0 && x < 1024 && y>0 && y < 1024)		
+	//	{
+	//		int xPixel = int(y + 0.5);			
+	//		int yPixel = 1024 - int(x + 0.5);	
+	//		/*int xPixel = 512 - int(y + 0.5);
+	//		int yPixel = 512 + int(x + 0.5);*/
+	//		UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
+	//		fprintf(fptxt, "%d\t%d\t%.1f\n", xPixel, yPixel, starCatlog[j].mag);
+	//	}
+	//}
+	//fclose(fptxt);
 
 	//根据姿态仿出星图
-	m = 1;
+	m = 40;
 	for (i=0;i<m;i++)
 	//for (i = 900; i < 1100; i++)
 	{
@@ -624,26 +507,25 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 		for (j = 0; j < n; j++)
 		{
 			FromLL2XY(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
-			if (x > 2 && x < 1022 && y>2 && y < 1022)
+			if (x > 4 && x < 1020 && y>4 && y < 1020)
+			//if (x > -510 && x < 510 && y>-510 && y < 510)
 			{
-				int xPixel = int(x + 0.5) - 2;
-				int yPixel = int(y + 0.5) - 2;
 				for (int ii = 0; ii < 5; ii++)//生成5个像素大小的星图
 				{
 					for (int jj = 0; jj < 5; jj++)
 					{
 						//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
-						//将 X→Y↓ 转换为 X↑Y→
-						int xTrans = yPixel;
-						int yTrans = 1024 - xPixel;
+						//将 X↓Y→ 转换为 X→Y↑
+						int xTrans = int(y+0.5);
+						int yTrans = 1024-int(x+0.5);
 						int DN = Mag2DN(starCatlog[j].mag);
 						if (DN > 255) DN = 255;
 						UnitData[yTrans*width + xTrans] = DN;
 						//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
-						xPixel++;
+						x++;
 					}
-					xPixel -= 5;
-					yPixel++;
+					x -= 5;
+					y++;
 				}
 			}
 		}
@@ -658,7 +540,7 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
 		sprintf(tempath, "星图 (%d) APS仿.tiff", i+1);
 		//sprintf(tempath, "星敏B仿真 (%d).tiff", i + 1, ZY3_02STGdata[i].StarB.UTC);
-		string imgpath = workpath + "星图\\" + tempath;
+		string imgpath = workpath + "星图\\星图仿真\\" + tempath;
 		GeoReadImage m_out;
 		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);
 		m_out.poDataset->SetProjection(tarProject.c_str());
