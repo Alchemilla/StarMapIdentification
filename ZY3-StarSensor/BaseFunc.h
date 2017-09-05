@@ -8,6 +8,7 @@
 #include<time.h>
 typedef unsigned char byte;
 #include <string>
+#define random(x) (rand()%x)
 
 class BaseFunc
 {
@@ -29,14 +30,39 @@ public:
 	double Norm(double *R, int num);
 	// 对向量进行归一化
 	void NormVector(double *R, int num);
+	void normalvect(double *x, double *y);
+	//求两个向量的叉积
+	void crossmultnorm(double *x, double *y, double *z);
 	// 求矩阵行列式
 	double Det(double *A, int m);
 	// 求矩阵转置，形参m为行，n为列,A转置后存为B 
 	void Transpose(double *A, double *B, int m, int n);
 	//四元数转旋转矩阵
 	void quat2matrix(double q1, double q2, double q3, double q0, double *R);
+	//四元数乘法，顺序为1234，其中4为标量
+	void quatMult(double *q1, double *q2, double *q3);
+	void quatMult2(double *q1, double *q2, double *q3);
+	void quatMult3(double *q1, double *q2, double *q3);
+	void Matrix2Eulor(double *R, int rotateOrder, double &eulor1, double &eulor2, double &eulor3);
+	// 从欧拉角获得旋转矩阵
+	void Eulor2Matrix(double eulor1, double eulor2, double eulor3, int rotateOrder, double *R);
+	//////////////////////////////////////////////////////////////////////////
+	// 绕轴的旋转
+	//////////////////////////////////////////////////////////////////////////
+	// 绕X轴转角angle的旋转矩阵
+	void RotationX(double angle, double *R);
+	// 绕Y轴转角angle的旋转矩阵
+	void RotationY(double angle, double *R);
+	// 绕Z轴转角angle的旋转矩阵
+	void RotationZ(double angle, double *R);
+	// 3*3的高斯求解
+	bool solve33(double *A, double *al);
+
+	//旋转矩阵转四元数
+	void matrix2quat(double *R, double &q1, double &q2, double &q3, double &q0);
 	//四元数内插，四元数顺序为0123，其中0为标量
 	void QuatInterpolation(Quat *Att, int AttNum, double *UTC, int interNum, Quat *&m_att);
+	void QuatInterpolation(vector<Quat>Att, double *UTC, int interNum, Quat *&m_att);
 	//解析STG要用到的三个小函数
 	double RevDouble(unsigned char a[]);
 	float ReverseQ(long Qtemp);
@@ -44,5 +70,6 @@ public:
 	//产生随机数(分别产生一个随机数，一组随机数)
 	double GaussRand(double mean, double sigma, int &phase);
 	double RandomDistribution(double mean, double sigma, int n, long randCount, double *a);
+	double AverageRand(double min, double max, int num, double *randnum);
 };
 

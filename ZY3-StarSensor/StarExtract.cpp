@@ -22,18 +22,18 @@ void StarExtract::StarPointExtraction(int index)
 	GeoReadImage ImgStarMap;
 	GeoReadImage ImgBackground, ImgBW, ImgStarPoint;
 	char pathtmp[512];
-	sprintf(pathtmp, "星图 (%d).tiff", index);
+	sprintf_s(pathtmp, "星图 (%d).tiff", index);
 	string path = workpath + string(pathtmp);
 	ImgStarMap.Open(path, GA_ReadOnly);
 	width = ImgStarMap.m_xRasterSize;
 	height = ImgStarMap.m_yRasterSize;
 	ImgStarMap.ReadBlock(0, 0, width, height, 0, ImgStarMap.pBuffer[0]);
 		
-	path = workpath + "背底噪声新3.tiff";
+	path = "D:\\2_ImageData\\ZY3-02\\星图处理\\背底噪声新3.tiff";
 	ImgBackground.Open(path, GA_ReadOnly);
 	ImgBackground.ReadBlock(0, 0, 1024, 1024, 0, ImgBackground.pBuffer[0]);
 
-	sprintf(pathtmp, "星点提取结果 (%d).tiff", index);
+	sprintf_s(pathtmp, "星点提取结果 (%d).tiff", index);
 	path = workpath + (string)pathtmp;
 	ImgBW.New(path, "GTiff", ImgStarMap.m_BandType, width, height, 1);
 	ImgBW.Destroy();
@@ -59,10 +59,91 @@ void StarExtract::StarPointExtraction(int index)
 			}
 		}
 	}
-	//ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
-
+	ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
+	//读取二值图像，提取控制点。
 	bwlabel(ImgBW, ImgStarMap);
+	//提升星点提取精度(精度下降了)
+	//GetPreciseXYbySubDevision(index);
 
+	ImgStarMap.Destroy();
+	ImgBackground.Destroy();
+	ImgBW.Destroy();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：将星点叠加起来
+//输入：在主函数中输入工作路径
+//输出：在工作路径下输出星点叠加文件
+//注意：函数中GeoReadImage的对象需要用引用
+//作者：GZC
+//日期：2017.03.08
+//////////////////////////////////////////////////////////////////////////
+void StarExtract::StarPointMulti(int index)
+{
+	GeoReadImage ImgStarMap, ImgBackground, ImgBW;
+	char pathtmp[512]; 
+	width = 1024;
+	height = 1024;
+	string path = "D:\\2_ImageData\\ZY3-02\\星图处理\\背底噪声新3.tiff";
+	ImgBackground.Open(path, GA_ReadOnly);
+	ImgBackground.ReadBlock(0, 0, width, height, 0, ImgBackground.pBuffer[0]);
+
+	double *ImgDN = new double[1024 * 1024];
+	double *ImgDNcount = new double[1024 * 1024];
+	memset(ImgDN, 0, sizeof(double) * 1024 * 1024);
+	memset(ImgDNcount, 0, sizeof(double)*1024*1024);
+	for (int a = 0; a < index; a++)
+	{
+		if (a%100==0)
+		{
+			printf("\r正在读取第%d景", a);
+		}
+		sprintf_s(pathtmp, "星图 (%d).tiff", a+1);
+		path = workpath + string(pathtmp);
+		ImgStarMap.Open(path, GA_ReadOnly);		
+		ImgStarMap.ReadBlock(0, 0, width, height, 0, ImgStarMap.pBuffer[0]);
+	
+		for (long i = 0; i < height; i++)
+		{
+			for (long j = 0; j < width; j++)
+			{
+				double StarMapDN, BackgrounDN;
+				StarMapDN = ImgStarMap.GetDataValue(j, i, 0, 0);
+				if (StarMapDN > 255) StarMapDN = 255;
+				BackgrounDN = ImgBackground.GetDataValue(j, i, 0, 0);
+				if ((StarMapDN - BackgrounDN) > 3)//阈值选择
+				{
+					ImgDN[1024 * i + j] = StarMapDN - BackgrounDN;
+					ImgDNcount[1024 * i + j]++;
+				}
+			}
+		}
+	}
+	sprintf_s(pathtmp, "%d景星点叠加结果.tiff", index);
+	string pathres = workpath + (string)pathtmp;
+	ImgBW.New(pathres, "GTiff", ImgStarMap.m_BandType, width, height, 1);
+	ImgBW.Destroy();
+	ImgBW.Open(pathres, GA_Update);
+	ImgBW.SetBuffer(0, 0, width, height, ImgBW.pBuffer[0]);
+	for (long i = 0; i < height; i++)
+	{
+		for (long j = 0; j < width; j++)
+		{
+			if (ImgDNcount[1024 * i + j]!=0)
+			{
+				double DN = ImgDN[1024 * i + j] / ImgDNcount[1024 * i + j];
+				ImgBW.SetDataValue(j, i, DN, 0);
+			}
+			else
+			{
+				ImgBW.SetDataValue(j, i, 0, 0);
+			}
+		}
+	}
+	ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
+
+	free(ImgDN);
+	free(ImgDNcount);
 	ImgStarMap.Destroy();
 	ImgBackground.Destroy();
 	ImgBW.Destroy();
@@ -100,15 +181,22 @@ void StarExtract::bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap)
 				for (long col = stRun[i]; col <= enRun[i]; col++)
 				{
 					double DN = ImgStarMap.GetDataValue(col, long(rowRun[i]),  0, 0);
-					sum_x += (rowRun[i]+1) *DN*DN*DN;//这里x定义为沿轨向
-					sum_y += (col + 1)*DN*DN*DN;//这里y定义为垂轨向
-					area += DN*DN*DN;
+					//sum_x += (rowRun[i]+1) *DN*DN*DN;//这里x定义为沿轨向
+					//sum_y += (col + 1)*DN*DN*DN;//这里y定义为垂轨向
+					sum_x += (rowRun[i] + 0.5) *pow(DN,3);//这里x定义为沿轨向
+					sum_y += (col + 0.5)*pow(DN, 3);//这里y定义为垂轨向
+					area += pow(DN, 3);
 					areaNum[k-1]++;
 				}
 			}
 		}
+		//double px = sum_x / area;
+		//double py = sum_y / area;
 		plot_x[k - 1] = sum_x / area;
 		plot_y[k - 1] = sum_y / area;
+
+		//GetPreciseXYbyFitting(py, px, plot_y[k - 1], plot_x[k - 1], 9, ImgStarMap);
+
 		double DN;
 		//避免取到边界以外的值
 		if ((plot_x[k - 1])>1&& (plot_x[k - 1])<1023&&(plot_y[k - 1])>1&& (plot_y[k - 1])<1023)
@@ -137,7 +225,8 @@ void StarExtract::bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap)
 	//筛选多于9个像素的星点
 	for (int i = 0; i < equaListsize; i++)
 	{
-		if (areaNum[i]>9)
+		//if (areaNum[i]>=9)
+			if (areaNum[i] >= 9|| StarMag[i]<6.5)
 		{
 			StarPoint StarPointExtractTmp;
 			StarPointExtractTmp.x = plot_x[i];
@@ -158,6 +247,8 @@ void StarExtract::bwlabel(GeoReadImage &ImgBW, GeoReadImage &ImgStarMap)
 	}
 	fclose(fp);*/
 }
+
+
 
 //////////////////////////////////////////////////////////////////////////
 //功能：以下三个函数是对连通区域进行标记的小函数
@@ -563,17 +654,17 @@ bool StarExtract::GetPreciseXYbyFitting(double m_sample, double m_line, double &
 		mbase.Gauss(aaaa, aabb, 6);
 		memcpy(a, aabb, sizeof(double) * 6);
 
-		if (a[3] != 0 && a[3]<1e6)
-		{
+		//if (a[3] != 0 && a[3]<1e6)
+		//{
 			fm_line = (2 * a[2] * a[3] - a[1] * a[4]) / (a[4] * a[4] - 4 * a[3] * a[5]);
 			fm_sample = -(a[4] * fm_line + a[1]) / (2 * a[3]);
-		}
+		//}
 
-		else if (a[4] != 0)
-		{
+		//else if (a[4] != 0)
+		//{
 			fm_sample = (a[2] * a[4] - 2 * a[1] * a[5]) / (4 * a[3] * a[5] - a[4] * a[4]);
 			fm_line = -(a[1] + 2 * a[3] * fm_sample) / a[4];
-		}
+		//}
 
 	}
 	else
@@ -582,4 +673,249 @@ bool StarExtract::GetPreciseXYbyFitting(double m_sample, double m_line, double &
 		return FALSE;
 	}
 	return TRUE;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：根据细分法提高星点坐标精度
+//输入：StarPointExtract：类中控制点成员
+//输出：StarPointExtract：类中控制点成员（更新）
+//注意：窗口大小为3
+//作者：原：ZRS；改写：GZC
+//日期：2017.03.27
+//////////////////////////////////////////////////////////////////////////
+bool StarExtract::GetPreciseXYbySubDevision(int index)
+{
+	vector<StarPoint>StarPointExtractDel;
+	StarPoint StarPointExtractDelTmp;
+	int pointnum = StarPointExtract.size();
+	for (size_t i = 0; i < pointnum; i++)
+	{
+		if (StarPointExtract[i].x > 4 && StarPointExtract[i].x < 1020 && StarPointExtract[i].y > 4 && StarPointExtract[i].y < 1020)
+		{
+			StarPointExtractDelTmp = StarPointExtract[i];
+			StarPointExtractDel.push_back(StarPointExtractDelTmp);
+		}
+	}
+	StarPointExtract.clear();
+	pointnum = StarPointExtractDel.size();
+	double *sample0 = new double[pointnum];
+	double *line0 = new double[pointnum];
+	double *centerX = new double[pointnum];
+	double *centerY = new double[pointnum];
+	for (size_t i = 0; i < pointnum; i++)
+	{
+		sample0[i] = StarPointExtractDel[i].x;
+		line0[i] = StarPointExtractDel[i].y;
+	}
+	StarPointExtractDel.clear();
+	StarPoint StarPointExtractTmp;
+
+	//参数配置
+	int num_range = 3;	//拟合范围
+	int num_subdivision = 100;	//细分尺寸
+	
+	float intervalSubdivision = 1 / (float)num_subdivision;
+	int width_subdivision = (num_range - 1)*num_subdivision;
+	int height_subdivision = (num_range - 1)*num_subdivision;
+	
+	//打开tiff文件
+	string path;
+	char pathtmp[512];
+	sprintf_s(pathtmp, "星图 (%d).tiff", index);
+	path = workpath + (string)pathtmp;
+	GDALDataset *pImgIn = (GDALDataset *)GDALOpen(path.c_str(), GA_ReadOnly);
+	if (pImgIn == NULL)
+	{
+		printf("Read tiff failed!\n");
+		return 0;
+	}
+	GDALRasterBand *poBand;
+	poBand = pImgIn->GetRasterBand(1);
+	GDALDataType aa = poBand->GetRasterDataType();
+
+	//读取拟合范围的像素值
+	void *tempValue = (void*)malloc(num_range*num_range * sizeof(double));
+	float *pValue0 = new float[num_range*num_range];
+	float *x0 = new float[num_range], *y0 = new float[num_range];
+
+	float *xc = new float[height_subdivision];	//每一行的质心坐标
+	float *pValueC = new float[height_subdivision];	//每一行的平均灰度值
+
+	float *pValueD = new float[width_subdivision];	//细分后的像素值
+	float *xd = new float[width_subdivision], *yd = new float[height_subdivision];	//细分后的坐标
+
+	float numerator_inter, numerator_divi;	//每行质心计算公式里的分子
+	float denominator_inter, denominator_divi;	//每行质心计算公式里的分母
+	float numerator_cx, numerator_cy;	//质心公式分子x,y
+	float denominator_c;
+
+	for (int j = 0; j<pointnum; j++)
+	{
+		memset(pValue0, 0, sizeof(float)*num_range*num_range);
+		memset(x0, 0, sizeof(float)*num_range);
+		memset(y0, 0, sizeof(float)*num_range);
+		memset(xc, 0, sizeof(float)*height_subdivision);
+		memset(pValueC, 0, sizeof(float)*height_subdivision);
+		memset(pValueD, 0, sizeof(float)*width_subdivision);
+		memset(xd, 0, sizeof(float)*width_subdivision);
+		memset(yd, 0, sizeof(float)*height_subdivision);
+		numerator_inter = 0;
+		numerator_divi = 0;
+		denominator_inter = 0;
+		denominator_divi = 0;
+		numerator_cx = 0;
+		numerator_cy = 0;
+		denominator_c = 0;
+
+		//读取拟合范围的像素值和坐标
+		int tempSAMPLE, tempLINE;
+		tempSAMPLE = (floor)(sample0[j]);
+		tempLINE = (floor)(line0[j]);
+
+		pImgIn->RasterIO(GF_Read, tempSAMPLE - num_range / 2, tempLINE - num_range / 2, num_range, num_range, tempValue,
+			num_range, num_range, aa, 1, 0, 0, 0, 0);
+
+		//printf("  Pixel value aquired from tiff:\n");
+		for (int t = 0; t<num_range*num_range; t++)
+		{
+			if (aa == GDT_Byte)	pValue0[t] = ((unsigned char*)tempValue)[t];
+			else if (aa == GDT_UInt16)	pValue0[t] = ((unsigned short*)tempValue)[t];
+			else if (aa == GDT_Int16)	pValue0[t] = ((short*)tempValue)[t];
+			else if (aa == GDT_UInt32)	pValue0[t] = ((unsigned long*)tempValue)[t];
+			else if (aa == GDT_Int32)	pValue0[t] = ((int*)tempValue)[t];
+			else if (aa == GDT_Float32)	pValue0[t] = ((float*)tempValue)[t];
+			else if (aa == GDT_Float64)	pValue0[t] = ((double*)tempValue)[t];
+			else { printf("Data type error!\n"); return 0; }
+
+			/*printf("  %f ", pValue0[t]);
+			if ((t + 1) % num_range == 0)
+			{
+				printf("\n");
+			}*/
+		}
+		//printf("\n");
+
+		for (int p = 0; p<num_range; p++)
+		{
+			x0[p] = (tempSAMPLE + 0.5) - num_range / 2 + p;
+			y0[p] = (tempLINE + 0.5) - num_range / 2 + p;
+		}
+
+		//printf("  Pixel value and coordinates of insert point: [pixel value] [x] [y]\n");
+		//for (int p = 0; p<num_range; p++)
+		//{
+
+		//	for (int n = 0; n<num_range; n++)
+		//	{
+		//		printf("  %f %f %f\n", pValue0[p*num_range + n], x0[n], y0[p]);
+		//	}
+
+		//	printf("\n");
+		//}
+		//		printf("\n");
+
+
+		//细分后的坐标
+		for (int d = 0; d<width_subdivision; d++)
+		{
+			xd[d] = x0[0] /*+ intervalSubdivision/2*/ + d*intervalSubdivision;
+			yd[d] = y0[0] /*+ intervalSubdivision/2*/ + d*intervalSubdivision;
+		}
+
+
+		//求每行的质心坐标和平均灰度值
+		for (int l = 0; l<height_subdivision; l++)
+		{
+			int nx0, ny0;	//细分时需要的内插点行列号
+			ny0 = (floor)(yd[l] - y0[0]);
+
+			float totalValue = 0.0;
+
+			//双线性内插每行细分像素的灰度值
+			for (int s = 0; s<width_subdivision; s++)
+			{
+				nx0 = (floor)(xd[s] - x0[0]);
+
+				// 				pValueD[s] = pValue0[nx0+ny0*num_range]*(x0[nx0+1]-xd[s])*(y0[ny0+1]-yd[l])/((x0[nx0+1]-x0[nx0])*(y0[ny0+1]-y0[ny0]))
+				// 					+pValue0[nx0+1+ny0*num_range]*(xd[s]-x0[nx0])*(y0[ny0+1]-yd[l])/((x0[nx0+1]-x0[nx0])*(y0[ny0+1]-y0[ny0]))
+				// 					+pValue0[nx0+(ny0+1)*num_range]*(x0[nx0+1]-xd[s])*(yd[l]-y0[ny0])/((x0[nx0+1]-x0[nx0])*(y0[ny0+1]-y0[ny0]))
+				// 					+pValue0[nx0+1+(ny0+1)*num_range]*(xd[s]-x0[nx0])*(yd[l]-y0[ny0])/((x0[nx0+1]-x0[nx0])*(y0[ny0+1]-y0[ny0]));
+
+				float uu, vv;
+				uu = xd[s] - x0[nx0];
+				vv = yd[l] - y0[ny0];
+
+				pValueD[s] = (1 - uu) * (1 - vv) * pValue0[nx0 + ny0*num_range]
+					+ (1 - uu) * vv * pValue0[nx0 + (ny0 + 1)*num_range]
+					+ uu * (1 - vv) * pValue0[nx0 + 1 + ny0*num_range]
+					+ uu * vv * pValue0[nx0 + 1 + (ny0 + 1)*num_range];
+
+
+				totalValue += pValueD[s];
+			}
+
+			//每行的平均像素值
+			pValueC[l] = totalValue / width_subdivision;
+
+			//计算每行质心坐标公式里的分子与分母
+			for (int n = 0; n<num_range; n++)
+			{
+				numerator_inter += x0[n] * pValue0[n + ny0*num_range];
+				denominator_inter += pValue0[n + ny0*num_range];
+			}
+
+			for (int m = 0; m<width_subdivision; m++)
+			{
+				numerator_divi += xd[m] * pValueD[m];
+				denominator_divi += pValueD[m];
+			}
+
+			//每行的质心坐标
+			xc[l] = (numerator_inter + numerator_divi) / (denominator_inter + denominator_divi);
+			//			printf("[%d] %f ", l, xc[l]);
+		}
+		//		printf("\n");
+
+		//计算整个目标区的质心坐标公式的分子与分母
+		for (int m = 0; m<height_subdivision; m++)
+		{
+			numerator_cx += xc[m] * pValueC[m];
+			numerator_cy += yd[m] * pValueC[m];
+			denominator_c += pValueC[m];
+		}
+
+		//计算整个目标区的质心坐标
+		centerX[j] = numerator_cx / denominator_c;
+		centerY[j] = numerator_cy / denominator_c;
+		StarPointExtractTmp.x = centerX[j];
+		StarPointExtractTmp.y = centerY[j];
+		StarPointExtract.push_back(StarPointExtractTmp);
+	}
+
+
+	delete[] tempValue; tempValue = NULL;
+	delete[] pValue0; pValue0 = NULL;
+	delete[] x0; x0 = NULL;
+	delete[] y0; y0 = NULL;
+	delete[] pValueC; pValueC = NULL;
+	delete[] xc; xc = NULL;
+	delete[] pValueD; pValueD = NULL;
+	delete[] xd; xd = NULL;
+
+
+	if (pImgIn != NULL)
+	{
+		delete[]pImgIn;
+		pImgIn = NULL;
+	}
+
+	delete[] sample0; sample0 = NULL;
+	delete[] line0; line0 = NULL;
+	delete[] centerX; centerX = NULL;
+	delete[] centerY; centerY = NULL;
+
+	//GDALDestroyDriverManager();
+
+	//printf("Finished!\n");
+	return 0;
 }

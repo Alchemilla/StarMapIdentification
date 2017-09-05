@@ -4,9 +4,6 @@
     <Filter Include="0-基本函数">
       <UniqueIdentifier>{96d95782-a41b-46b9-9f4f-0e30fd3d8b4b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="1-底层数据">
-      <UniqueIdentifier>{44edb53d-a93e-4344-bb1a-b76b0aa63590}</UniqueIdentifier>
-    </Filter>
     <Filter Include="2-星点提取">
       <UniqueIdentifier>{055ca950-9a7f-4558-bf23-79d6bbfc8a79}</UniqueIdentifier>
     </Filter>
@@ -19,6 +16,9 @@
     </Filter>
     <Filter Include="5-姿态确定">
       <UniqueIdentifier>{228e2dd9-daeb-4ef2-ab76-2414e746357d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1-姿态数据">
+      <UniqueIdentifier>{44edb53d-a93e-4344-bb1a-b76b0aa63590}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -35,7 +35,7 @@
       <Filter>0-基本函数</Filter>
     </ClInclude>
     <ClInclude Include="ParseSTG.h">
-      <Filter>1-底层数据</Filter>
+      <Filter>1-姿态数据</Filter>
     </ClInclude>
     <ClInclude Include="DateTime.h">
       <Filter>0-基本函数</Filter>
@@ -48,6 +48,12 @@
     </ClInclude>
     <ClInclude Include="AttDetermination.h">
       <Filter>5-姿态确定</Filter>
+    </ClInclude>
+    <ClInclude Include="AttSim.h">
+      <Filter>1-姿态数据</Filter>
+    </ClInclude>
+    <ClInclude Include="matrix.h">
+      <Filter>0-基本函数</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -64,7 +70,7 @@
       <Filter>0-基本函数</Filter>
     </ClCompile>
     <ClCompile Include="ParseSTG.cpp">
-      <Filter>1-底层数据</Filter>
+      <Filter>1-姿态数据</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>5-姿态确定</Filter>
@@ -77,6 +83,9 @@
     </ClCompile>
     <ClCompile Include="AttDetermination.cpp">
       <Filter>5-姿态确定</Filter>
+    </ClCompile>
+    <ClCompile Include="AttSim.cpp">
+      <Filter>1-姿态数据</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

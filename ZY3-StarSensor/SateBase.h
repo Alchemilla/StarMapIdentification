@@ -6,6 +6,7 @@
 #include <iostream>
 using namespace Eigen;
 using namespace std;
+typedef Matrix<double, Dynamic, Dynamic, RowMajor>rMatrixXd;
 //the struct for orbit;
 struct Orbit_Ep
 {
@@ -108,7 +109,15 @@ struct StarPoint
 //星点控制点
 struct StarGCP
 {
+	double UTC;
 	double x, y;
 	double V[3];
+};
+
+//星敏矫正畸变参数
+struct StarCaliParam
+{
+	double x0, y0;
+	double f, k1,k2;
 };
 #endif

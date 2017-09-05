@@ -47,6 +47,9 @@ public:
 	ParseSTG mSTGfunc;
 	BaseFunc mBase;
 	void GetStarGCP(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
+	void GetStarGCP0702(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
+	void GetStarGCP0707(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
+	void GetStarGCP0712(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
 	vector<StarGCP> getGCP;
 	string workpath;
 private: 

@@ -176,7 +176,6 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 		printf("Failed to open the RAW File(%s)\n", STIpath.c_str());
 		return false;
 	}
-
 	//一次将文件全部读入内存pData
 	_fseeki64(fp, 0, SEEK_END);
 	__int64 nSize = _ftelli64(fp);
@@ -188,18 +187,20 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 		return false;
 	}
 	fclose(fp);	fp = NULL;
-
-
 	long width = 1024, height = 1024;// 影像的宽度和高度
 	unsigned short *pFred = new unsigned short[width * height];	     //像素值
 	int nSizeFred = nSize / 1310736;   //帧数
-	nSizeFred = 300;//先生产10景再说
-	vector<vector<double>>pUnitData(nSizeFred, vector<double>(1024 * 1024));//用二维vector来定义多景影像
-
+	
+	//创建星图文件夹
+	workpath = STIpath.substr(0, STIpath.rfind('\\'));
+	string imgtmp = workpath + "\\Bouguet";
+	char * imgpath = (char *)imgtmp.data();
+	if (_mkdir(imgpath) == 0);
+	string imgtxt = workpath + "\\Bouguet\\像面坐标.txt";
 	// 累计秒从2009年1月1日0时开始计数
 	double jd0, refMJD;
 	Cal2JD(2009, 1, 1, 0, &jd0, &refMJD);
-	string outpath = workpath + "星时.txt";
+	string outpath = workpath + "\\星时.txt";
 	FILE *ftime = fopen(outpath.c_str(), "w");
 	if (!ftime)
 	{
@@ -217,13 +218,7 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 	//输出影像格式
 	string outdriver = "GTiff";	    //也可以存为bmp
 	GeoReadImage m_out;
-	//投影
-	string tarProject;
-	tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
-	//仿射变换
-	double minx = 0, maxy = 1024, resolution = 1;
-	double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-	for (int i = 100; i < nSizeFred; i++)
+	for (int i = 0; i < nSizeFred; )
 	{
 		//星时
 		//整秒
@@ -268,11 +263,9 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 		}
 		//创建影像
 		char tempath[100];
-		sprintf(tempath, "星图 (%d).tiff", i + 1);
-		string imgpath = workpath + "星图\\" + tempath;
+		sprintf_s(tempath, "\\Bouguet\\星图%d.tiff", i/5 + 1);
+		string imgpath = workpath +  tempath;
 		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);
-		//m_out.poDataset->SetProjection(tarProject.c_str());
-		//m_out.poDataset->SetGeoTransform(adfGeoTransform);
 
 		//更新方式打开影像
 		m_out.Open(imgpath, GA_Update);
@@ -305,12 +298,171 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 			
 		int rate = 100 * (i+1) / nSizeFred;
 		printf("\r已处理行数：%d;  Process:%d%%", i+1, rate);               //进度输出
+		i = i + 5;//每五景输出一次
 	}
 	if (pFred != NULL)		delete[]pFred;       pFred = NULL;
 	if (pData != NULL)		delete[]pData;		 pData = NULL;
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//功能：解析STI文件中的星图
+//输入：STIpath，STI文件路径
+//输出：输出到星敏目录
+//注意：该星敏为APS星敏数据
+//作者：GZC
+//日期：2017.02.21
+//////////////////////////////////////////////////////////////////////////
+bool ParseSTG::ParseZY302_STI_10B(string STIpath)
+{
+	FILE *fp = fopen(STIpath.c_str(), "rb");
+	if (!fp)
+	{
+		printf("Failed to open the RAW File(%s)\n", STIpath.c_str());
+		return false;
+	}
+
+	long width = 1024, height = 1024;// 影像的宽度和高度
+	unsigned short *pFred = new unsigned short[width * height];	     //像素值	
+	//一次将文件全部读入内存pData
+	_fseeki64(fp, 0, SEEK_END);
+	__int64 nSize = _ftelli64(fp);
+	_fseeki64(fp, 0, SEEK_SET);
+	byte *pData = new byte[nSize];
+	if (fread(pData, sizeof(byte), nSize, fp) != nSize)
+	{
+		fclose(fp);
+		return false;
+	}
+	fclose(fp);	fp = NULL;
+	int nSizeFred = nSize / 1310736;   //帧数
+		
+	 // 累计秒从2009年1月1日0时开始计数
+	double jd0, refMJD;
+	Cal2JD(2009, 1, 1, 0, &jd0, &refMJD);
+	string outpath = workpath + "星时.txt";
+	FILE *ftime = fopen(outpath.c_str(), "w");
+	if (!ftime)
+	{
+		printf("Failed to open the RAW File(%s)\n", outpath);
+		return false;
+	}
+	fprintf(ftime, "帧号\t 星时1(累计秒，与姿态轨道文件对应)\t星时2（YYYY:MM:DD）\n");
+	char chr[41], c[10];
+	
+	string str;
+	unsigned int tmp, tmps = 0, tmpms = 0;
+	double  second;
+	double *UT = new double[nSizeFred];
+	int year, month, day, hour, minute;
+	GeoReadImage m_out;
+	bitset<8>bit8;
+	bitset<10>bit10;
+	bitset<40>bit40;
+	bitset<40>bit401;
+
+	for (int i = 0; i < nSizeFred; i++)
+	{
+		//星时
+		//整秒
+		memcpy(&bit8, pData + i * 1310736 + 4, sizeof(byte));
+		tmps = pow(2, 24)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 5, sizeof(byte));
+		tmps += pow(2, 16)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 6, sizeof(byte));
+		tmps += pow(2, 8)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 7, sizeof(byte));
+		tmps += pow(2, 0)* bit8.to_ulong();
+		//微妙
+		memcpy(&bit8, pData + i * 1310736 + 8, sizeof(byte));
+		tmpms = pow(2, 16)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 9, sizeof(byte));
+		tmpms += pow(2, 8)* bit8.to_ulong();
+		memcpy(&bit8, pData + i * 1310736 + 10, sizeof(byte));
+		tmpms += pow(2, 0)* bit8.to_ulong();
+		//累计秒
+		UT[i] = tmps + tmpms / 1000000.0;
+		//历书时
+		FromSecondtoYMD(refMJD, UT[i], year, month, day, hour, minute, second);
+		fprintf(ftime, "%3d\t%16.6lf\n", i + 1, UT[i]);
+		//fprintf(ftime, "%04d:%02d:%02d:%02d:%02d:%06.3lf\n", year, month, day, hour, minute, second);
+				
+		//重新组织一帧数据
+		for (int j = 0; j < 262144; j++)
+		{
+			//每次从内存取5B转换为4个像素值，存入pFred
+			for (int k = 0; k < 5; k++)
+			{
+				memcpy(&bit8, pData + i * 1310736 + 15 + j * 5 + k, sizeof(byte));
+				str = bit8.to_string();
+				strcpy(chr + k * 8, str.c_str());
+			}
+			for (int k = 0; k < 4; k++)
+			{
+				memcpy(c, &chr[10 * k], sizeof(char) * 10);
+				pFred[j * 4 + k] = (c[0] - 48) * 512 + (c[1] - 48) * 256 + (c[2] - 48) * 128 + (c[3] - 48) * 64 + (c[4] - 48) * 32
+					+ (c[5] - 48) * 16 + (c[6] - 48) * 8 + (c[7] - 48) * 4 + (c[8] - 48) * 2 + (c[9] - 48) * 1;
+			}
+		}
+		//创建影像
+		char tempath[100];
+		sprintf_s(tempath, "星图 (%d).tiff", i + 1);
+		string imgpath = workpath + tempath;
+		m_out.New(imgpath, "GTiff", GDT_Byte, width, height, 1);
+
+		//更新方式打开影像
+		m_out.Open(imgpath, GA_Update);
+		if (m_out.m_isopen == true)
+			printf("\rUpdate Img (%s)", imgpath.c_str());
+		else
+		{
+			printf("\rUpdate Img (%s) Failed", imgpath.c_str());
+			return 0;
+		}
+		//建立out数据区
+		m_out.SetBuffer(0, 0, width, height, m_out.pBuffer[0]);
+		double gray;
+		for (long y = 0; y < height; y++)       //y坐标
+		{
+			for (long x = 0; x < width; x++)   //x坐标
+			{
+				//读入数据
+				gray = pFred[y*width + x];
+				if (gray > 255)gray = 255;
+				//输出图像坐标系顺时针90度转为星敏像平面坐标系
+				m_out.SetDataValue(x, y, gray, 0);    //赋值
+			}
+		}
+		//写入数据
+		bool iswrite = true;
+		iswrite *= m_out.WriteBlock(0, 0, width, height, 0, m_out.pBuffer[0]);
+		//关闭影像
+		m_out.Destroy();
+
+		int rate = 100 * (i + 1) / nSizeFred;
+		printf("\r已处理行数：%d;  Process:%d%%", i + 1, rate);               //进度输出
+	}
+	if (pFred != NULL)		delete[]pFred;       pFred = NULL;
+	if (pData != NULL)		delete[]pData;		 pData = NULL;
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：解析STI用到的，将5字节40bit转为4个10bit的arr
+//输入：5个字节的p
+//输出：4个unsigned short的arr
+//注意：该星敏为APS星敏数据
+//作者：jianwen0529，http://bbs.csdn.net/topics/392089574
+//日期：2017.02.23
+//////////////////////////////////////////////////////////////////////////
+void ParseSTG::Get4_10Bit(const unsigned char *p, unsigned short(&arr)[4])
+{
+	const unsigned short bit_mask = 0x00ff; // 0000 0011 1111 1111
+	arr[0] = (unsigned short)(p[0] | (p[1] << 8)) & bit_mask;
+	arr[1] = ((unsigned short)(p[1] | (p[2] << 8)) >> 2) & bit_mask;
+	arr[2] = ((unsigned short)(p[2] | (p[3] << 8)) >> 4) & bit_mask;
+	arr[3] = ((unsigned short)(p[3] | (p[4] << 8)) >> 6) & bit_mask;
+}
 //////////////////////////////////////////////////////////////////////////
 //功能：解析STI文件中的星图
 //输入：STIpath，STI文件路径
@@ -388,6 +540,25 @@ bool ParseSTG::ParseZY302_STItime(string STIpath)
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：读取星时文件
+//输入：STItimepath，STI星时文件
+//输出：星时指针
+//注意：该星敏为APS星敏数据
+//日期：2017.01.08
+//////////////////////////////////////////////////////////////////////////
+void ParseSTG::ReadZY302_STItime(double *UTC)
+{
+	string STItimepath = workpath + "星时.txt";
+	FILE *fp = fopen(STItimepath.c_str(), "r");
+	int num,index;
+	fscanf(fp, "%d", num);
+	for (int a = 0; a < num; a++)
+	{
+		fscanf(fp, "%d\t%f\n", index, UTC[a]);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：根据恒星赤经赤纬及星敏姿态，计算星敏像面坐标
 //输入：starCatlog，单颗恒星参数，包括J2000系下的单位矢量V[3]
 //		R，星敏坐标系与J2000系的旋转关系，Crj
@@ -419,6 +590,62 @@ void ParseSTG::FromLL2XY(Star starCatlog, double *R, double &x, double &y)
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：根据恒星赤经赤纬及星敏姿态，计算星敏像面坐标
+//输入：getGCP，单颗恒星参数，J2000系下的单位矢量V[3]
+//		Param，定标结果参数
+//		R，星敏坐标系与J2000系的旋转关系，Crj
+//输出：x,y，像面坐标
+//注意：与上面函数名相同，用到了函数重载
+//日期：2017.03.07
+//////////////////////////////////////////////////////////////////////////
+void ParseSTG::FromLL2XY(double *W, StarCaliParam Param, double *x, double *y)
+{	
+	//没有畸变的情况
+	x[0] = Param.x0 - W[0] / W[2] * Param.f;
+	y[0] = Param.y0 - W[1] / W[2] * Param.f;
+
+	//有畸变的情况
+	double r2 = (x[0] - Param.x0)*(x[0] - Param.x0) + (y[0] - Param.y0)*(y[0] - Param.y0);
+	x[1] = Param.x0 - W[0] / W[2] * Param.f * (1 - Param.k1 * r2 - Param.k2 * r2*r2);
+	y[1] = Param.y0 - W[1] / W[2] * Param.f * (1 - Param.k1 * r2 - Param.k2 * r2*r2);
+	
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：根据星敏像面坐标及星敏感器参数，得到真实星点坐标矢量
+//输入：x,y，像面坐标，Param，星敏参数
+//输出：V，恒星在惯性系下坐标
+//注意：要在这一步加入畸变
+//作者：GZC
+//日期：2017.03.02
+//////////////////////////////////////////////////////////////////////////
+void ParseSTG::FromXY2LL(double x, double y, StarCaliParam Param, double * V)
+{
+	/*double p1 = 1e-7, p2 = 1e-7;
+	double xp = x - Param.x0;
+	double yp = y - Param.y0;
+	double r2 = (x - Param.x0)*(x - Param.x0) + (y - Param.y0)*(y - Param.y0);
+	double xreal = -(x - Param.x0)*(1 - Param.k1 * r2) -
+		p1*(3 * xp*xp + yp*yp) - 2 * p2*xp*yp;
+	double yreal = -(y - Param.y0)*(1 - Param.k1 * r2) -
+		p2*(3 * yp*yp + xp*xp) - 2 * p1*xp*yp;
+	double freal = Param.f;
+	double sum = sqrt(xreal*xreal + yreal*yreal + freal*freal);
+	V[0] = xreal / sum;
+	V[1] = yreal / sum;
+	V[2] = freal / sum;*/
+
+	double r2 = (x - Param.x0)*(x - Param.x0) + (y - Param.y0)*(y - Param.y0);
+	double xreal = -(x - Param.x0)*(1 - Param.k1 * r2 - Param.k2 * r2*r2);
+	double yreal = -(y - Param.y0)*(1 - Param.k1 * r2 - Param.k2 * r2*r2);
+	double freal = Param.f;
+	double sum = sqrt(xreal*xreal + yreal*yreal + freal*freal);
+	V[0] = xreal / sum;
+	V[1] = yreal / sum;
+	V[2] = freal / sum;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：根据恒星亮度等级，计算仿真星图的亮度DN值
 //输入：Mag:恒星星等；
 //输出：DN值
@@ -441,7 +668,7 @@ int ParseSTG::Mag2DN(double Mag)
 void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 {
 	//打开星表文件
-	string starCatlogpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\星表\\star1";
+	string starCatlogpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\星表\\导航星表矢量.txt";
 	FILE *fp;
 	fp = fopen(starCatlogpath.c_str(), "r");
 	if (fp == NULL)
@@ -454,9 +681,10 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 	Star *starCatlog = new Star[n];
 	for (i = 0; i < n; i++)
 	{
-		fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\n", &starCatlog[i].ID, &starCatlog[i].phiX, &starCatlog[i].phiY,
-			&starCatlog[i].mag, &starCatlog[i].V[0], &starCatlog[i].V[1], &starCatlog[i].V[2], &starCatlog[i].DN);
+		fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &starCatlog[i].ID, &starCatlog[i].phiX,
+			&starCatlog[i].phiY, &starCatlog[i].mag, &starCatlog[i].V[0], &starCatlog[i].V[1], &starCatlog[i].V[2]);
 	}
+	fclose(fp);
 
 	int j, m = ZY3_02STGdata.size();
 	double R[9], za[3] = { 0,0,1 }, zc[3];
@@ -465,11 +693,13 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 	long width = 1024, height = 1024;
 	//创建像平面像素值数组
 	byte *UnitData = new byte[1024 * 1024];
-
-	//创建星图文件夹
+		
 	string imgtmp = workpath + "星图";
 	char * imgpath = (char *)imgtmp.data();
-	if (_mkdir(imgpath) == 0);
+	_mkdir(imgpath);//创建星图文件夹
+	imgtmp = workpath + "星图\\星图仿真\\";
+	imgpath = (char *)imgtmp.data();
+	_mkdir(imgpath);//创建星图仿真文件夹
 	string imgtxt = workpath + "星图\\像面坐标.txt";
 	FILE *fptxt = fopen(imgtxt.c_str(), "w");
 
@@ -538,8 +768,8 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 		//仿射变换
 		double minx = 0, maxy = 1024, resolution = 1;
 		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-		sprintf(tempath, "星图 (%d) APS仿.tiff", i+1);
-		//sprintf(tempath, "星敏B仿真 (%d).tiff", i + 1, ZY3_02STGdata[i].StarB.UTC);
+		sprintf_s(tempath, "星图 (%d) APS仿.tiff", i+1);
+		//sprintf_s(tempath, "星敏B仿真 (%d).tiff", i + 1, ZY3_02STGdata[i].StarB.UTC);
 		string imgpath = workpath + "星图\\星图仿真\\" + tempath;
 		GeoReadImage m_out;
 		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);
