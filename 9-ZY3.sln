@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZY3-02Att", "ZY3-02Att\ZY3-
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZY3-StarSensor", "ZY3-StarSensor\ZY3-StarSensor.vcxproj", "{93A6BB40-19BB-4ECF-AD60-F74E3A95D769}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeometryProcess", "GeometryProcess\GeometryProcess.vcxproj", "{EBF220BC-1EE1-4910-971D-2236323D1BFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -29,6 +31,14 @@ Global
 		{93A6BB40-19BB-4ECF-AD60-F74E3A95D769}.Release|Win32.Build.0 = Release|Win32
 		{93A6BB40-19BB-4ECF-AD60-F74E3A95D769}.Release|x64.ActiveCfg = Release|x64
 		{93A6BB40-19BB-4ECF-AD60-F74E3A95D769}.Release|x64.Build.0 = Release|x64
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Debug|Win32.Build.0 = Debug|Win32
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Debug|x64.ActiveCfg = Debug|x64
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Debug|x64.Build.0 = Debug|x64
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Release|Win32.ActiveCfg = Release|Win32
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Release|Win32.Build.0 = Release|Win32
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Release|x64.ActiveCfg = Release|x64
+		{EBF220BC-1EE1-4910-971D-2236323D1BFB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

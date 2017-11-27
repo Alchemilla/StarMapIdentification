@@ -500,17 +500,17 @@ int main(int argc, char* argv[])
 	//功能：不定标，直接用原始姿态定位
 	//日期：2017.04.27
 	//////////////////////////////////////////////////////////////////////////	
-	//APScalibration ZY3_calibrate;
-	//ParseSTG ZY3_STGSTI;
-	//AttDetermination ZY3_AD;
-	//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\0707.STG"; 
-	//vector<STGData> ZY3_02STGdata;
-	//ZY3_STGSTI.ParseZY302_STG(argv1, ZY3_02STGdata);
-	//ZY3_calibrate.workpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\星图\\";
-	//vector<vector<StarGCP>>getGCPall;
-	//ZY3_calibrate.ReadAllGCP(getGCPall);
-	//ZY3_AD.workpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\姿态确定\\";
-	//ZY3_AD.AttDeter2(ZY3_02STGdata, getGCPall);
+APScalibration ZY3_calibrate;
+ParseSTG ZY3_STGSTI;
+AttDetermination ZY3_AD;
+string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\0707.STG";
+vector<STGData> ZY3_02STGdata;
+ZY3_STGSTI.ParseZY302_STG(argv1, ZY3_02STGdata);
+ZY3_calibrate.workpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\星图\\";
+vector<vector<StarGCP>>getGCPall;
+ZY3_calibrate.ReadAllGCP(getGCPall);
+ZY3_AD.workpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\姿态确定\\";
+ZY3_AD.AttDeter2(ZY3_02STGdata, getGCPall);
 
 
 	

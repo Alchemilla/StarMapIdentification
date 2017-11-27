@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="0.WorkFlow">
+      <UniqueIdentifier>{7d7952e1-0630-4fe8-b2b2-3a6afed13a3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1.GeoBase">
+      <UniqueIdentifier>{a3ed7e67-55c0-4c06-9ca7-4a52d31c7d5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2.GeoOrbit">
+      <UniqueIdentifier>{50ef37ec-bc2a-485c-9a78-d6b72bf5b4d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.GeoAttitude">
+      <UniqueIdentifier>{b398f818-6394-481d-9f15-ce54cf4d6de1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="5.GeoTime">
+      <UniqueIdentifier>{56b41e9b-82dd-4fec-bf76-bd50d52ca37e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="4.GeoCamera">
+      <UniqueIdentifier>{7ef81fbb-6724-4195-9653-510e626d717f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="8.DataParse">
+      <UniqueIdentifier>{615bf967-966f-4dc4-ae3d-f291faaf382b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="6.GeoModel">
+      <UniqueIdentifier>{fc6f2948-ae69-459d-a15d-673210beefa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Calibration">
+      <UniqueIdentifier>{27607a2e-f111-4753-8836-9f5565b02386}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="9.GeoImage">
+      <UniqueIdentifier>{7d435fe0-978a-47c8-8d7d-2515704041e4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GeoBase.cpp">
+      <Filter>1.GeoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoOrbit.cpp">
+      <Filter>2.GeoOrbit</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoOrbitEarth.cpp">
+      <Filter>2.GeoOrbit</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoAttitude.cpp">
+      <Filter>3.GeoAttitude</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoTime.cpp">
+      <Filter>5.GeoTime</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoCamera.cpp">
+      <Filter>4.GeoCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoCameraLine.cpp">
+      <Filter>4.GeoCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoModel.cpp">
+      <Filter>6.GeoModel</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoModelLine.cpp">
+      <Filter>6.GeoModel</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>0.WorkFlow</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkFlow.cpp">
+      <Filter>0.WorkFlow</Filter>
+    </ClCompile>
+    <ClCompile Include="triangle.cpp">
+      <Filter>1.GeoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoTranslation.cpp">
+      <Filter>1.GeoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml.cpp">
+      <Filter>1.GeoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxmlerror.cpp">
+      <Filter>1.GeoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxmlparser.cpp">
+      <Filter>1.GeoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoCameraArray.cpp">
+      <Filter>4.GeoCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoModelRFM.cpp">
+      <Filter>6.GeoModel</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkFlow_ZY3.cpp">
+      <Filter>0.WorkFlow</Filter>
+    </ClCompile>
+    <ClCompile Include="ParseZY3Aux.cpp">
+      <Filter>8.DataParse</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoAttitude_ZY3.cpp">
+      <Filter>3.GeoAttitude</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoTime_ZY3.cpp">
+      <Filter>5.GeoTime</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoOrbitEarth_ZY3.cpp">
+      <Filter>2.GeoOrbit</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoCalibration.cpp">
+      <Filter>7.Calibration</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoModelArray.cpp">
+      <Filter>6.GeoModel</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoHarris.cpp">
+      <Filter>9.GeoImage</Filter>
+    </ClCompile>
+    <ClCompile Include="LSMatching.cpp">
+      <Filter>9.GeoImage</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoReadImage.cpp">
+      <Filter>9.GeoImage</Filter>
+    </ClCompile>
+    <ClCompile Include="PhaseCorrelation.cpp">
+      <Filter>9.GeoImage</Filter>
+    </ClCompile>
+    <ClCompile Include="surfMatch.cpp">
+      <Filter>9.GeoImage</Filter>
+    </ClCompile>
+    <ClCompile Include="AttDeter.cpp">
+      <Filter>3.GeoAttitude</Filter>
+    </ClCompile>
+    <ClCompile Include="GeoImage.cpp">
+      <Filter>9.GeoImage</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeoBase.h">
+      <Filter>1.GeoBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoDefine.h">
+      <Filter>1.GeoBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoOrbit.h">
+      <Filter>2.GeoOrbit</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoOrbitEarth.h">
+      <Filter>2.GeoOrbit</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoAttitude.h">
+      <Filter>3.GeoAttitude</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoTime.h">
+      <Filter>5.GeoTime</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoCamera.h">
+      <Filter>4.GeoCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoCameraLine.h">
+      <Filter>4.GeoCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoModel.h">
+      <Filter>6.GeoModel</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoModelLine.h">
+      <Filter>6.GeoModel</Filter>
+    </ClInclude>
+    <ClInclude Include="WorkFlow.h">
+      <Filter>0.WorkFlow</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoTranslation.h">
+      <Filter>1.GeoBase</Filter>
+    </ClInclude>
+    <ClInclude Include="triangle.h">
+      <Filter>1.GeoBase</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml.h">
+      <Filter>1.GeoBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoCameraArray.h">
+      <Filter>4.GeoCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoModelRFM.h">
+      <Filter>6.GeoModel</Filter>
+    </ClInclude>
+    <ClInclude Include="WorkFlow_ZY3.h">
+      <Filter>0.WorkFlow</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseZY3Aux.h">
+      <Filter>8.DataParse</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoAttitude_ZY3.h">
+      <Filter>3.GeoAttitude</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoTime_ZY3.h">
+      <Filter>5.GeoTime</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoOrbitEarth_ZY3.h">
+      <Filter>2.GeoOrbit</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoCalibration.h">
+      <Filter>7.Calibration</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoModelArray.h">
+      <Filter>6.GeoModel</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoHarris.h">
+      <Filter>9.GeoImage</Filter>
+    </ClInclude>
+    <ClInclude Include="LSMatching.h">
+      <Filter>9.GeoImage</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoReadImage.h">
+      <Filter>9.GeoImage</Filter>
+    </ClInclude>
+    <ClInclude Include="PhaseCorrelation.h">
+      <Filter>9.GeoImage</Filter>
+    </ClInclude>
+    <ClInclude Include="surfMatch.h">
+      <Filter>9.GeoImage</Filter>
+    </ClInclude>
+    <ClInclude Include="UseOpenCV.h">
+      <Filter>9.GeoImage</Filter>
+    </ClInclude>
+    <ClInclude Include="AttDeter.h">
+      <Filter>3.GeoAttitude</Filter>
+    </ClInclude>
+    <ClInclude Include="GeoImage.h">
+      <Filter>9.GeoImage</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
