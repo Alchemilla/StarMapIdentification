@@ -19,10 +19,9 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////	
 		ParseSTG ZY3_STGSTI;
 		AttDetermination ZY3_AD;
-		string argv1 = argv[1];
 		vector<STGData> ZY3_02STGdata;
-		ZY3_STGSTI.ParseZY302_STG(argv1, ZY3_02STGdata);
-		ZY3_AD.workpath = argv1;
+		ZY3_STGSTI.ParseZY302_STG(argv[1], ZY3_02STGdata);
+		ZY3_AD.workpath = argv[1];
 		ZY3_AD.AttDeter3(ZY3_02STGdata);
 	}
 	else if (atoi(argv[2]) == 2)
@@ -418,83 +417,83 @@ int main(int argc, char* argv[])
 	//功能：以下为星敏多景定标流程仿真，星点位置跟随真实星图随机
 	//日期：2017.03.27
 	//////////////////////////////////////////////////////////////////////////
-	//ParseSTG ZY3_STGSTI;
-	//StarExtract ZY3_STMap;
-	//StarIdentify ZY3_ST;
-	//APScalibration ZY3_calibrate;
-	//ZY3_calibrate.ZY302CaliParam.f = 2879;
-	//ZY3_calibrate.ZY302CaliParam.x0 = 512 + 20;
-	//ZY3_calibrate.ZY302CaliParam.y0 = 512 - 10;
-	//ZY3_calibrate.ZY302CaliParam.k1 = -1e-8;
-	//ZY3_calibrate.ZY302CaliParam.k2 = 8e-15;
-	////ZY3_calibrate.ZY302CaliParam.k1 = 0;
-	////ZY3_calibrate.ZY302CaliParam.k2 = 0;
-	////string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0702\\星图\\";
-	//string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\星图\\";
-	////string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0712\\星图\\";
-	////string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0830\\星图\\";
-	//ZY3_STMap.workpath = workpath_ST;
-	//ZY3_ST.workpath = ZY3_STMap.workpath;
-	//ZY3_calibrate.workpath = ZY3_STMap.workpath;
-	////string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0702\\0702.STG";
-	//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\0707.STG";
-	////string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0712\\0712.STG";
-	////string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0830\\0830.STG";
-	//vector<STGData> ZY3_02STGdata;
-	//ZY3_STGSTI.ParseZY302_STG(argv1, ZY3_02STGdata);
-	//vector<vector<StarGCP>>getGCPall;
-	//vector<StarGCP > getGCPalltmp(0);
-	//int index;
-	//const int nImg = 1000;
-	//for (index = 5; index <nImg; )
-	//{
-	//	printf("\r开始生成控制点，累加%d景...", index);
-	//	ZY3_STMap.StarPointExtraction(index);
-	//	//ZY3_ST.GetStarGCP0702(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
-	//	ZY3_ST.GetStarGCP0707(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
-	//	//ZY3_ST.GetStarGCP0712(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
-	//	//ZY3_ST.GetStarGCP(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
-	//	ZY3_calibrate.OptimizeGCP(ZY3_ST.getGCP, 100, index);//精化控制点
-	//	getGCPalltmp.assign(ZY3_ST.getGCP.begin(), ZY3_ST.getGCP.end());
-	//	getGCPall.push_back(getGCPalltmp);//累加控制点
-	//	ZY3_STMap.StarPointExtract.clear();//记得清除vector里的内容，不然内容会叠加
-	//	ZY3_ST.getGCP.clear();
-	//	index = index++;//输出间隔
-	//}	
-	////星点按实际情况分布的控制点仿真
-	////ZY3_calibrate.SimulateGCP_PreRand5Param(getGCPall, ZY3_02STGdata, nImg); 
-	////星点随机分布的控制点仿真
-	////ZY3_calibrate.SimulateGCP_RandomXY5Param(nImg, getGCPall);
-	//printf("\n开始定标\n");
-	////Kalman Filter定标
-	////ZY3_calibrate.Calibrate3ParamKalman(getGCPall);
-	//ZY3_calibrate.Calibrate5ParamKalman(getGCPall);
-	//ZY3_calibrate.OutputAllGCP(getGCPall);
-	//getGCPall.clear();
-	//ZY3_calibrate.ReadAllGCP(getGCPall);
+	ParseSTG ZY3_STGSTI;
+	StarExtract ZY3_STMap;
+	StarIdentify ZY3_ST;
+	APScalibration ZY3_calibrate;
+	ZY3_calibrate.ZY302CaliParam.f = 2879;
+	ZY3_calibrate.ZY302CaliParam.x0 = 512 + 20;
+	ZY3_calibrate.ZY302CaliParam.y0 = 512 - 10;
+	ZY3_calibrate.ZY302CaliParam.k1 = -1e-8;
+	ZY3_calibrate.ZY302CaliParam.k2 = 8e-15;
+	//ZY3_calibrate.ZY302CaliParam.k1 = 0;
+	//ZY3_calibrate.ZY302CaliParam.k2 = 0;
+	//string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0702\\星图\\";
+	string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\星图\\";
+	//string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0712\\星图\\";
+	//string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0830\\星图\\";
+	ZY3_STMap.workpath = workpath_ST;
+	ZY3_ST.workpath = ZY3_STMap.workpath;
+	ZY3_calibrate.workpath = ZY3_STMap.workpath;
+	//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0702\\0702.STG";
+	string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\0707.STG";
+	//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0712\\0712.STG";
+	//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0830\\0830.STG";
+	vector<STGData> ZY3_02STGdata;
+	ZY3_STGSTI.ParseZY302_STG(argv1, ZY3_02STGdata);
+	vector<vector<StarGCP>>getGCPall;
+	vector<StarGCP > getGCPalltmp(0);
+	int index;
+	const int nImg = 1000;
+	for (index = 5; index <nImg; )
+	{
+		printf("\r开始生成控制点，累加%d景...", index);
+		ZY3_STMap.StarPointExtraction(index);
+		//ZY3_ST.GetStarGCP0702(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+		ZY3_ST.GetStarGCP0707(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+		//ZY3_ST.GetStarGCP0712(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+		//ZY3_ST.GetStarGCP(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+		ZY3_calibrate.OptimizeGCP(ZY3_ST.getGCP, 100, index);//精化控制点
+		getGCPalltmp.assign(ZY3_ST.getGCP.begin(), ZY3_ST.getGCP.end());
+		getGCPall.push_back(getGCPalltmp);//累加控制点
+		ZY3_STMap.StarPointExtract.clear();//记得清除vector里的内容，不然内容会叠加
+		ZY3_ST.getGCP.clear();
+		index = index++;//输出间隔
+	}	
+	//星点按实际情况分布的控制点仿真
+	//ZY3_calibrate.SimulateGCP_PreRand5Param(getGCPall, ZY3_02STGdata, nImg); 
+	//星点随机分布的控制点仿真
+	//ZY3_calibrate.SimulateGCP_RandomXY5Param(nImg, getGCPall);
+	printf("\n开始定标\n");
+	//Kalman Filter定标
+	//ZY3_calibrate.Calibrate3ParamKalman(getGCPall);
+	ZY3_calibrate.Calibrate5ParamKalman(getGCPall);
+	ZY3_calibrate.OutputAllGCP(getGCPall);
+	getGCPall.clear();
+	ZY3_calibrate.ReadAllGCP(getGCPall);
 
-	//////////////////////////////////////////////////////////////////////////////
-	//////功能：接上一步，为姿态确定过程
-	//////日期：2017.04.27
-	//////////////////////////////////////////////////////////////////////////////	
-	//AttDetermination ZY3_AD;
-	//ZY3_AD.workpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\姿态确定\\";
-	//ZY3_AD.AttDeter2(ZY3_02STGdata, getGCPall);
+	////////////////////////////////////////////////////////////////////////////
+	////功能：接上一步，为姿态确定过程
+	////日期：2017.04.27
+	////////////////////////////////////////////////////////////////////////////	
+	AttDetermination ZY3_AD;
+	ZY3_AD.workpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\姿态确定\\";
+	ZY3_AD.AttDeter2(ZY3_02STGdata, getGCPall);
 
-	//vector<vector<StarGCP>>getGCPaccu;
-	//for (index = 0; index < getGCPall.size(); )
-	//{
-	//	//ZY3_calibrate.Calibrate3Param(getGCPall[index], index);
-	//	//ZY3_calibrate.Calibrate5Param(getGCPall[index], index);
-	//	//getGCPaccu.assign(getGCPall[index].begin(), getGCPall[index].end());
-	//	getGCPaccu.assign(getGCPall.begin(), getGCPall.begin() +index +1);
-	//	printf("\r定标中，累加%d景...", index+1);
-	//	ZY3_calibrate.Calibrate5ParamMultiImg(getGCPaccu, index + 1);
-	//	//ZY3_calibrate.Calibrate3ParamMultiImg(getGCPaccu, index + 1);
-	//	//ZY3_calibrate.CalibrateOpticAxisMultiImg(getGCPaccu, index + 1);
-	//	//
-	//	index++;//输出间隔
-	//}
+	vector<vector<StarGCP>>getGCPaccu;
+	for (index = 0; index < getGCPall.size(); )
+	{
+		//ZY3_calibrate.Calibrate3Param(getGCPall[index], index);
+		//ZY3_calibrate.Calibrate5Param(getGCPall[index], index);
+		//getGCPaccu.assign(getGCPall[index].begin(), getGCPall[index].end());
+		getGCPaccu.assign(getGCPall.begin(), getGCPall.begin() +index +1);
+		printf("\r定标中，累加%d景...", index+1);
+		ZY3_calibrate.Calibrate5ParamMultiImg(getGCPaccu, index + 1);
+		//ZY3_calibrate.Calibrate3ParamMultiImg(getGCPaccu, index + 1);
+		//ZY3_calibrate.CalibrateOpticAxisMultiImg(getGCPaccu, index + 1);
+		//
+		index++;//输出间隔
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	//功能：不定标，直接用原始姿态定位

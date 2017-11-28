@@ -212,7 +212,7 @@ void WorkFlow_ZY3::CalibrationModel2(string auxpath, string eoppath)
 	StrAttParamInput attitudeinput;
 	attitudeinput.DatumName = "WGS84";
 	attitudeinput.m_PolyOrder = 2;
-	attitude->ReadZY3AttFile(allAtt, attitudeinput, orbit);
+	attitude->ReadZY3AttFile(allAtt, attitudeinput, orbit, auxpath);
 
 	// 时间
 	GeoTime *time = new GeoTime_ZY3();
@@ -286,7 +286,7 @@ void WorkFlow_ZY3::AccuracyVerify(string auxpath)
 	}
 	fprintf(fperr, "\n");
 	fprintf(fperr, "%.9f\t%.9f\t%.9f\n", xxErr, yyErr, zzErr);
-	fcloseall;
+	fcloseall();
 }
 
 /////////////////////////////////////////////
@@ -328,7 +328,7 @@ void WorkFlow_ZY3::ModelVerify()
 	double lat, lon, h = 0, x = 1, y = 1;
 	while (x != 0 || y != 0)
 	{
-		cout << "请输入Sample和Line和h(输入两个0本程序退出)" << endl;
+		cout << "请输入Sample和Line和h   (输入三个0本程序退出)" << endl;
 		cin >> y >> x >> h;
 		pModel->FromXY2LatLon(x, y, h, lat, lon);
 		lat = lat * 180 / PI;

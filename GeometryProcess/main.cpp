@@ -78,22 +78,11 @@ int main(int argc, char* argv[])
 		/////////////////////////////////////////////////////////////////////////
 		WorkFlow_ZY3 *pflow2 = new WorkFlow_ZY3();
 		//外方位元素检校
-		//pflow->CalibrationModel2(argv[1], argv2);
+		pflow2->CalibrationModel2(argv[1], argv2);
 		//严密模型构建
 		pflow2->GenerateRigorousModel(argv[1], argv2);
 		pflow2->AccuracyVerify(argv[1]);
-		double lat, lon, h = 0, x = 1, y = 1;
-		while (x != 0 && y != 0)
-		{
-			cout << "请输入Sample和Line(输入两个0本程序退出)" << endl;
-			cin >> x >> y;
-			pflow2->pModel->FromXY2LatLon(y, x, h, lat, lon);
-			lat = lat * 180 / PI;
-			lon = lon * 180 / PI;
-			cout << "经纬度分别是" << endl;
-			cout << setiosflags(ios::fixed);//加上这句话，控制的就是小数的精度了
-			cout << setprecision(10) << lat << "," << setprecision(10) << lon << endl;
-		}
+		pflow2->ModelVerify();
 		if (pflow2 != NULL)		delete[]pflow2;		pflow2 = NULL;
 
 		//////////////////////////////////////////////////////////////////////////
