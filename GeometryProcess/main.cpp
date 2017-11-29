@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 		/////////////////////////////////////////////////////////////////////////
 		WorkFlow_ZY3 *pflow2 = new WorkFlow_ZY3();
 		//外方位元素检校
-		pflow2->CalibrationModel2(argv[1], argv2);
+		//pflow2->CalibrationModel2(argv[1], argv2);
 		//严密模型构建
 		pflow2->GenerateRigorousModel(argv[1], argv2);
 		pflow2->AccuracyVerify(argv[1]);

@@ -154,6 +154,25 @@ void AttDetermination::AttDeter3(vector<STGData> AttData)
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：（APS）星敏姿态确定
+//输入：AttData：从STG文件读取的数据
+//输出：Quater：Kalman滤波结果四元数
+//注意：
+//作者：GZC
+//日期：2017.11.29
+//////////////////////////////////////////////////////////////////////////
+void AttDetermination::AttDeter4(vector<STGData> AttData)
+{
+	vector<Quat>Quater, EKFres;
+	for (int i=0;i<AttData.size();i++)
+	{
+		Quater.push_back(AttData[i].StarA);
+	}
+	EKF6StateV3(AttData, Quater, EKFres);
+	OutputFile(EKFres, "EKF滤波结果.txt");
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：读取定标参数
 //输入：定义类的对象时得到workplace的路径
 //输出：StarCaliParam结构体的定标参数

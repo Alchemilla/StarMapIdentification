@@ -570,7 +570,7 @@ void APScalibration::Calibrate5ParamKalman(vector<vector<StarGCP>>getGCP)
 	//去除定标结果文件里的内容
 	string path = workpath + "定标结果！！！.txt";
 	FILE *fp = fopen(path.c_str(), "w");
-	fclose(fp);
+	fclose(fp);	
 
 	for (size_t i = 0; i < getGCP.size(); i++)
 	{
@@ -1362,11 +1362,11 @@ void APScalibration::CaliAccuracy5Param(vector<vector<StarGCP>> getGCP, double *
 	string path;
 	if (X[4] != 0)
 	{
-		path = workpath + "控制点\\精度-定标后.txt";
+		path = workpath + "精度-定标后.txt";
 	}
 	else
 	{
-		path = workpath + "控制点\\精度-定标前.txt";
+		path = workpath + "精度-定标前.txt";
 	}
 	FILE *fp = fopen(path.c_str(), "w");
 

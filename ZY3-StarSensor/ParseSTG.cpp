@@ -540,6 +540,41 @@ bool ParseSTG::ParseZY302_STItime(string STIpath)
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：读取资三软件解析出的星点文件
+//输入：StarDataPath，星点文件路径
+//输出：星点控制点
+//注意：该星敏为APS星敏数据
+//日期：2017.11.29
+//////////////////////////////////////////////////////////////////////////
+bool ParseSTG::ParseZY302_SoftStarData(string StarDataPath, vector<vector<StarGCP>>&StarData)
+{
+	FILE *fp = fopen(StarDataPath.c_str(), "r");
+	StarGCP StarTmp;	vector<StarGCP > StarTmp2;
+	fscanf(fp, "%lf\t%lf\t%lf\t%*f\t%*f\t%*f\t%*f\t%lf\t%lf\t%lf\n", &StarTmp.UTC
+		, &StarTmp.x, &StarTmp.y, &StarTmp.V[0], &StarTmp.V[1], &StarTmp.V[2]);
+	StarTmp2.push_back(StarTmp);
+	double utIndex;	
+	while (!feof(fp))
+	{
+		utIndex = StarTmp.UTC;
+		fscanf(fp, "%lf\t%lf\t%lf\t%*f\t%*f\t%*f\t%*f\t%lf\t%lf\t%lf\n", &StarTmp.UTC
+		, &StarTmp.x, &StarTmp.y, &StarTmp.V[0], &StarTmp.V[1], &StarTmp.V[2]);
+		if (StarTmp.UTC == utIndex)
+		{
+			StarTmp2.push_back(StarTmp);
+		}
+		else
+		{
+			StarData.push_back(StarTmp2);
+			StarTmp2.clear();
+			StarTmp2.push_back(StarTmp);
+		}
+	}
+	fcloseall();
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：读取星时文件
 //输入：STItimepath，STI星时文件
 //输出：星时指针

@@ -20,6 +20,7 @@ public:
 	bool ParseZY302_STI(string STIpath);
 	bool ParseZY302_STI_10B(string STIpath);
 	bool ParseZY302_STItime(string STIpath);
+	bool ParseZY302_SoftStarData(string StarDataPath,vector<vector<StarGCP>>&StarData);
 	//读取星时文件
 	void ReadZY302_STItime(double *UTC);
 	//解析STI用到的，将5字节40bit转为4个10bit的arr

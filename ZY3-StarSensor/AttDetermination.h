@@ -13,6 +13,7 @@ public:
 	void AttDeter(vector<STGData> AttData, vector<vector<StarGCP>>getGCP, StarCaliParam Param, vector<Quat>&Quater);
 	void AttDeter2(vector<STGData> AttData, vector<vector<StarGCP>>getGCP);
 	void AttDeter3(vector<STGData> AttData);
+	void AttDeter4(vector<STGData> AttData);
 	//static attitude determination
 	bool q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater);
 
