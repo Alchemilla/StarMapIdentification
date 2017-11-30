@@ -12,10 +12,38 @@
 int main(int argc, char* argv[])
 {
 	//////////////////////////////////////////////////////////////////////////
-	//功能：对星图进行姿态确定
+	//功能：对STG数据中的APS进行姿态确定
 	//日期：2017.11.29
 	//////////////////////////////////////////////////////////////////////////	
 	if (atoi(argv[2]) == 1)
+	{
+		APScalibration ZY3_calibrate;
+		StarCaliParam ZY302CaliParam;
+		ZY302CaliParam.f = 2879;
+		ZY302CaliParam.x0 = 512 + 20;
+		ZY302CaliParam.y0 = 512 - 10;
+		ZY302CaliParam.k1 = -1e-8;
+		ZY302CaliParam.k2 = 8e-15;
+		ZY3_calibrate.workpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\星图\\";
+		vector<vector<StarGCP>>getGCPall;
+		ZY3_calibrate.ReadAllGCP(getGCPall);
+		
+		ParseSTG ZY3_STG;
+		vector<STGData>stg;
+		string stgPath = "";
+		ZY3_STG.ParseZY302_STG(stgPath, stg);
+
+		AttDetermination ZY3_AD;
+		ZY3_AD.workpath = argv[1];
+		vector<vector<BmImStar>>BmIm;
+		ZY3_AD.GetImBm(getGCPall, ZY302CaliParam, BmIm);
+		ZY3_AD.EKF6StateForStarMap(BmIm, stg);
+	}
+	//////////////////////////////////////////////////////////////////////////
+	//功能：对STG数据中的APS进行姿态确定
+	//日期：2017.11.29
+	//////////////////////////////////////////////////////////////////////////	
+	else if (atoi(argv[2]) == 10)
 	{
 		ParseSTG ZY3_STGSTI;
 		AttDetermination ZY3_AD;
@@ -35,7 +63,8 @@ int main(int argc, char* argv[])
 		ZY3_StarPoint.ParseZY302_SoftStarData(string(argv[1]) + "StarData.txt", getGCPall);
 		APScalibration ZY3_calibrate;
 		ZY3_calibrate.workpath = argv[1];
-		ZY3_calibrate.Calibrate5ParamKalman(getGCPall);
+		//ZY3_calibrate.Calibrate5ParamKalman(getGCPall);
+		ZY3_calibrate.Calibrate5ParamMultiImg(getGCPall, 1);
 	}
 	else if (atoi(argv[2]) == 2)
 	{

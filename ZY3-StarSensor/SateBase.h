@@ -120,4 +120,11 @@ struct StarCaliParam
 	double x0, y0;
 	double f, k1,k2;
 };
+
+//星点控制点转换为 惯性矢量和本体矢量
+struct BmImStar
+{
+	double UT;
+	double Im[3], Bm[3];
+};
 #endif

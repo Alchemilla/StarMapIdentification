@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
 		//严密模型构建
 		pflow2->GenerateRigorousModel(argv[1], argv2);
 		pflow2->AccuracyVerify(argv[1]);
-		pflow2->ModelVerify();
+		//pflow2->ModelVerify();
 		if (pflow2 != NULL)		delete[]pflow2;		pflow2 = NULL;
 
 		//////////////////////////////////////////////////////////////////////////

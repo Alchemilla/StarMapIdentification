@@ -2396,146 +2396,240 @@ void AttDetermination::EKF6StateForStarAB3(int m, Quat *qB, Quat *qC, Quat * qTr
 //作者：GZC
 //日期：2017.11.28
 //////////////////////////////////////////////////////////////////////////
-void AttDetermination::EKF6StateForStarMap(int m, Quat *qB, Quat *qC, Quat * qTrue, Gyro *wMeas)
-{
-	//星敏B和C转坐标系，由Crj变为Cbj；
-	Quat *starB = new Quat[m];
-	Quat *starC = new Quat[m];
-	double Balin[9], Calin[9];
-	getInstall(Balin, Calin);
-	double Crj[9], Cbj[9], q[4];
-
-	//获取两颗星敏相对安装误差
-	double Err[9];
-	getInstallErr(m, qB, qC, Calin);
-
-	mbase.invers_matrix(Balin, 3);//转换为Cbr	
-	mbase.invers_matrix(Calin, 3);//转换为Cbr	
-	for (int i = 0; i < m; i++)
+void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vector<STGData>stg)
+{	
+	double GyDat[3], GyTran[3];
+	int nGyro = stg.size();
+	double *UT = new double[nGyro];
+	Gyro *wMeas = new Gyro[nGyro];
+	double gyIns[9];
+	memcpy(gyIns, GyroIns, sizeof(GyroIns));
+	mbase.invers_matrix(gyIns, 3);
+	vector<Quat>APSdat;
+	for (int i = 0; i < nGyro; i++)
 	{
-		mbase.quat2matrix(qB[i].Q1, qB[i].Q2, qB[i].Q3, qB[i].Q0, Crj);
-		mbase.Multi(Balin, Crj, Cbj, 3, 3, 3);
-		mbase.matrix2quat(Cbj, starB[i].Q1, starB[i].Q2, starB[i].Q3, starB[i].Q0);
-		starB[i].UTC = qB[i].UTC;
-		mbase.quat2matrix(qC[i].Q1, qC[i].Q2, qC[i].Q3, qC[i].Q0, Crj);
-		mbase.Multi(Calin, Crj, Cbj, 3, 3, 3);
-		mbase.matrix2quat(Cbj, starC[i].Q1, starC[i].Q2, starC[i].Q3, starC[i].Q0);
-		starC[i].UTC = qC[i].UTC;
+		GyDat[0] = stg.at(i).g1, GyDat[1] = stg.at(i).g3, GyDat[2] = stg.at(i).g5;
+		mbase.Multi(gyIns, GyDat, GyTran, 3, 3, 1);
+		wMeas[i].x = GyTran[0] / 180 * PI, wMeas[i].y = GyTran[1] / 180 * PI, wMeas[i].z = GyTran[2] / 180 * PI;
+		UT[i] = stg[i].utgyro;
+		Quat aps;
+		aps.UTC = stg.at(i).StarA.UTC;
+		aps.Q0 = stg.at(i).StarA.Q0; aps.Q1 = stg.at(i).StarA.Q1;
+		aps.Q2 = stg.at(i).StarA.Q2; aps.Q3 = stg.at(i).StarA.Q3;
+		APSdat.push_back(aps);
 	}
+	Quat *Quat_inter = new Quat[nGyro];
+	alinAPS(APSdat);//乘以安装矩阵
+	mbase.QuatInterpolation(APSdat, UT, nGyro, Quat_inter);
 
-	double sig = 0.8 / 3600 * PI / 180;
+	double sig = 5. / 3600 * PI / 180;
 	double w, dt, qw1, qw2, qw3, qw4, qmm1, qmm2, qmm3, qe11, qe22, qe33, qe44;
-	Matrix3d zero33, eye33, poa, pog, sigu33, sigv33;
-	MatrixXd p(6, 6), Q(6, 6), eye66(6, 6), xe(1, 6), r(6, 6), z(6, 1), h(6, 6), k(6, 6), tempqe(4, 1), om(4, 4),
+	Matrix3d zero33, eye33, poa, pog, r, sigu33, sigv33, wa;
+	MatrixXd p(6, 6), Q(6, 6), eye66(6, 6), xe(1, 3), z(3, 1), h(3, 6), tempqe(4, 1), om(4, 4),
 		fmat(6, 6), gmat(6, 6), phi(6, 6), gamma(6, 6);
 	eye33 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
 	zero33 << MatrixXd::Zero(3, 3);
-	eye66 = MatrixXd::Identity(6, 6);
 	sigu33 << 1e-19*eye33;//陀螺漂移噪声
 	sigv33 << 1e-13*eye33;//陀螺噪声
 	poa << 3e-6*eye33;//初始姿态误差协方差
 	pog << 1e-12*eye33;//初始陀螺误差协方差
-	r << pow(sig, 2)*eye66;//星敏噪声	
+	r << pow(sig, 2)*eye33;//星敏噪声	
+	eye66 << eye33, zero33, zero33, eye33;
 
-	MatrixXd Qest(m + 1, 4), we(m + 1, 3), xest(m + 1, 6);
+	//预先计算估计四元数的数量
+	int nQuat = BmIm.size();
+	double utStart = BmIm[0][0].UT;
+	int a = 1, b = 0;
+	for (int i = 1; i < nGyro;)
+	{
+		if (a < nQuat && (BmIm[a][0].UT - utStart) <= (UT[i] - utStart))
+		{
+			utStart = BmIm[a][0].UT;	 a++;		b++;
+		}
+		else
+		{
+			utStart = UT[i];	 i++;		 b++;
+		}
+	}
+	MatrixXd Qest(b + 1, 4), we(b + 1, 3), xest(b + 1, 6);
 
-	Quat *quatEst = new Quat[m];
 	//设置递推初始值
+	a = 1, b = 0;
+	utStart = BmIm[0][0].UT;
 	xest.row(0) << 0, 0, 0, 0, 0, 0;//状态初始值
 	p << poa, zero33, zero33, pog;//过程协方差
 	Q << sigv33, zero33, zero33, sigu33;//过程噪声
-	Qest(0, 0) = starB[0].Q1, Qest(0, 1) = starB[0].Q2;
-	Qest(0, 2) = starB[0].Q3, Qest(0, 3) = starB[0].Q0;
-	quatEst[0].UTC = starB[0].UTC;
-	quatEst[0].Q1 = Qest(0, 0), quatEst[0].Q2 = Qest(0, 1);
-	quatEst[0].Q3 = Qest(0, 2), quatEst[0].Q0 = Qest(0, 3);
-	FILE *fp = fopen((workpath + "\\StarBC_EKFAtt.txt").c_str(), "w");
-	fprintf(fp, "%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\n", 0, quatEst[0].Q1, quatEst[0].Q2, quatEst[0].Q3, 0, 0, 0);
+	Qest(0, 0) = Quat_inter[0].Q1, Qest(0, 1) = Quat_inter[0].Q2;
+	Qest(0, 2) = Quat_inter[0].Q3, Qest(0, 3) = Quat_inter[0].Q0;
+	Quat *quatEst = new Quat[nGyro];
+	double *xest_store = new double[6 * nGyro];
+	quatEst[0].UTC = Quat_inter[0].UTC;
+	quatEst[0].Q1 = Qest(b, 0), quatEst[0].Q2 = Qest(b, 1);
+	quatEst[0].Q3 = Qest(b, 2), quatEst[0].Q0 = Qest(b, 3);
+	xest_store[0] = wMeas[0].UTC; xest_store[1] = 0; xest_store[2] = 0;
+	xest_store[3] = 0; xest_store[4] = 0, xest_store[5] = 0;
 
-	for (int i = 0; i < m - 1; i++)
+	for (int i = 1; i < nGyro;)
 	{
-		dt = 0.25;
-		double Cbj[9]; double optic[] = { 0,0,1 };
-		mbase.quat2matrix(Qest(i, 0), Qest(i, 1), Qest(i, 2), Qest(i, 3), Cbj);//Cbj
-		double im1[3], im2[3];
-		mbase.quat2matrix(qB[i].Q1, qB[i].Q2, qB[i].Q3, qB[i].Q0, Crj);//Crj
-		mbase.invers_matrix(Crj, 3);//Cjr
-		mbase.Multi(Crj, optic, im1, 3, 3, 1);//
-		double pbe1[3], pbe2[3];
-		mbase.Multi(Cbj, im1, pbe1, 3, 3, 1);
-		MatrixXd pbe_cr1(3, 3);
-		pbe_cr1 << 0, -pbe1[2], pbe1[1], pbe1[2], 0, -pbe1[0], -pbe1[1], pbe1[0], 0;
-		mbase.quat2matrix(qC[i].Q1, qC[i].Q2, qC[i].Q3, qC[i].Q0, Crj);//Crj
-		mbase.invers_matrix(Crj, 3);//Cjr
-		mbase.Multi(Crj, optic, im2, 3, 3, 1);//
-		mbase.Multi(Cbj, im2, pbe2, 3, 3, 1);
-		MatrixXd pbe_cr2(3, 3);
-		pbe_cr2 << 0, -pbe2[2], pbe2[1], pbe2[2], 0, -pbe2[0], -pbe2[1], pbe2[0], 0;
-		h << pbe_cr1, zero33, pbe_cr2, zero33;
+		if (a < nQuat && (BmIm[a][0].UT - utStart) <= (wMeas[i].UTC - utStart))
+		{
+			/****************陀螺测量值预测***************/
+			dt = BmIm[a][0].UT - utStart;
+			utStart = BmIm[a][0].UT;
+			we(b, 0) = wMeas[i - 1].x - xest(b, 3);
+			we(b, 1) = wMeas[i - 1].y - xest(b, 4);
+			we(b, 2) = wMeas[i - 1].z - xest(b, 5);
+			w = sqrt(we(b, 0)*we(b, 0) + we(b, 1)*we(b, 1) + we(b, 2)*we(b, 2));
+			wa << 0, -we(b, 2), we(b, 1), we(b, 2), 0, -we(b, 0), -we(b, 1), we(b, 0), 0;
+			fmat << -wa, -eye33, zero33, zero33;
+			gmat << -eye33, zero33, zero33, eye33;
+			phi = eye66 + fmat*dt;
+			gamma = (eye66*dt + fmat*dt*dt / 2)*gmat;
+			//Propagate State
+			qw1 = we(b, 0) / w*sin(0.5*w*dt);
+			qw2 = we(b, 1) / w*sin(0.5*w*dt);
+			qw3 = we(b, 2) / w*sin(0.5*w*dt);
+			qw4 = cos(0.5*w*dt);
+			om << qw4, qw3, -qw2, qw1, -qw3, qw4, qw1, qw2, qw2, -qw1, qw4, qw3, -qw1, -qw2, -qw3, qw4;
+			Qest.row(b + 1) = (om*Qest.row(b).transpose()).transpose();
+			//Propagate Covariance
+			p = phi*p*phi.transpose() + gamma*Q*gamma.transpose();
+			xest.row(b + 1) = xest.row(b);
+			xest(b + 1, 0) = 0; xest(b + 1, 1) = 0; xest(b + 1, 2) = 0;
+			b++;
 
-		double	Lb1[3], Lb2[3];//星敏1和2的Z轴在卫星本体的坐标
-		mbase.Multi(Balin, optic, Lb1, 3, 3, 1);
-		mbase.Multi(Calin, optic, Lb2, 3, 3, 1);
-		z << Lb1[0] - pbe1[0], Lb1[1] - pbe1[1], Lb1[2] - pbe1[2], Lb2[0] - pbe2[0], Lb2[1] - pbe2[1], Lb2[2] - pbe2[2];
-		k = p*h.transpose()*(h*p*h.transpose() + r).inverse();//k(6*6)
-		p = (eye66 - k*h)*p;
-		xest.row(i) = xest.row(i) + (k*z).transpose();
-		xe = 0.5*xest.row(i).head(3);
-		qe11 = Qest(i, 0) + xe(2)*Qest(i, 1) - xe(1)*Qest(i, 2) + xe(0)*Qest(i, 3);
-		qe22 = -xe(2)*Qest(i, 0) + Qest(i, 1) + xe(0)*Qest(i, 2) + xe(1)*Qest(i, 3);
-		qe33 = xe(1)*Qest(i, 0) - xe(0)*Qest(i, 1) + Qest(i, 2) + xe(2)*Qest(i, 3);
-		qe44 = -xe(0)*Qest(i, 0) - xe(1)*Qest(i, 1) - xe(2)*Qest(i, 2) + Qest(i, 3);
-		tempqe << qe11, qe22, qe33, qe44;
-		tempqe.normalize();
-		Qest.row(i) << tempqe(0), tempqe(1), tempqe(2), tempqe(3);
+			/****************星敏测量值更新***************/
+			double Cbj[9];
+			mbase.quat2matrix(Qest(i, 0), Qest(i, 1), Qest(i, 2), Qest(i, 3), Cbj);//Cbj
+			int num = BmIm[i].size();
+			MatrixXd mH(3 * num, 6), mDetZ(3 * num, 1), k(6, 3 * num);
+			MatrixXd r1 = pow(sig, 2)*MatrixXd::Identity(3 * num, 3 * num);
+			Measurement(BmIm[i], Cbj, mH, mDetZ);
+			k = p*mH.transpose()*(mH*p*mH.transpose() + r1).inverse();//k(6*6)
+			p = (eye66 - k*mH)*p;
+			xest.row(i) = xest.row(i) + (k*mDetZ).transpose();		
+			xe = 0.5*xest.row(b).head(3);
+			qe11 = Qest(b, 0) + xe(2)*Qest(b, 1) - xe(1)*Qest(b, 2) + xe(0)*Qest(b, 3);
+			qe22 = -xe(2)*Qest(b, 0) + Qest(b, 1) + xe(0)*Qest(b, 2) + xe(1)*Qest(b, 3);
+			qe33 = xe(1)*Qest(b, 0) - xe(0)*Qest(b, 1) + Qest(b, 2) + xe(2)*Qest(b, 3);
+			qe44 = -xe(0)*Qest(b, 0) - xe(1)*Qest(b, 1) - xe(2)*Qest(b, 2) + Qest(b, 3);
+			tempqe << qe11, qe22, qe33, qe44;
+			tempqe.normalize();
+			Qest.row(b) << tempqe(0), tempqe(1), tempqe(2), tempqe(3);
 
-		//Propagate State
-		we(i, 0) = wMeas[i + 1].x - xest(i, 3);//
-		we(i, 1) = wMeas[i + 1].y - xest(i, 4);
-		we(i, 2) = wMeas[i + 1].z - xest(i, 5);
-		w = sqrt(we(i, 0)*we(i, 0) + we(i, 1)*we(i, 1) + we(i, 2)*we(i, 2));
-		qw1 = we(i, 0) / w*sin(0.5*w*dt);
-		qw2 = we(i, 1) / w*sin(0.5*w*dt);
-		qw3 = we(i, 2) / w*sin(0.5*w*dt);
-		qw4 = cos(0.5*w*dt);
-		om << qw4, qw3, -qw2, qw1, -qw3, qw4, qw1, qw2, qw2, -qw1, qw4, qw3, -qw1, -qw2, -qw3, qw4;
-		Qest.row(i + 1) = (om*Qest.row(i).transpose()).transpose();
+			a++;
+		}
+		else
+		{
+			/****************陀螺测量值预测***************/
+			dt = wMeas[i].UTC - utStart;
+			utStart = wMeas[i].UTC;
+			we(b, 0) = wMeas[i - 1].x - xest(b, 3);//注意是i-1，因为此刻的四元数是上一刻陀螺递推而来
+			we(b, 1) = wMeas[i - 1].y - xest(b, 4);
+			we(b, 2) = wMeas[i - 1].z - xest(b, 5);
+			w = sqrt(we(b, 0)*we(b, 0) + we(b, 1)*we(b, 1) + we(b, 2)*we(b, 2));
+			wa << 0, -we(b, 2), we(b, 1), we(b, 2), 0, -we(b, 0), -we(b, 1), we(b, 0), 0;
+			fmat << -wa, -eye33, zero33, zero33;
+			gmat << -eye33, zero33, zero33, eye33;
+			phi = eye66 + fmat*dt;
+			gamma = (eye66*dt + fmat*dt*dt / 2)*gmat;
+			//Propagate State
+			qw1 = we(b, 0) / w*sin(0.5*w*dt);
+			qw2 = we(b, 1) / w*sin(0.5*w*dt);
+			qw3 = we(b, 2) / w*sin(0.5*w*dt);
+			qw4 = cos(0.5*w*dt);
+			om << qw4, qw3, -qw2, qw1, -qw3, qw4, qw1, qw2, qw2, -qw1, qw4, qw3, -qw1, -qw2, -qw3, qw4;
+			Qest.row(b + 1) = (om*Qest.row(b).transpose()).transpose();
+			//Propagate Covariance
+			p = phi*p*phi.transpose() + gamma*Q*gamma.transpose();
+			xest.row(b + 1) = xest.row(b);
+			xest(b + 1, 0) = 0; xest(b + 1, 1) = 0; xest(b + 1, 2) = 0;
 
-		//Propagate Covariance
-		Matrix3d wa;
-		wa << 0, -we(i, 2), we(i, 1), we(i, 2), 0, -we(i, 0), -we(i, 1), we(i, 0), 0;
-		fmat << -wa, -eye33, zero33, zero33;
-		gmat << -eye33, zero33, zero33, eye33;
-		phi = eye66 + fmat*dt;
-		gamma = (eye66*dt + fmat*dt*dt / 2)*gmat;
-		p = phi*p*phi.transpose() + gamma*Q*gamma.transpose();
+			quatEst[i].UTC = wMeas[i].UTC;
+			quatEst[i].Q1 = Qest(b + 1, 0), quatEst[i].Q2 = Qest(b + 1, 1);
+			quatEst[i].Q3 = Qest(b + 1, 2), quatEst[i].Q0 = Qest(b + 1, 3);
 
-		xest.row(i + 1) = xest.row(i);
-		xest(i + 1, 0) = 0; xest(i + 1, 1) = 0; xest(i + 1, 2) = 0;
+			//保存xest值
+			xest_store[6 * i + 0] = wMeas[i].UTC; xest_store[6 * i + 1] = xest(b, 1); xest_store[6 * i + 2] = xest(b, 2);
+			xest_store[6 * i + 3] = xest(b, 3); xest_store[6 * i + 4] = xest(b, 4); xest_store[6 * i + 5] = xest(b, 5);
 
-		quatEst[i].UTC = wMeas[i].UTC;
-		quatEst[i].Q1 = Qest(i, 0), quatEst[i].Q2 = Qest(i, 1);
-		quatEst[i].Q3 = Qest(i, 2), quatEst[i].Q0 = Qest(i, 3);
-		fprintf(fp, "%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\n",
-			quatEst[i].UTC, quatEst[i].Q1, quatEst[i].Q2, quatEst[i].Q3,
-			xest(i, 3) / PI * 180 * 3600 / 0.25, xest(i, 4) / PI * 180 * 3600 / 0.25, xest(i, 5) / PI * 180 * 3600 / 0.25);
-	}
-	fclose(fp);
-
-	fp = fopen((workpath + "\\StarBC_Err.txt").c_str(), "w");
-	double dq1[4], dq2[4], dq3[4];
-	for (int i = 0; i < m; i++)
-	{
-		dq1[0] = -quatEst[i].Q0, dq1[1] = quatEst[i].Q1, dq1[2] = quatEst[i].Q2, dq1[3] = quatEst[i].Q3;
-		dq2[0] = qTrue[i].Q0, dq2[1] = qTrue[i].Q1, dq2[2] = qTrue[i].Q2, dq2[3] = qTrue[i].Q3;
-		mbase.quatMult2(dq1, dq2, dq3);
-		dq3[1] = dq3[1] * 2 / PI * 180 * 3600, dq3[2] = dq3[2] * 2 / PI * 180 * 3600, dq3[3] = dq3[3] * 2 / PI * 180 * 3600;
-		fprintf(fp, "%.9f\t%.9f\t%.9f\n", dq3[1], dq3[2], dq3[3]);
-	}
-	fclose(fp);
+			b++;
+			i++;
+		}
+	}	
 }
 
+//////////////////////////////////////////////////////////////////////////
+//功能：得到测量值，测量协方差
+//输入：
+//输出：
+//注意：相当于多光轴联合滤波
+//作者：GZC
+//日期：2017.11.29
+//////////////////////////////////////////////////////////////////////////
+void AttDetermination::Measurement(vector<BmImStar> BmIm, double *Att,
+	MatrixXd &mH, MatrixXd &mDetZ)
+{
+	int num = BmIm.size();
+	MatrixXd pbe(3, num);
+	Matrix3d pbe_cr(3, 3);
+	Map<rMatrixXd>mAtt(Att, 3, 3);
+	for (int a = 0; a < num; a++)
+	{
+		Map<MatrixXd>im(BmIm[a].Im, 3, 1);
+		pbe.block<3, 1>(0, a) = mAtt*im;
+		pbe_cr << 0, -pbe(2, a), pbe(1, a), pbe(2, a), 0, -pbe(0, a), -pbe(1, a), pbe(0, a), 0;
+		mH.block<3, 6>(3 * a, 0) << pbe_cr, MatrixXd::Zero(3, 3);
+		Map<MatrixXd>bm(BmIm[a].Bm, 3, 1);
+		mDetZ.block<3, 1>(3 * 1, 0) << pbe.block<3, 1>(0, a) - bm;
+	}
+}
 
+//////////////////////////////////////////////////////////////////////////
+//功能：得到光轴在惯性系和本体系矢量
+//输入：星点控制点，标定参数
+//输出：
+//注意：相当于多光轴联合滤波
+//作者：GZC
+//日期：2017.11.29
+//////////////////////////////////////////////////////////////////////////
+void AttDetermination::GetImBm(vector<vector<StarGCP>> getGCP,
+	const StarCaliParam Param, vector<vector<BmImStar>> BmIm)
+{	
+	double Wob[3];
+	double X, Y, DetX, DetY;
+	for (int a = 0; a < getGCP.size(); a++)
+	{
+		vector<BmImStar>BmImTmp;
+		for (int b=0; b<getGCP[a].size();b++)
+		{
+			double Xp, Yp;
+			Xp = 1024 - getGCP[a][b].y;		Yp = getGCP[a][b].x;
+			//畸变模型(5参数情况)
+			double r2 = (Xp - Param.x0)*(Xp - Param.x0) + (Yp - Param.y0)*(Yp - Param.y0);
+			double xreal = -(Xp - Param.x0)*(1 - Param.k1 * r2 - Param.k2 * r2*r2);
+			double yreal = -(Yp - Param.y0)*(1 - Param.k1 * r2 - Param.k2 * r2*r2);
+			double freal = Param.f;
+
+			//赋值，将像方坐标系转到星敏坐标系，星敏坐标系为-(X-X0)，-(Y-Y0)，f；然后
+			double D = sqrt(pow(xreal, 2) + pow(yreal, 2) + pow(freal, 2));
+			//double Wob[3];
+			Wob[0] = xreal / D;
+			Wob[1] = yreal / D;
+			Wob[2] = freal / D;
+			BmImStar BmImTmp2;
+			BmImTmp2.Bm[0] = Wob[0]; 
+			BmImTmp2.Bm[1] = Wob[1]; 
+			BmImTmp2.Bm[2] = Wob[2];
+			BmImTmp2.Im[0] = getGCP[a][b].V[0];
+			BmImTmp2.Im[1] = getGCP[a][b].V[1];
+			BmImTmp2.Im[2] = getGCP[a][b].V[2];
+			BmImTmp2.UT = getGCP[a][b].UTC;
+			BmImTmp.push_back(BmImTmp2);
+		}
+		BmIm.push_back(BmImTmp);
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////
 //功能：15状态卡尔曼滤波主程序

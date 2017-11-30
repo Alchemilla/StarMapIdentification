@@ -35,7 +35,9 @@ public:
 	void EKF6StateForStarAB2(int m, Quat *qA, Quat *qB, Quat * qTrue, Gyro *wMeas);
 	void EKF6StateForStarAB3(int m, Quat *qA, Quat *qB, Quat * qTrue, Gyro *wMeas);
 	//针对星图识别矢量进行姿态确定
-	void EKF6StateForStarMap(int m, Quat *qA, Quat *qB, Quat * qTrue, Gyro *wMeas);
+	void EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vector<STGData>stg);
+	void Measurement(vector<BmImStar> BmIm, double *Att, MatrixXd &matH, MatrixXd &matDetZ);
+	void GetImBm(vector<vector<StarGCP >>getGCP, const StarCaliParam Param, vector<vector<BmImStar >>BmIm);
 	//添加了陀螺尺度和安装
 	void EKF15State(vector<STGData> AttData, Quat *EKFres, double *xest_store);
 

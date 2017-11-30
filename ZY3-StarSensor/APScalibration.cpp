@@ -586,11 +586,11 @@ void APScalibration::Calibrate5ParamKalman(vector<vector<StarGCP>>getGCP)
 					Xa = 1024 - getGCP[i][a].y;		Ya = getGCP[i][a].x;
 					Xb = 1024 - getGCP[i][b].y;		Yb = getGCP[i][b].x;
 					//真实数据使用
-					/*Xa = 1024 - getGCP[i][a].y - 512;			Ya = getGCP[i][a].x - 512;
-					Xb = 1024 - getGCP[i][b].y - 512;		Yb = getGCP[i][b].x - 512;*/
+					//Xa = 1024 - getGCP[i][a].y - 512;			Ya = getGCP[i][a].x - 512;
+					//Xb = 1024 - getGCP[i][b].y - 512;		Yb = getGCP[i][b].x - 512;
 					//仿真的时候用
-					/*Xa = getGCP[i][a].x;		Ya = getGCP[i][a].y;
-					Xb = getGCP[i][b].x;		Yb = getGCP[i][b].y;*/
+					//Xa = getGCP[i][a].x;		Ya = getGCP[i][a].y;
+					//Xb = getGCP[i][b].x;		Yb = getGCP[i][b].y;
 
 					//模型
 					double ra2 = (Xa - Xest[0]) * (Xa - Xest[0]) + (Ya - Xest[1]) * (Ya - Xest[1]);
