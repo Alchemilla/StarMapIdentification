@@ -2398,9 +2398,9 @@ void AttDetermination::EKF6StateForStarAB3(int m, Quat *qB, Quat *qC, Quat * qTr
 //////////////////////////////////////////////////////////////////////////
 void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vector<STGData>stg)
 {	
-	double GyDat[3], GyTran[3];
 	int nGyro = stg.size();
-	double *UT = new double[nGyro];
+	int nQuat = BmIm.size();
+	double GyDat[3], GyTran[3];	
 	Gyro *wMeas = new Gyro[nGyro];
 	double gyIns[9];
 	memcpy(gyIns, GyroIns, sizeof(GyroIns));
@@ -2411,16 +2411,22 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 		GyDat[0] = stg.at(i).g1, GyDat[1] = stg.at(i).g3, GyDat[2] = stg.at(i).g5;
 		mbase.Multi(gyIns, GyDat, GyTran, 3, 3, 1);
 		wMeas[i].x = GyTran[0] / 180 * PI, wMeas[i].y = GyTran[1] / 180 * PI, wMeas[i].z = GyTran[2] / 180 * PI;
-		UT[i] = stg[i].utgyro;
+		wMeas[i].UTC = stg.at(i).utgyro;
 		Quat aps;
 		aps.UTC = stg.at(i).StarA.UTC;
 		aps.Q0 = stg.at(i).StarA.Q0; aps.Q1 = stg.at(i).StarA.Q1;
 		aps.Q2 = stg.at(i).StarA.Q2; aps.Q3 = stg.at(i).StarA.Q3;
 		APSdat.push_back(aps);
 	}
-	Quat *Quat_inter = new Quat[nGyro];
 	alinAPS(APSdat);//乘以安装矩阵
-	mbase.QuatInterpolation(APSdat, UT, nGyro, Quat_inter);
+
+	double *UT = new double[nQuat];
+	for (int i=0;i<nQuat;i++)
+	{
+		UT[i] = BmIm[i][0].UT;
+	}
+	Quat *Quat_inter = new Quat[nQuat];
+	mbase.QuatInterpolation(APSdat, UT, nQuat, Quat_inter);
 
 	double sig = 5. / 3600 * PI / 180;
 	double w, dt, qw1, qw2, qw3, qw4, qmm1, qmm2, qmm3, qe11, qe22, qe33, qe44;
@@ -2437,18 +2443,22 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 	eye66 << eye33, zero33, zero33, eye33;
 
 	//预先计算估计四元数的数量
-	int nQuat = BmIm.size();
 	double utStart = BmIm[0][0].UT;
 	int a = 1, b = 0;
-	for (int i = 1; i < nGyro;)
+	int ii = 0;
+	while ((wMeas[ii].UTC - utStart)<0)
 	{
-		if (a < nQuat && (BmIm[a][0].UT - utStart) <= (UT[i] - utStart))
+		 ii++;
+	}
+	for (int i = ii; i < nGyro;)
+	{
+		if (a < nQuat && (BmIm[a][0].UT - utStart) <= (wMeas[i].UTC - utStart))
 		{
 			utStart = BmIm[a][0].UT;	 a++;		b++;
 		}
 		else
 		{
-			utStart = UT[i];	 i++;		 b++;
+			utStart = wMeas[i].UTC;	 i++;		 b++;
 		}
 	}
 	MatrixXd Qest(b + 1, 4), we(b + 1, 3), xest(b + 1, 6);
@@ -2469,7 +2479,7 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 	xest_store[0] = wMeas[0].UTC; xest_store[1] = 0; xest_store[2] = 0;
 	xest_store[3] = 0; xest_store[4] = 0, xest_store[5] = 0;
 
-	for (int i = 1; i < nGyro;)
+	for (int i = ii; i < nGyro;)
 	{
 		if (a < nQuat && (BmIm[a][0].UT - utStart) <= (wMeas[i].UTC - utStart))
 		{
@@ -2594,7 +2604,7 @@ void AttDetermination::Measurement(vector<BmImStar> BmIm, double *Att,
 //日期：2017.11.29
 //////////////////////////////////////////////////////////////////////////
 void AttDetermination::GetImBm(vector<vector<StarGCP>> getGCP,
-	const StarCaliParam Param, vector<vector<BmImStar>> BmIm)
+	const StarCaliParam Param, vector<vector<BmImStar>> &BmIm)
 {	
 	double Wob[3];
 	double X, Y, DetX, DetY;
