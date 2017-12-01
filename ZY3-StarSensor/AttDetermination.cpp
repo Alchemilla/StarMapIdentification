@@ -2398,8 +2398,15 @@ void AttDetermination::EKF6StateForStarAB3(int m, Quat *qB, Quat *qC, Quat * qTr
 //////////////////////////////////////////////////////////////////////////
 void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vector<STGData>stg)
 {	
+	//删掉四元数之前的陀螺数据
+	double utStart = BmIm[0][0].UT;
+	int ii = 0;
+	while ((stg[ii].utgyro - utStart) < 0)
+	{		ii++;		}
+	stg.erase(stg.begin(), stg.begin() + ii);
+
+	//乘以陀螺安装
 	int nGyro = stg.size();
-	int nQuat = BmIm.size();
 	double GyDat[3], GyTran[3];	
 	Gyro *wMeas = new Gyro[nGyro];
 	double gyIns[9];
@@ -2420,6 +2427,7 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 	}
 	alinAPS(APSdat);//乘以安装矩阵
 
+	int nQuat = BmIm.size();
 	double *UT = new double[nQuat];
 	for (int i=0;i<nQuat;i++)
 	{
@@ -2442,15 +2450,9 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 	r << pow(sig, 2)*eye33;//星敏噪声	
 	eye66 << eye33, zero33, zero33, eye33;
 
-	//预先计算估计四元数的数量
-	double utStart = BmIm[0][0].UT;
+	//预先计算估计四元数的数量	
 	int a = 1, b = 0;
-	int ii = 0;
-	while ((wMeas[ii].UTC - utStart)<0)
-	{
-		 ii++;
-	}
-	for (int i = ii; i < nGyro;)
+	for (int i = 0; i < nGyro;)
 	{
 		if (a < nQuat && (BmIm[a][0].UT - utStart) <= (wMeas[i].UTC - utStart))
 		{
@@ -2479,7 +2481,7 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 	xest_store[0] = wMeas[0].UTC; xest_store[1] = 0; xest_store[2] = 0;
 	xest_store[3] = 0; xest_store[4] = 0, xest_store[5] = 0;
 
-	for (int i = ii; i < nGyro;)
+	for (int i = 1; i < nGyro;)
 	{
 		if (a < nQuat && (BmIm[a][0].UT - utStart) <= (wMeas[i].UTC - utStart))
 		{
