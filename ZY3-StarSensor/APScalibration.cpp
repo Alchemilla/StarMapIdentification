@@ -1574,14 +1574,14 @@ void APScalibration::OutputAllGCP(vector<vector<StarGCP>> getGCP)
 //功能：读取所有的控制点
 //输入：Allgcp.txt，在控制点目录下
 //输出：getGCP，所有的控制点
-//注意：
+//注意：12.04改workpath为完整路径
 //作者：GZC
 //日期：2017.03.16
 //////////////////////////////////////////////////////////////////////////
 void APScalibration::ReadAllGCP(vector<vector<StarGCP>> &getGCP)
 {
-	string GCPpath = workpath + "控制点\\Allgcp.txt";
-	FILE *fp = fopen(GCPpath.c_str(), "r");
+	//string GCPpath = workpath + "控制点\\Allgcp.txt";
+	FILE *fp = fopen(workpath.c_str(), "r");
 	if (fp == NULL) perror("Error opening file");
 	int num;
 	vector<StarGCP > getGCPtmp;

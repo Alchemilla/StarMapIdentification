@@ -285,8 +285,7 @@ void AttDetermination::OutputFile(vector<Quat>Att,string FileName)
 }
 void AttDetermination::OutputFile(Quat *Att,int num, string FileName)
 {
-	string path = workpath;
-	path = path.substr(0, path.rfind('\\')+1) +FileName;
+	string path = workpath + FileName;
 	FILE *fp = fopen(path.c_str(), "w");
 	fprintf(fp, "%d\n", num);
 	for (int a = 0; a < num; a++)
