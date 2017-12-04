@@ -126,5 +126,6 @@ struct BmImStar
 {
 	double UT;
 	double Im[3], Bm[3];
+
 };
 #endif

@@ -2598,7 +2598,7 @@ void AttDetermination::Measurement(vector<BmImStar> BmIm, double *Att,
 }
 
 //////////////////////////////////////////////////////////////////////////
-//功能：得到光轴在惯性系和星敏坐标系矢量
+//功能：得到光轴在惯性系和本体系矢量
 //输入：星点控制点，标定参数
 //输出：
 //注意：相当于多光轴联合滤波
@@ -2641,32 +2641,6 @@ void AttDetermination::GetImBm(vector<vector<StarGCP>> getGCP,
 		}
 		BmIm.push_back(BmImTmp);
 	}
-	GetImRm(BmIm);
-}
-
-//////////////////////////////////////////////////////////////////////////
-//功能：将光轴从星敏坐标系转换到本体坐标系
-//输入：光轴在星敏坐标系和惯性系矢量
-//输出：光轴在本体坐标系和惯性系矢量
-//注意：
-//作者：GZC
-//日期：2017.12.04
-//////////////////////////////////////////////////////////////////////////
-void AttDetermination::GetImRm(vector<vector<BmImStar>>& BmIm)
-{
-	double Aalin[9];
-	memcpy(Aalin, Ainstall, sizeof(Ainstall));
-	mbase.invers_matrix(Aalin, 3);//转换为Cbr	
-	for (int a=0;a<BmIm.size();a++)
-	{
-		for (int b=0;b<BmIm[a].size();b++)
-		{
-			double Rm[3],Bm[3];
-			Rm[0] = BmIm[a][b].Bm[0]; Rm[1] = BmIm[a][b].Bm[1]; Rm[2] = BmIm[a][b].Bm[2];
-			mbase.Multi(Aalin, Rm, Bm, 3, 3, 1);
-			BmIm[a][b].Bm[0] = Bm[0]; BmIm[a][b].Bm[1] = Bm[1]; BmIm[a][b].Bm[2] = Bm[2];
-		}
-	}	
 }
 
 //////////////////////////////////////////////////////////////////////////
