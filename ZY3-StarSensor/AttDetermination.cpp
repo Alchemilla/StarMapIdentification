@@ -2513,10 +2513,10 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 			/****************星敏测量值更新***************/
 			double Cbj[9];
 			mbase.quat2matrix(Qest(i, 0), Qest(i, 1), Qest(i, 2), Qest(i, 3), Cbj);//Cbj
-			int num = BmIm[i].size();
+			int num = BmIm[a].size();
 			MatrixXd mH(3 * num, 6), mDetZ(3 * num, 1), k(6, 3 * num);
 			MatrixXd r1 = pow(sig, 2)*MatrixXd::Identity(3 * num, 3 * num);
-			Measurement(BmIm[i], Cbj, mH, mDetZ);
+			Measurement(BmIm[a], Cbj, mH, mDetZ);
 			k = p*mH.transpose()*(mH*p*mH.transpose() + r1).inverse();//k(6*6)
 			p = (eye66 - k*mH)*p;
 			xest.row(i) = xest.row(i) + (k*mDetZ).transpose();		
@@ -2565,10 +2565,16 @@ void AttDetermination::EKF6StateForStarMap(vector < vector<BmImStar>>BmIm, vecto
 			xest_store[6 * i + 0] = wMeas[i].UTC; xest_store[6 * i + 1] = xest(b, 1); xest_store[6 * i + 2] = xest(b, 2);
 			xest_store[6 * i + 3] = xest(b, 3); xest_store[6 * i + 4] = xest(b, 4); xest_store[6 * i + 5] = xest(b, 5);
 
+			if (i%500==0)
+			{
+				printf("已运行到第%d个陀螺值\n",i);
+			}
 			b++;
 			i++;
 		}
 	}	
+
+	OutputFile(quatEst, nGyro, "\\StarMap滤波结果.txt");
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -617,6 +617,6 @@ int main(int argc, char* argv[])
 	ZY3_ST.match_tolerance = 500 * 5e-6;
 	ZY3_ST.Match_Stars_Relative_To_Basis_Pair();
 	ZY3_ST.Q_Method();*/
-	PlaySound(TEXT("C:\\WINDOWS\\Media\\Alarm01.wav"), NULL, SND_FILENAME);
+	//PlaySound(TEXT("C:\\WINDOWS\\Media\\Alarm01.wav"), NULL, SND_FILENAME);
 	return 0;
 }
