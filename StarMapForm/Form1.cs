@@ -103,7 +103,7 @@ namespace StarMapForm
             exep.StartInfo.Arguments = textBox4.Text +" 1";
             exep.StartInfo.CreateNoWindow = true;
             exep.StartInfo.UseShellExecute = false;
-            ShowInfo("根据滤波结果计算严密几何模型\n开始处理...");
+            ShowInfo("几何模型开始处理...");
             exep.Start();
             exep.WaitForExit();
             int returnValue = exep.ExitCode;
@@ -124,7 +124,7 @@ namespace StarMapForm
             exep.StartInfo.Arguments = textBox4.Text + " 2";
             exep.StartInfo.CreateNoWindow = true;
             exep.StartInfo.UseShellExecute = false;
-            ShowInfo("根据滤波结果计算严密几何模型\n开始处理...");
+            ShowInfo("几何定标开始处理...");
             exep.Start();
             exep.WaitForExit();
             int returnValue = exep.ExitCode;

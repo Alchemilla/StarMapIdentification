@@ -63,6 +63,8 @@ public:
 	//四元数内插，四元数顺序为0123，其中0为标量
 	void QuatInterpolation(Quat *Att, int AttNum, double *UTC, int interNum, Quat *&m_att);
 	void QuatInterpolation(vector<Quat>Att, double *UTC, int interNum, Quat *&m_att);
+	//轨道拉格朗日内插
+	void LagrangianInterpolation(Orbit_Ep *Eph, long EphNum, double UTC, Orbit_Ep &m_point, int order);
 	//解析STG要用到的三个小函数
 	double RevDouble(unsigned char a[]);
 	float ReverseQ(long Qtemp);

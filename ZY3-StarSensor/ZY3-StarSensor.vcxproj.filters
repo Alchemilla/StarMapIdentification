@@ -55,6 +55,9 @@
     <ClInclude Include="matrix.h">
       <Filter>0-基本函数</Filter>
     </ClInclude>
+    <ClInclude Include="EOP_files.h">
+      <Filter>0-基本函数</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StarIdentify.cpp">

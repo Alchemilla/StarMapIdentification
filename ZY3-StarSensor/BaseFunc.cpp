@@ -768,6 +768,58 @@ void BaseFunc::QuatInterpolation(vector<Quat>Att, double *UTC, int interNum, Qua
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：轨道拉格朗日内插
+// 输入:
+//		StrOrbitPoint *Eph：存储轨道点的结构体数组指针
+//		long EphNum：		轨道点个数
+//		double UT：			内插轨道点所对应的的累计秒
+//		int order：			拉格朗日内插次数,默认是7次
+// 输出：
+//		StrOrbitPoint &m_point：内插得到的轨道点
+//注意：四元数时间范围要大于陀螺时间UTC范围
+//作者：GZC
+//日期：2017.03.23
+//////////////////////////////////////////////////////////////////////////
+void BaseFunc::LagrangianInterpolation(Orbit_Ep *Eph, long EphNum, double UTC, Orbit_Ep &m_point, int order)
+{
+	memset(&m_point, 0, sizeof(Orbit_Ep));
+	m_point.UTC = UTC;
+	// 搜索内插用的起始和结束点(对分查找)
+	double up = 1, down = 1;
+	long posstart, posend, pos;
+	posstart = 0, posend = EphNum - 1, pos = 0;
+	while (posstart < posend)
+	{
+		pos = (posstart + posend) / 2;
+		if (pos == posstart) break;	// 记得加上这句判断,否则会陷入死循环
+		if ((Eph[pos].UTC <= UTC) && (UTC < Eph[pos + 1].UTC))
+			break;
+		if (Eph[pos].UTC <= UTC)
+			posstart = pos;
+		else
+			posend = pos;
+	}
+	if (pos - order / 2 < 0)			posstart = 0;
+	else						posstart = pos - order / 2;
+	if (pos + order / 2 >= EphNum - 1)	posend = EphNum - 1;
+	else						posend = pos + order / 2;
+	int i, j;
+	// 开始进行内插
+	for (j = posstart; j <= posend; j++)
+	{
+		up = 1, down = 1;
+		for (i = posstart; i <= posend; i++)
+			if (i != j) { up *= (UTC - Eph[i].UTC);	down *= (Eph[j].UTC - Eph[i].UTC); }
+		m_point.X += Eph[j].X*up / down;
+		m_point.Y += Eph[j].Y*up / down;
+		m_point.Z += Eph[j].Z*up / down;
+		m_point.Xv += Eph[j].Xv*up / down;
+		m_point.Yv += Eph[j].Yv*up / down;
+		m_point.Zv += Eph[j].Zv*up / down;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：产生一个符合正态分布的随机数
 //输入：mean:均值，sigma:方差
 //输出：函数分布图

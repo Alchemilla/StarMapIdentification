@@ -2677,6 +2677,66 @@ void AttDetermination::GetImRm(vector<vector<BmImStar>>& BmIm)
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：ZY3根据星敏和轨道得到光行差修正后，星敏之间的角度
+//输入：星敏数据，轨道数据
+//输出：星敏光行差修正结果
+//注意：
+//作者：GZC
+//日期：2016.12.06	更新：2017.12.04
+//////////////////////////////////////////////////////////////////////////
+bool AttDetermination::Aberration(vector<vector<BmImStar>>& BmIm, vector<Orbit_Ep> EpDat)
+{
+	int m = EpDat.size();
+	Orbit_Ep *Epdata = new Orbit_Ep[m];
+	Orbit_Ep Epdatainter;
+	for (int i = 0; i < m; i++)
+	{
+		memcpy(&Epdata[i], &EpDat[i], sizeof(EpDat[i]));
+	}
+	double jd0, mjd, second, PosEarth[6], GCRS2ITRS[9], SatePos[3], SateVel[3], LightVelocity = 299792458.0;
+	int year, month, day, hour, minute;
+	memset(PosEarth, 0, sizeof(double) * 6);
+	Cal2JD(2009, 1, 1, 0., &jd0, &mjd);
+	//设置星历参数路径和EOP参数路径
+	char *JPLPath = "C:\\Users\\wcsgz\\Documents\\2-CProject\\9-ZY3\\Need\\2000_2020_421.txt";
+	char* EOPPath = "C:\\Users\\wcsgz\\Documents\\2-CProject\\9-ZY3\\Need\\EOP00.txt";
+
+	for (int a = 0; a < BmIm.size(); a++)
+	{
+		vector<BmImStar>BmImTmp;
+		for (int b = 0; b < BmIm[a].size(); b++)
+		{
+			double za[3];//星敏光轴相关定义
+			za[0] = BmIm[a][b].Im[0], za[1] = BmIm[a][b].Im[1], za[2] = BmIm[a][b].Im[2];
+			mbase.LagrangianInterpolation(Epdata, m, BmIm[a][b].UT, Epdatainter, 7);
+			SatePos[0] = Epdatainter.X, SatePos[1] = Epdatainter.Y, SatePos[2] = Epdatainter.Z;
+			SateVel[0] = Epdatainter.Xv, SateVel[1] = Epdatainter.Yv, SateVel[2] = Epdatainter.Zv;
+			FromSecondtoYMD(mjd, BmIm[a][b].UT-28800, year, month, day, hour, minute, second);
+			PlanetEph(year, month, day, hour, minute, second, JPLPath, EOPPath, 2, 11, PosEarth);
+			IAU2000ABaseCIOTerToCel(year, month, day, hour, minute, second, EOPPath, 8, GCRS2ITRS, SatePos, SateVel);
+			//卫星在GCRS坐标系下的速度(考虑了地球相对太阳的速度)
+			SateVel[0] = SateVel[0] + PosEarth[3], SateVel[1] = SateVel[1] + PosEarth[4], SateVel[2] = SateVel[2] + PosEarth[5];
+			double VelRa[3], SateVelocity, costhetaA, sinthetaA;
+			mbase.crossmultnorm(za, SateVel, VelRa);//修正旋转轴
+			SateVelocity = sqrt(pow(SateVel[0], 2) + pow(SateVel[1], 2) + pow(SateVel[2], 2));
+			costhetaA = (za[0] * SateVel[0] + za[1] * SateVel[1] + za[2] * SateVel[2]) / sqrt(za[0] * za[0] + za[1] * za[1] + za[2] * za[2]) / SateVelocity;
+			sinthetaA = sqrt(1 - pow(costhetaA, 2));//星敏A光轴与速度夹角			
+			double angleA, quatA[4], RotA[9];
+			angleA = -(SateVelocity / LightVelocity)*sinthetaA;
+			//修正星敏光轴的旋转四元数
+			quatA[0] = cos(angleA / 2);
+			quatA[1] = VelRa[0] * sin(angleA / 2), quatA[2] = VelRa[1] * sin(angleA / 2), quatA[3] = VelRa[2] * sin(angleA / 2);
+			//转换为旋转矩阵
+			mbase.quat2matrix(quatA[1], quatA[2], quatA[3], quatA[0], RotA);
+			double zafix[3], zbfix[3], StarSensorAngle, detza, detzb;
+			mbase.Multi(RotA, za, zafix, 3, 3, 1);
+			BmIm[a][b].Im[0] = zafix[0], BmIm[a][b].Im[1] = zafix[1], BmIm[a][b].Im[2] = zafix[2];
+		}
+	}
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：15状态卡尔曼滤波主程序
 //输入：AttData：STG解析出的姿态数据	
 //输出：EKFatt：姿态确定结果

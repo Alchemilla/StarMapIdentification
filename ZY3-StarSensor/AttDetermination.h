@@ -2,6 +2,7 @@
 #include "SateBase.h"
 #include "BaseFunc.h"
 #include "AttSim.h"
+#include "EOP_files.h"
 class AttDetermination
 {
 public:
@@ -39,6 +40,7 @@ public:
 	void Measurement(vector<BmImStar> BmIm, double *Att, MatrixXd &matH, MatrixXd &matDetZ);
 	void GetImBm(vector<vector<StarGCP >>getGCP, const StarCaliParam Param, vector<vector<BmImStar >>&BmIm);
 	void GetImRm(vector<vector<BmImStar >>&BmIm);
+	bool Aberration(vector<vector<BmImStar>>& BmIm, vector<Orbit_Ep> EpDat);
 	//添加了陀螺尺度和安装
 	void EKF15State(vector<STGData> AttData, Quat *EKFres, double *xest_store);
 

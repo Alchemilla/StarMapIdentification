@@ -575,6 +575,39 @@ bool ParseSTG::ParseZY302_SoftStarData(string StarDataPath, vector<vector<StarGC
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：读取资三02星轨道txt数据
+//输入：sOrb，ZY3-02轨道数据
+//输出：轨道vector
+//注意：这个是星上GPS数据
+//日期：2017.04.25
+//////////////////////////////////////////////////////////////////////////
+bool  ParseSTG::ReadZY302OrbTXT2(string sOrb, vector<Orbit_Ep> &arr_Orb)
+{
+	if (sOrb.empty())
+		return false;
+	FILE *fp = fopen(sOrb.c_str(), "r");
+	if (!fp)
+		return false;
+	arr_Orb.clear();
+
+	int num;
+	Orbit_Ep Orb;
+	char ss[1024];
+	fgets(ss, 1024, fp);
+	fgets(ss, 1024, fp);
+	fscanf(fp, "%d\n", &num);//跳过前两行读取第三行
+	for (size_t i = 0; i < num; i++)
+	{
+		fscanf(fp, "%*s\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+			&Orb.UTC, &Orb.X, &Orb.Y, &Orb.Z, &Orb.Xv, &Orb.Yv, &Orb.Zv);
+		arr_Orb.push_back(Orb);
+	}
+
+	fclose(fp);
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：读取星时文件
 //输入：STItimepath，STI星时文件
 //输出：星时指针

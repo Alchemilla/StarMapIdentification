@@ -24,6 +24,11 @@ int main(int argc, char* argv[])
 		ZY302CaliParam.y0 = 534.552;
 		ZY302CaliParam.k1 = -1.066e-08;
 		ZY302CaliParam.k2 = 8e-15;
+		//ZY302CaliParam.f = 43.3/0.015;
+		//ZY302CaliParam.x0 = 512;
+		//ZY302CaliParam.y0 = 512;
+		//ZY302CaliParam.k1 = 0;
+		//ZY302CaliParam.k2 = 0;
 		ZY3_calibrate.workpath = argv[2];
 		vector<vector<StarGCP>>getGCPall;
 		ZY3_calibrate.ReadAllGCP(getGCPall);
@@ -32,11 +37,15 @@ int main(int argc, char* argv[])
 		vector<STGData>stg;
 		string stgPath = argv[3];
 		ZY3_STG.ParseZY302_STG(stgPath, stg);
+		string sOrb = stgPath.substr(0,stgPath.rfind('.')+1)+"EPH";
+		vector<Orbit_Ep>arr_Orb;
+		ZY3_STG.ReadZY302OrbTXT2(sOrb,arr_Orb);
 
 		AttDetermination ZY3_AD;
 		ZY3_AD.workpath = stgPath.substr(0, stgPath.rfind('\\')+1);
 		vector<vector<BmImStar>>BmIm;
 		ZY3_AD.GetImBm(getGCPall, ZY302CaliParam, BmIm);
+		ZY3_AD.Aberration(BmIm, arr_Orb);
 		ZY3_AD.EKF6StateForStarMap(BmIm, stg);
 	}
 	//////////////////////////////////////////////////////////////////////////
