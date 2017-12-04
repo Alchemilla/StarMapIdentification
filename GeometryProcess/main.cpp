@@ -70,10 +70,10 @@ int main(int argc, char* argv[])
 		}
 		if (pflow != NULL)		delete[]pflow;		pflow = NULL;
 	}
-	else
+	else if (argc == 3 && atoi(argv[2]) == 1)
 	{
 		//////////////////////////////////////////////////////////////////////////
-		//功能：以下为资三02星定标和定位模型
+		//功能：以下为资三02星定位模型
 		//日期：2017.04.25
 		/////////////////////////////////////////////////////////////////////////
 		WorkFlow_ZY3 *pflow2 = new WorkFlow_ZY3();
@@ -84,7 +84,21 @@ int main(int argc, char* argv[])
 		pflow2->AccuracyVerify(argv[1]);
 		//pflow2->ModelVerify();
 		if (pflow2 != NULL)		delete[]pflow2;		pflow2 = NULL;
-
+	}
+	else if (argc == 3 && atoi(argv[2]) == 2)
+	{
+		//////////////////////////////////////////////////////////////////////////
+		//功能：以下为资三02星定标模型
+		//日期：2017.12.04
+		/////////////////////////////////////////////////////////////////////////
+		WorkFlow_ZY3 *pflow2 = new WorkFlow_ZY3();
+		//外方位元素检校
+		pflow2->CalibrationModel2(argv[1], argv2);
+		//严密模型构建
+		pflow2->GenerateRigorousModel(argv[1], argv2);
+		pflow2->AccuracyVerify(argv[1]);
+		//pflow2->ModelVerify();
+		if (pflow2 != NULL)		delete[]pflow2;		pflow2 = NULL;
 		//////////////////////////////////////////////////////////////////////////
 		//功能：以下为资三01星定标和定位模型
 		//日期：2016.12.21
@@ -128,7 +142,7 @@ int main(int argc, char* argv[])
 		////pflow->pModel->FromLatLon2XY(lat, lon, h, x, y);
 	}
 
-	PlaySound(TEXT("C:\\WINDOWS\\Media\\Alarm01.wav"), NULL, NULL);
+	//PlaySound(TEXT("C:\\WINDOWS\\Media\\Alarm01.wav"), NULL, NULL);
 	return 0;
 }
 

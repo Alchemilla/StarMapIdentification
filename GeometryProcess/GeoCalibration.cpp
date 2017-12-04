@@ -132,25 +132,33 @@ void GeoCalibration::ExtOrientCali(GeoOrbit *orbit, GeoAttitude *att, GeoTime *t
 		m_base.Eulor2Matrix(phi,omg,kap,213,Ru);
 		iter_phi = abs(ATL[0]), iter_omg = abs(ATL[1]), iter_kap = abs(ATL[2]);
 	}
-	// 开始计算精度
-	double mean = 0;
-	m_base.Eulor2Matrix(phi, omg, kap, 213, Ru);
-	double Ru0[9];
-	m_base.Multi(m_body2att.R, Ru, Ru0, 3, 3, 3);
-	memcpy(m_body2att.R, Ru0, sizeof(double)*9);
-	ComputerGlobalParam();
-	double dxy, dx, dy;
-	for(int i=0; i<num; i++)
-	{
-		FromLatLon2XY(ZY3_GCP[i].lat/180*PI,ZY3_GCP[i].lon/180*PI, ZY3_GCP[i].h, dx, dy);
-		dx = ZY3_GCP[i].y - dx;
-		dy = ZY3_GCP[i].x - dy;
-		mean += (dx*dx + dy*dy);
-	}
-	mean = sqrt(mean/num);
-	printf("偏置补偿后精度：%lf像素\n", mean);	
+	OutputRu(phi, omg, kap);
+
+	//// 开始计算精度
+	//double mean = 0;
+	//m_base.Eulor2Matrix(phi, omg, kap, 213, Ru);
+	//double Ru0[9];
+	//m_base.Multi(m_body2att.R, Ru, Ru0, 3, 3, 3);
+	//memcpy(m_body2att.R, Ru0, sizeof(double)*9);
+	//ComputerGlobalParam();
+	//double dxy, dx, dy;
+	//for(int i=0; i<num; i++)
+	//{
+	//	FromLatLon2XY(ZY3_GCP[i].lat/180*PI,ZY3_GCP[i].lon/180*PI, ZY3_GCP[i].h, dx, dy);
+	//	dx = ZY3_GCP[i].y - dx;
+	//	dy = ZY3_GCP[i].x - dy;
+	//	mean += (dx*dx + dy*dy);
+	//}
+	//mean = sqrt(mean/num);
+	//printf("偏置补偿后精度：%lf像素\n", mean);	
 }
 
+void GeoCalibration::OutputRu(double phi, double omg, double kap)
+{
+	char* ruPath = "D:\\2_ImageData\\ZY3-02\\1-定位精度\\503\\标定参数\\2016-07-02GZC.txt";
+	FILE *fp = fopen(ruPath, "w");
+	fprintf(fp, "%s\n%.9f\n%.9f\n%.9f\n", "phi omg kap", phi, omg, kap);
+}
 /////////////////////////////////////////////
 //功能：检校线性模型2
 //输入：面阵几何模型，控制点

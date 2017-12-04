@@ -27,6 +27,7 @@ namespace StarMapForm
         {
             textBox2.Text = @"D:\2_ImageData\ZY3-02\星图处理\0707\星图\控制点\Allgcp.txt";
             textBox3.Text = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\0707.STG";
+            textBox4.Text = @"D:\2_ImageData\ZY3-02\1-定位精度\579";
         }
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -51,6 +52,16 @@ namespace StarMapForm
             else { ShowInfo("未打开STG文件"); }
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openDlg = new OpenFileDialog();
+            if (openDlg.ShowDialog() == DialogResult.OK)
+            {
+                textBox4.Text = openDlg.FileName.ToString(); //获得文件路径                
+                ShowInfo("成功设置输出文件路径");
+            }
+            else { ShowInfo("未设置输出文件路径"); }
+        }
         /// <summary>
         /// 星图姿态确定
         /// </summary>
@@ -63,14 +74,14 @@ namespace StarMapForm
             exep.StartInfo.Arguments = "1 " + textBox2.Text + " " + textBox3.Text;
             exep.StartInfo.CreateNoWindow = true;
             exep.StartInfo.UseShellExecute = false;
-            ShowInfo("开始处理...");
+            ShowInfo("根据星点矢量进行姿态确定\n开始处理...");
             exep.Start();
             exep.WaitForExit();
             int returnValue = exep.ExitCode;
             if (returnValue == 0)
-            { ShowInfo("数据处理完毕"); }
+            { ShowInfo("星图数据处理完毕"); }
             else
-            { ShowInfo("数据有问题"); }
+            { ShowInfo("星图数据有问题"); }
         }
 
         //信息实时显示
@@ -81,7 +92,47 @@ namespace StarMapForm
             textBox1.ScrollToCaret(); //滚动到光标处
         }
 
-  
+        private void button5_Click(object sender, EventArgs e)
+        {
+            string sourcePath = textBox3.Text.Substring(0,textBox3.Text.LastIndexOf('\\')+1)+"StarMap滤波结果.txt";
+            string targetPath = textBox4.Text + "\\"+
+                textBox4.Text.Substring(textBox4.Text.LastIndexOf('\\') + 1)+".ATT";
+            System.IO.File.Copy(sourcePath, targetPath, true);
+            Process exep = new Process();
+            exep.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "GeometryProcess.exe";
+            exep.StartInfo.Arguments = textBox4.Text +" 1";
+            exep.StartInfo.CreateNoWindow = true;
+            exep.StartInfo.UseShellExecute = false;
+            ShowInfo("根据滤波结果计算严密几何模型\n开始处理...");
+            exep.Start();
+            exep.WaitForExit();
+            int returnValue = exep.ExitCode;
+            if (returnValue == 0)
+            { ShowInfo("几何模型处理完毕"); }
+            else
+            { ShowInfo("数据有问题"); }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            string sourcePath = textBox3.Text.Substring(0, textBox3.Text.LastIndexOf('\\') + 1) + "StarMap滤波结果.txt";
+            string targetPath = textBox4.Text + "\\" +
+                textBox4.Text.Substring(textBox4.Text.LastIndexOf('\\') + 1) + ".ATT";
+            System.IO.File.Copy(sourcePath, targetPath, true);
+            Process exep = new Process();
+            exep.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "GeometryProcess.exe";
+            exep.StartInfo.Arguments = textBox4.Text + " 2";
+            exep.StartInfo.CreateNoWindow = true;
+            exep.StartInfo.UseShellExecute = false;
+            ShowInfo("根据滤波结果计算严密几何模型\n开始处理...");
+            exep.Start();
+            exep.WaitForExit();
+            int returnValue = exep.ExitCode;
+            if (returnValue == 0)
+            { ShowInfo("几何模型处理完毕"); }
+            else
+            { ShowInfo("数据有问题"); }
+        }
     }
 
 

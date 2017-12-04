@@ -38,6 +38,10 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.button3 = new System.Windows.Forms.Button();
+            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.button5 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -55,6 +59,10 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.button6);
+            this.tabPage1.Controls.Add(this.button5);
+            this.tabPage1.Controls.Add(this.textBox4);
+            this.tabPage1.Controls.Add(this.button3);
             this.tabPage1.Controls.Add(this.textBox3);
             this.tabPage1.Controls.Add(this.textBox2);
             this.tabPage1.Controls.Add(this.button4);
@@ -70,23 +78,23 @@
             // 
             // textBox3
             // 
-            this.textBox3.Font = new System.Drawing.Font("宋体", 14.1F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.textBox3.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.textBox3.Location = new System.Drawing.Point(268, 123);
             this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(880, 61);
+            this.textBox3.Size = new System.Drawing.Size(880, 47);
             this.textBox3.TabIndex = 5;
             // 
             // textBox2
             // 
-            this.textBox2.Font = new System.Drawing.Font("宋体", 14.1F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.textBox2.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.textBox2.Location = new System.Drawing.Point(268, 48);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(880, 61);
+            this.textBox2.Size = new System.Drawing.Size(880, 47);
             this.textBox2.TabIndex = 4;
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(484, 314);
+            this.button4.Location = new System.Drawing.Point(59, 327);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(280, 157);
             this.button4.TabIndex = 3;
@@ -142,6 +150,44 @@
             this.textBox1.Size = new System.Drawing.Size(1193, 475);
             this.textBox1.TabIndex = 0;
             // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(59, 190);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(190, 74);
+            this.button3.TabIndex = 6;
+            this.button3.Text = "几何目录";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // textBox4
+            // 
+            this.textBox4.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.textBox4.Location = new System.Drawing.Point(268, 205);
+            this.textBox4.Name = "textBox4";
+            this.textBox4.Size = new System.Drawing.Size(880, 47);
+            this.textBox4.TabIndex = 7;
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(446, 327);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(280, 157);
+            this.button5.TabIndex = 8;
+            this.button5.Text = "严密模型";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(833, 327);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(280, 157);
+            this.button6.TabIndex = 9;
+            this.button6.Text = "外定标";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 30F);
@@ -173,6 +219,10 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button6;
     }
 }
 

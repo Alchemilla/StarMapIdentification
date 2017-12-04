@@ -66,6 +66,50 @@ int main(int argc, char* argv[])
 		//ZY3_calibrate.Calibrate5ParamKalman(getGCPall);
 		ZY3_calibrate.Calibrate5ParamMultiImg(getGCPall, 1);
 	}
+	else if(argc==4&&atoi(argv[1])==2)
+	{
+		//////////////////////////////////////////////////////////////////////////
+		//功能：得到所有星点坐标
+		//日期：2017.12.04
+		//////////////////////////////////////////////////////////////////////////
+		ParseSTG ZY3_STGSTI;
+		StarExtract ZY3_STMap;
+		StarIdentify ZY3_ST;
+		APScalibration ZY3_calibrate;
+		//string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0702\\星图\\";
+		string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\星图\\";
+		//string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0712\\星图\\";
+		//string workpath_ST = "D:\\2_ImageData\\ZY3-02\\星图处理\\0830\\星图\\";
+		ZY3_STMap.workpath = workpath_ST;
+		ZY3_ST.workpath = ZY3_STMap.workpath;
+		ZY3_calibrate.workpath = ZY3_STMap.workpath;
+		//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0702\\0702.STG";
+		string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0707\\0707.STG";
+		//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0712\\0712.STG";
+		//string argv1 = "D:\\2_ImageData\\ZY3-02\\星图处理\\0830\\0830.STG";
+		vector<STGData> ZY3_02STGdata;
+		ZY3_STGSTI.ParseZY302_STG(argv1, ZY3_02STGdata);
+		vector<vector<StarGCP>>getGCPall;
+		vector<StarGCP > getGCPalltmp(0);
+		int index;
+		const int nImg = 1090;
+		for (index = 5; index < nImg; )
+		{
+			printf("\r开始生成控制点，累加%d景...", index);
+			ZY3_STMap.StarPointExtraction(index);
+			//ZY3_ST.GetStarGCP0702(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+			ZY3_ST.GetStarGCP0707(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+			//ZY3_ST.GetStarGCP0712(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+			//ZY3_ST.GetStarGCP(ZY3_02STGdata, ZY3_STMap.StarPointExtract, index);
+			ZY3_calibrate.OptimizeGCP(ZY3_ST.getGCP, 100, index);//精化控制点
+			getGCPalltmp.assign(ZY3_ST.getGCP.begin(), ZY3_ST.getGCP.end());
+			getGCPall.push_back(getGCPalltmp);//累加控制点
+			ZY3_STMap.StarPointExtract.clear();//记得清除vector里的内容，不然内容会叠加
+			ZY3_ST.getGCP.clear();
+			index = index++;//输出间隔
+		}
+		ZY3_calibrate.OutputAllGCP(getGCPall);
+	}
 	else if (atoi(argv[2]) == 2)
 	{
 		//////////////////////////////////////////////////////////////////////////

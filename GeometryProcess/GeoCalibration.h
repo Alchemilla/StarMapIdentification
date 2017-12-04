@@ -20,7 +20,8 @@ public:
 	void calcRMS(GeoModelArray* pModel, string workpath, StrGCP *pGCP, int numGCP);
 	//根据真实控制点计算残差
 	void calcGCPerr(GeoModelArray* pModel, string strImg, string out, vector<strRMS>&acc, bool isPlus1);
-
+	//输出外定标参数
+	void OutputRu(double phi, double omg, double kap);
 public:
 	// 添加成像模型
 	void AddModel (GeoModelArray *model);

@@ -287,6 +287,8 @@ void AttDetermination::OutputFile(Quat *Att,int num, string FileName)
 {
 	string path = workpath + FileName;
 	FILE *fp = fopen(path.c_str(), "w");
+	fprintf(fp, "%s\n", "ZY302");
+	fprintf(fp, "%s\n", "ZY302");
 	fprintf(fp, "%d\n", num);
 	for (int a = 0; a < num; a++)
 	{
