@@ -75,8 +75,10 @@ public:
 	void OutputFile(Quat *Att, int num, string FileName);
 	void outputXest(int num, double * xest_store);
 	void outputXest15(int num, double * xest_store, string res);
+	//¶Ô±È
 	void compareEKFAndAOCC(Quat *StarDat,int n, string res);
 	void compareEKFAndAOCC(vector<Quat>StarDat, string res);
+	void compareAPSandStarMap();
 private:
 	const static double Ainstall[9], Binstall[9], Cinstall[9], GyroIns[9];
 };

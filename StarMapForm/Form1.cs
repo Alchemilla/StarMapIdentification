@@ -91,7 +91,11 @@ namespace StarMapForm
             textBox1.SelectionStart = textBox1.Text.Length; //设定光标位置
             textBox1.ScrollToCaret(); //滚动到光标处
         }
-
+        /// <summary>
+        /// 严密模型
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button5_Click(object sender, EventArgs e)
         {
             string sourcePath = textBox3.Text.Substring(0,textBox3.Text.LastIndexOf('\\')+1)+"StarMap滤波结果.txt";
@@ -112,7 +116,11 @@ namespace StarMapForm
             else
             { ShowInfo("数据有问题"); }
         }
-
+        /// <summary>
+        /// 模型外定标
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button6_Click(object sender, EventArgs e)
         {
             string sourcePath = textBox3.Text.Substring(0, textBox3.Text.LastIndexOf('\\') + 1) + "StarMap滤波结果.txt";
@@ -122,6 +130,29 @@ namespace StarMapForm
             Process exep = new Process();
             exep.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "GeometryProcess.exe";
             exep.StartInfo.Arguments = textBox4.Text + " 2";
+            exep.StartInfo.CreateNoWindow = true;
+            exep.StartInfo.UseShellExecute = false;
+            ShowInfo("几何定标开始处理...");
+            exep.Start();
+            exep.WaitForExit();
+            int returnValue = exep.ExitCode;
+            if (returnValue == 0)
+            { ShowInfo("几何模型处理完毕"); }
+            else
+            { ShowInfo("数据有问题"); }
+        }
+
+        /// <summary>
+        /// 对比各种结果
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button7_Click(object sender, EventArgs e)
+        {
+            string workpath = textBox3.Text.Substring(0, textBox3.Text.LastIndexOf('\\') + 1);
+            Process exep = new Process();
+            exep.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "GeometryProcess.exe";
+            exep.StartInfo.Arguments = workpath + " 11";
             exep.StartInfo.CreateNoWindow = true;
             exep.StartInfo.UseShellExecute = false;
             ShowInfo("几何定标开始处理...");

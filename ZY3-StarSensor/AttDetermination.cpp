@@ -3913,3 +3913,57 @@ void AttDetermination::compareEKFAndAOCC(vector<Quat>StarDat,string res)
 	delete[] UTC; UTC = NULL;
 	delete[] StarDatInt; StarDatInt = NULL;
 }
+
+void AttDetermination::compareAPSandStarMap()
+{
+	string strStg = workpath + "EKF滤波结果.txt";
+	string strSMap = workpath + "StarMap滤波结果.txt";
+	string strRes = workpath + "APS和StarMap结果对比.txt";
+	FILE *fp1 = fopen(strStg.c_str(), "r");
+	FILE *fp2 = fopen(strSMap.c_str(), "r");
+	FILE *fp3 = fopen(strRes.c_str(), "w");
+	int m,n;
+	fscanf(fp1, "%*s\n%*s\n%d\n", &m);
+	vector<Quat> stgVec(m);
+	fscanf(fp2, "%*s\n%*s\n%d\n", &n);
+	vector<Quat> mapVec(n);
+	for (int a = 0; a < m; a++)
+	{
+		fscanf(fp1, "%*s\t%lf\t%lf\t%lf\t%lf\t%lf\n", &stgVec[a].UTC, &stgVec[a].Q0,
+			&stgVec[a].Q1, &stgVec[a].Q2, &stgVec[a].Q3);
+	} 
+	for (int a = 0; a < n; a++)
+	{
+		fscanf(fp2, "%*s\t%lf\t%lf\t%lf\t%lf\t%lf\n", &mapVec[a].UTC, &mapVec[a].Q0,
+			&mapVec[a].Q1, &mapVec[a].Q2, &mapVec[a].Q3);
+	}
+	int ii = 0;
+	if (stgVec[0].UTC<mapVec[0].UTC)
+	{
+		while (stgVec[ii].UTC<mapVec[0].UTC)
+		{
+			ii++;
+		}
+		stgVec.erase(stgVec.begin(), stgVec.begin() + ii);
+	}
+	else
+	{
+		while (stgVec[0].UTC > mapVec[ii].UTC)
+		{
+			ii++;
+		}
+		mapVec.erase(mapVec.begin(), mapVec.begin() + ii);
+	}
+	int num = stgVec.size() > mapVec.size() ? mapVec.size() : stgVec.size();
+	double dq1[4], dq2[4], dq3[4];
+	for (int i = 0; i < num; i++)
+	{
+		//注意dq1里的负号
+		dq1[0] = -stgVec[i].Q0, dq1[1] = stgVec[i].Q1, dq1[2] = stgVec[i].Q2, dq1[3] = stgVec[i].Q3;
+		dq2[0] = mapVec[i].Q0, dq2[1] = mapVec[i].Q1, dq2[2] = mapVec[i].Q2, dq2[3] = mapVec[i].Q3;
+		mbase.quatMult2(dq1, dq2, dq3);
+		dq3[1] = dq3[1] * 2 / PI * 180 * 3600, dq3[2] = dq3[2] * 2 / PI * 180 * 3600, dq3[3] = dq3[3] * 2 / PI * 180 * 3600;
+		fprintf(fp3, "%.9f\t%.9f\t%.9f\t%.9f\n", stgVec[i].UTC, dq3[1], dq3[2], dq3[3]);
+	}
+	fcloseall();
+}

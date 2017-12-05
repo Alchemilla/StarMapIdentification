@@ -46,7 +46,17 @@ int main(int argc, char* argv[])
 		vector<vector<BmImStar>>BmIm;
 		ZY3_AD.GetImBm(getGCPall, ZY302CaliParam, BmIm);
 		ZY3_AD.Aberration(BmIm, arr_Orb);
-		ZY3_AD.EKF6StateForStarMap(BmIm, stg);
+		ZY3_AD.EKF6StateForStarMap(BmIm, stg);//根据星图进行定姿		
+	}
+	//////////////////////////////////////////////////////////////////////////
+	//功能：添加各种对比
+	//日期：2017.12.05
+	//////////////////////////////////////////////////////////////////////////	
+	else if (argc == 3 && atoi(argv[2]) == 11)
+	{
+		AttDetermination ZY3_AD;
+		ZY3_AD.workpath = argv[1];
+		ZY3_AD.compareAPSandStarMap();//对比星图和STG解析数据定姿
 	}
 	//////////////////////////////////////////////////////////////////////////
 	//功能：对STG数据中的APS进行姿态确定
