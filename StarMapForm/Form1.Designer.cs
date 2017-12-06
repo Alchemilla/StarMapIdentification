@@ -52,10 +52,11 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(-1, 1);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1205, 649);
+            this.tabControl1.Size = new System.Drawing.Size(1205, 758);
             this.tabControl1.TabIndex = 0;
             // 
             // tabPage1
@@ -73,7 +74,7 @@
             this.tabPage1.Location = new System.Drawing.Point(10, 48);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1185, 591);
+            this.tabPage1.Size = new System.Drawing.Size(1185, 700);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "星图姿态确定";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -138,7 +139,7 @@
             // 
             this.groupBox1.Controls.Add(this.textBox1);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBox1.Location = new System.Drawing.Point(0, 658);
+            this.groupBox1.Location = new System.Drawing.Point(0, 696);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(1205, 507);
             this.groupBox1.TabIndex = 1;
@@ -205,9 +206,10 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 30F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1205, 1165);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(240F, 240F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.AutoSize = true;
+            this.ClientSize = new System.Drawing.Size(1205, 1203);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.tabControl1);
             this.Name = "Form1";

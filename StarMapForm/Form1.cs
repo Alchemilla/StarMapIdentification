@@ -151,7 +151,7 @@ namespace StarMapForm
         {
             string workpath = textBox3.Text.Substring(0, textBox3.Text.LastIndexOf('\\') + 1);
             Process exep = new Process();
-            exep.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "GeometryProcess.exe";
+            exep.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "ZY3-StarSensor.exe";
             exep.StartInfo.Arguments = workpath + " 11";
             exep.StartInfo.CreateNoWindow = true;
             exep.StartInfo.UseShellExecute = false;

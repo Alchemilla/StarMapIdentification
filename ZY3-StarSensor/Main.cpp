@@ -19,16 +19,16 @@ int main(int argc, char* argv[])
 	{
 		APScalibration ZY3_calibrate;
 		StarCaliParam ZY302CaliParam;
-		ZY302CaliParam.f = 2885.019;
-		ZY302CaliParam.x0 = 526.878;
-		ZY302CaliParam.y0 = 534.552;
-		ZY302CaliParam.k1 = -1.066e-08;
-		ZY302CaliParam.k2 = 8e-15;
-		//ZY302CaliParam.f = 43.3/0.015;
-		//ZY302CaliParam.x0 = 512;
-		//ZY302CaliParam.y0 = 512;
-		//ZY302CaliParam.k1 = 0;
-		//ZY302CaliParam.k2 = 0;
+		//ZY302CaliParam.f = 2885.019;
+		//ZY302CaliParam.x0 = 526.878;
+		//ZY302CaliParam.y0 = 534.552;
+		//ZY302CaliParam.k1 = -1.066e-08;
+		//ZY302CaliParam.k2 = 8e-15;
+		ZY302CaliParam.f = 43.3 / 0.015;
+		ZY302CaliParam.x0 = 512;
+		ZY302CaliParam.y0 = 512;
+		ZY302CaliParam.k1 = 0;
+		ZY302CaliParam.k2 = 0;
 		ZY3_calibrate.workpath = argv[2];
 		vector<vector<StarGCP>>getGCPall;
 		ZY3_calibrate.ReadAllGCP(getGCPall);
