@@ -55,6 +55,8 @@ public:
 	void RotationY(double angle, double *R);
 	// 绕Z轴转角angle的旋转矩阵
 	void RotationZ(double angle, double *R);
+	//旋转
+	void rot(double phi, double omg, double kap, double *R);
 	// 3*3的高斯求解
 	bool solve33(double *A, double *al);
 

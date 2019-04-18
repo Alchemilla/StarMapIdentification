@@ -10,6 +10,93 @@ StarExtract::~StarExtract()
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：提取星图的背底噪声
+//输入：
+//输出：
+//注意：
+//作者：GZC
+//日期：2019.04.17
+//////////////////////////////////////////////////////////////////////////
+void StarExtract::StarCameraBackground(int index1,int index2)
+{
+	GeoReadImage ImgStarMap, ImgBackground, ImgBW;
+	char pathtmp[512];
+	width = 4096;
+	height = 2048;
+	string path = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\";
+	ImgBackground.New(path+"珞珈一号背底噪声.tif", "GTiff", GDT_UInt32, width, height, 1);
+	ImgBackground.Destroy();
+	ImgBackground.Open(path + "珞珈一号背底噪声.tif", GA_ReadOnly);
+	ImgBackground.ReadBlock(0, 0, width, height, 0, ImgBackground.pBuffer[0]);
+
+	int *ImgDN = new int[width * height];
+	int *ImgDNcount = new int[width * height];
+	memset(ImgDN, 0, sizeof(int) * width * height);
+	memset(ImgDNcount, 0, sizeof(int) * width * height);
+	for (int a = index1; a < index2; a++)
+	{
+		if (a % 10 == 0)
+		{
+			printf("\r正在读取第%d景", a);
+		}
+		if (a==77)
+		{
+			a++;
+		}
+		sprintf_s(pathtmp, "%04d_L0.tif", a);
+		string Tifpath =path + "LuoJia1-01_LR201904012992_HDR_" + string(pathtmp);
+		ImgStarMap.Open(Tifpath, GA_ReadOnly);
+		ImgStarMap.ReadBlock(0, 0, width, height, 0, ImgStarMap.pBuffer[0]);
+
+		for (long i = 0; i < height; i++)
+		{
+			for (long j = 0; j < width; j++)
+			{
+				ImgDN[width * i + j] += ImgStarMap.GetDataValue(j, i, 0, 0);
+				ImgDNcount[width * i + j]++;
+				//int StarMapDN, BackgrounDN;
+				//StarMapDN = ImgStarMap.GetDataValue(j, i, 0, 0);
+				////if (StarMapDN > 255) StarMapDN = 255;
+				//BackgrounDN = ImgBackground.GetDataValue(j, i, 0, 0);
+				//if ((StarMapDN - BackgrounDN) > 3)//阈值选择
+				//{
+				//	ImgDN[width * i + j] = StarMapDN - BackgrounDN;
+				//	ImgDNcount[width * i + j]++;
+				//}
+			}
+		}
+	}
+	sprintf_s(pathtmp, "%d-%d景星点叠加结果.tiff", index1,index2);
+	string pathres = path + (string)pathtmp;
+	ImgBW.New(pathres, "GTiff", GDT_UInt32, width, height, 1);
+	ImgBW.Destroy();
+	ImgBW.Open(pathres, GA_Update);
+	ImgBW.SetBuffer(0, 0, width, height, ImgBW.pBuffer[0]);
+	for (long i = 0; i < height; i++)
+	{
+		for (long j = 0; j < width; j++)
+		{
+			if (ImgDNcount[width * i + j] != 0)
+			{
+				double DN = ImgDN[width * i + j] / ImgDNcount[width * i + j];
+				ImgBW.SetDataValue(j, i, DN, 0);
+			}
+			else
+			{
+				ImgBW.SetDataValue(j, i, 0, 0);
+			}
+		}
+	}
+	ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
+
+	free(ImgDN);
+	free(ImgDNcount);
+	ImgStarMap.Destroy();
+	ImgBackground.Destroy();
+	ImgBW.Destroy();
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：提取星点坐标
 //输入：在主函数中输入工作路径
 //输出：在工作路径下输出星点提取文件

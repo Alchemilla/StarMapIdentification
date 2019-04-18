@@ -607,6 +607,17 @@ void BaseFunc::RotationZ(double angle, double *R)
 	R[1] = sin(angle);
 	R[3] = -R[1];
 }
+void BaseFunc::rot(double phi, double omg, double kap, double * R)
+{
+	memset(R, 0, 9 * sizeof(double));
+	double RX[9], RY[9], RZ[9], Tmp[9];
+	RotationX(-omg, RX);
+	RotationY(-phi, RY);
+	RotationZ(-kap, RZ);
+
+	Multi(RY, RX, Tmp, 3, 3, 3);
+	Multi(Tmp, RZ, R, 3, 3, 3);
+}
 // 3*3的高斯求解
 bool BaseFunc::solve33(double *A, double *al)
 {
@@ -854,8 +865,8 @@ double BaseFunc::GaussRand(double mean, double sigma, int &phase)
 //功能：产生一组符合正态分布的随机数
 //输入：mean:均值，sigma:方差，n:随机数量，randCount:输入0每组随机数不一样
 //输出：a:生成n组随机数组a
-//注意：randCount一般为0
-//日期：2016.10.12 by HWC
+//注意：randCount一般为0，解决了timetemp一直为0的情况
+//日期：2016.10.12 by HWC  2018.01.10 update by GZC
 //////////////////////////////////////////////////////////////////////////
 double BaseFunc::RandomDistribution(double mean, double sigma, int n, long randCount, double *a)
 {
@@ -885,7 +896,14 @@ double BaseFunc::RandomDistribution(double mean, double sigma, int n, long randC
 			if ((a[i]<min) || (a[i]>max))
 				i--;
 		}
-		timetemp = (unsigned int)fabs(a[0]);
+		if (fabs(a[0]) > 1)
+		{
+			timetemp = (unsigned int)fabs(a[0]);
+		}
+		else
+		{
+			timetemp = (unsigned int)1. / fabs(a[0]);
+		}
 	}
 	// 产生每次都相同的随机数,比如稳定度就需要用到
 	else

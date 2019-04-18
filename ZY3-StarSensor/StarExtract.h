@@ -14,6 +14,7 @@ public:
 	BaseFunc mbase;
 	void StarPointExtraction(int index);
 	//将各种提取出的星点叠加在一起
+	void StarCameraBackground(int index1, int index2);//背底噪声提取
 	void StarPointMulti(int index);
 	//连通区域标记函数
 	void bwlabel(GeoReadImage &ImgBW,  GeoReadImage &ImgStarMap);

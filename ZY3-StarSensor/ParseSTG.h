@@ -29,6 +29,8 @@ public:
 	void Get4_10Bit(const unsigned char *p, unsigned short(&arr)[4]);
 	//仿真星图
 	void StarMap(vector<STGData> ZY3_02STGdata);
+	void StarMapForLuojia(vector<Quat>LuojiaCam);//仿真珞珈一号恒星拍摄
+	void CalcLuojiaCamOpt(vector<Quat>LuojiaCam);//计算珞珈光轴指向
 	//
 	void FromLL2XY(Star starCatlog, double *R, double &x, double &y);
 	void FromLL2XY(double *W, StarCaliParam Param, double *x, double *y);

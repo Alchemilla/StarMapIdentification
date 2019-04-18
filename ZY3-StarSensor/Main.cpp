@@ -12,6 +12,24 @@
 int main(int argc, char* argv[])
 {
 	//////////////////////////////////////////////////////////////////////////
+	//功能：珞珈一号恒星拍摄处理
+	//日期：2019.04.17
+	//////////////////////////////////////////////////////////////////////////	
+	if (argc == 2 && atoi(argv[1]) == 1)
+	{
+		ParseSTG LJAtt;
+		LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\星敏陀螺数据\\";
+		vector<Quat>LJCamera;
+		LJAtt.CalcLuojiaCamOpt(LJCamera);
+		LJAtt.StarMapForLuojia(LJCamera);
+		StarExtract Luojia01;
+		Luojia01.StarCameraBackground(0,9);
+		Luojia01.StarCameraBackground(20, 29);
+		Luojia01.StarCameraBackground(50, 59);
+		Luojia01.StarCameraBackground(100, 109);
+		return 0;
+	}
+	//////////////////////////////////////////////////////////////////////////
 	//功能：对星图数据中的APS进行姿态确定
 	//日期：2017.11.29
 	//////////////////////////////////////////////////////////////////////////	
