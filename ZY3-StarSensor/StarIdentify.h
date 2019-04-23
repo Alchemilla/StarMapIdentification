@@ -50,6 +50,8 @@ public:
 	void GetStarGCP0702(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
 	void GetStarGCP0707(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
 	void GetStarGCP0712(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
+	void GetStarGCPForLuojia(vector<Quat> LuojiaCam, vector<StarGCP> &starGCPLuojia);
+	void OutputGCPForLuojia(vector<StarGCP> &getGCP);
 	vector<StarGCP> getGCP;
 	string workpath;
 private: 

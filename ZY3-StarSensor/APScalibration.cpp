@@ -123,6 +123,120 @@ void APScalibration::Calibrate3Param(vector<StarGCP> getGCP, int index)
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：星敏相机定标函数，采用最小二乘迭代求解
+//输入：星点提取点和对应恒星赤经赤纬，作为控制点
+//输出：待估计的3个参数
+//注意：
+//作者：GZC
+//日期：2019.04.23
+//////////////////////////////////////////////////////////////////////////
+void APScalibration::Calibrate3ParamForLuojia(vector<StarGCP> getGCP, int index)
+{
+	//是否对控制点进行优化，小于20个像素角距的不要
+	//OptimizeGCP(getGCP,20);
+	//未知参数个数
+	const int Param = 3;
+	//定义Xest为待估计的6个量，单位都化成毫米mm吧
+	//Xest[0]  Xest[1]  Xest[2]  Xest[3]  Xest[4]  Xest[5]
+	//Detx0	Dety0	 f			  k1		   p1         p2
+	double x0 = 2048, y0 = 2048;
+	double f = 0.055086;
+	double pixel = 11 / 1.e6;
+	double Xest[Param];
+	memset(Xest, 0, sizeof(double) * Param);
+	Xest[2] = f / pixel;
+	//有关法化计算的数组
+	double *ATA = new double[Param*Param];
+	double *ATL = new double[Param];
+	double L;
+	//设置迭代判断初值
+	double iter_x0 = 0, iter_y0 = 0, iter_f = Xest[2], iter_count = 0;
+	int num = getGCP.size();
+	double Xa, Ya, Xb, Yb, DetX, DetY;
+	while (true)
+	{
+		memset(ATA, 0, sizeof(double) * Param*Param);	memset(ATL, 0, sizeof(double) * Param);
+		for (int a = 0; a < num - 1; a++)
+		{
+			for (int b = a + 1; b < num; b++)
+			{
+				//真实角距
+				//double  VTV1, VTV2;
+				//mBase.Multi(getGCP[a].V, getGCP[b].V, &VTV1, 1, 3, 1);
+				////测量角距
+				//double V1[3],V2[3];
+				//V1[0] = (getGCP[a].x - 512)*0.015;	V1[1] = (getGCP[a].y - 512)*0.015;	V1[2] = 43.3;
+				//V2[0] = (getGCP[b].x - 512)*0.015;	V2[1] = (getGCP[b].y - 512)*0.015;	V2[2] = 43.3;
+				//mBase.NormVector(V1, 3);
+				//mBase.NormVector(V2, 3);
+				//mBase.Multi(V1, V2, &VTV2, 1, 3, 1);
+				//double det = VTV1 - VTV2;
+				//if (det > 0.0001)
+				//	continue;
+
+				//赋值
+				/*Xa = getGCP[a].x ;		Ya = getGCP[a].y ;
+				Xb = getGCP[b].x;		Yb = getGCP[b].y;*/
+				Xa = x0/2 - getGCP[a].y;		Ya = getGCP[a].x - x0/2;
+				Xb = y0/2 - getGCP[b].y;		Yb = getGCP[b].x - y0/2;
+				/*Xa = 512 - getGCP[a].x;		Ya = 512 - getGCP[a].y;
+				Xb = 512 - getGCP[b].x;		Yb = 512 - getGCP[b].y;*/
+				//畸变模型
+				DetX = Xest[0];
+				DetY = Xest[1];
+				double N = (Xa - DetX)*(Xb - DetX) + (Ya - DetY)*(Yb - DetY) + Xest[2] * Xest[2];
+				double D1 = (Xa - DetX)*(Xa - DetX) + (Ya - DetY)*(Ya - DetY) + Xest[2] * Xest[2];
+				double D2 = (Xb - DetX)*(Xb - DetX) + (Yb - DetY)*(Yb - DetY) + Xest[2] * Xest[2];
+				double D0 = sqrt(D1*D2);
+
+				//第一层偏导
+				double D1x0_Par = -2 * (Xa - DetX);
+				double D1y0_Par = -2 * (Ya - DetY);
+				double D1f_Par = 2 * Xest[2];
+				double D2x0_Par = -2 * (Xb - DetX);
+				double D2y0_Par = -2 * (Yb - DetY);
+				double D2f_Par = 2 * Xest[2];
+
+				//第二层偏导第一部分
+				double D0x0_Par = 0.5*sqrt(D2 / D1)*D1x0_Par + 0.5*sqrt(D1 / D2)*D2x0_Par;
+				double D0y0_Par = 0.5*sqrt(D2 / D1)*D1y0_Par + 0.5*sqrt(D1 / D2)*D2y0_Par;
+				double D0f_Par = 0.5*sqrt(D2 / D1)*D1f_Par + 0.5*sqrt(D1 / D2)*D2f_Par;
+
+				//第二层偏导第二部分
+				double Nx0_Par = 2 * DetX - Xa - Xb;
+				double Ny0_Par = 2 * DetY - Ya - Yb;
+				double Nf_Par = 2 * Xest[2];
+
+				//第三层偏导
+				double G[Param];
+				G[0] = (Nx0_Par*D0 - D0x0_Par * N) / D0 / D0;
+				G[1] = (Ny0_Par*D0 - D0y0_Par * N) / D0 / D0;
+				G[2] = (Nf_Par*D0 - D0f_Par * N) / D0 / D0;
+
+				//真实角距
+				double  VTV;
+				mBase.Multi(getGCP[a].V, getGCP[b].V, &VTV, 1, 3, 1);
+				L = VTV - N / D0;
+				mBase.pNormal(G, Param, L, ATA, ATL, 1.0);
+			}
+		}
+		//迭代求解
+		mBase.Gauss(ATA, ATL, Param);
+		if (abs(ATL[0] - iter_x0) < 1e-20&&abs(ATL[1] - iter_y0) < 1e-20&&abs(ATL[2] - iter_f) < 1e-20
+			|| iter_count > 20)
+			break;
+		iter_count++;
+		Xest[0] += ATL[0]; Xest[1] += ATL[1]; Xest[2] += ATL[2];
+		iter_x0 = abs(ATL[0]), iter_y0 = abs(ATL[1]), iter_f = abs(ATL[2]);
+	}
+	//精度评估
+	//CaliAccuracy(getGCP, Xest, 3);
+	char output[512];
+	sprintf_s(output, "角距3参数定标第%d景", index);
+	OutputFile(Xest, 3, output);
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：星敏相机定标函数，采用最小二乘迭代求解，涉及多幅影像叠加求解
 //输入：星点提取点和对应恒星赤经赤纬，作为控制点
 //输出：待估计的3个参数

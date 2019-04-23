@@ -1103,6 +1103,145 @@ void StarIdentify::GetStarGCP0712(vector<STGData> ZY3_02STGdata, vector<StarPoin
 	//fclose(fp2);
 }
 
+//////////////////////////////////////////////////////////////////////////
+//功能：获取星点控制for珞珈一号
+//输入：ZY3_02STGdata，解析后存储的星敏STG数据
+//			 StarPointExtract，星点提取结果
+//输出：getCCP：控制点vector
+//注意：本方法还未依赖星图识别
+//作者：GZC
+//日期：2019.04.23
+//////////////////////////////////////////////////////////////////////////
+void StarIdentify::GetStarGCPForLuojia(vector<Quat> LuojiaCam, vector<StarGCP> &starGCPLuojia)
+{
+	//打开星表文件
+	string starCatlogpath = "C:\\Users\\wcsgz\\Documents\\OneDrive\\4-项目资料\\20150519-珞珈一号\\20190417-星图拍摄\\星表\\导航星表矢量.txt";
+	FILE *fp;
+	fp = fopen(starCatlogpath.c_str(), "r");
+	if (fp == NULL)
+	{
+		printf("打开%s文件失败,请确认文件路径是否正确!\n", starCatlogpath.c_str());
+		return;
+	}
+	int i, n;
+	fscanf(fp, "%d", &n);//读取星表数据
+	Star *starCatlog = new Star[n];
+	for (i = 0; i < n; i++)
+	{
+		fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &starCatlog[i].ID, &starCatlog[i].phiX,
+			&starCatlog[i].phiY, &starCatlog[i].mag, &starCatlog[i].V[0], &starCatlog[i].V[1], &starCatlog[i].V[2]);
+	}
+	fclose(fp);
+	
+	int j, m = LuojiaCam.size();
+	double R[9];
+	double x, y;
+	char GCPpathtmp[100];
+	workpath = "D:\\珞珈一号恒星\\";
+	
+	// 影像的宽度和高度
+	long width = 2048, height = 2048;
+	//创建像平面像素值数组
+	byte *UnitData = new byte[width * height];
+
+	ParseSTG pLuojia; StarGCP starGCPtmp;
+	GeoReadImage ImgStarMap;
+
+	//for (i = 0; i < 146; i++)
+	//{
+	i = 0;
+		char pathtmp[100];
+		sprintf_s(pathtmp, "%04d_L0_RC.tif", i);
+		string Tifpath = workpath + "LuoJia1-01_LR201904012992_HDR_" + string(pathtmp);
+		ImgStarMap.Open(Tifpath, GA_ReadOnly);
+		ImgStarMap.ReadBlock(0, 0, width, height, 0, ImgStarMap.pBuffer[0]);
+		memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
+		mBase.quat2matrix(LuojiaCam[i+7].Q1, LuojiaCam[i + 7].Q2, LuojiaCam[i + 7].Q3, LuojiaCam[i + 7].Q0, R);//估计10景姿态变化一点
+		for (j = 0; j < n; j++)
+		{
+			pLuojia.FromLL2XYForLuojia(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
+			if (x > 5 && x < width - 5 && y>5 && y < height - 5 && starCatlog[j].mag < 4)
+			{
+				long xTrans, yTrans, xMax, yMax;
+				xTrans = long(x - 4.5);
+				yTrans = long(y - 4.5);
+				double DN, tmpDN;
+				//tmpDN = ImgStarMap.GetDataValue((long)1409,(long)896, 0, 0);
+				//在仿真的星点附近找恒星
+				for (int ii = 0; ii < 10; ii++)
+				{
+					for (int jj = 0; jj < 10; jj++)
+					{
+						tmpDN = ImgStarMap.GetDataValue(xTrans, yTrans,  0, 0);						
+						if (ii == 0 && jj == 0)
+						{
+							DN = tmpDN;
+							xMax = xTrans; yMax = yTrans;
+						}
+						if (DN < tmpDN)
+						{
+							DN = tmpDN;//找到DN值最大点
+							xMax = xTrans; yMax = yTrans;
+						}
+						yTrans++;
+					}
+					yTrans -= 10;
+					xTrans++;
+				}
+				if (DN>200)
+				{
+				//根据最亮点得到恒星中心点位置
+				xMax = xMax - 2; yMax = yMax - 2;
+				double sum_x=0, sum_y=0, area=0;
+				for (int a = 0; a < 5; a++)
+				{
+					for (int b = 0; b < 5; b++)
+					{
+						DN = ImgStarMap.GetDataValue(xMax, yMax++, 0, 0);
+						sum_x += xMax * pow(DN, 3);//这里x定义为沿轨向
+						sum_y += yMax * pow(DN, 3);//这里y定义为垂轨向
+						area += pow(DN, 3);
+					}
+					yMax -= 5;
+					xMax++;
+				}
+				starGCPtmp.x = sum_x / area;
+				starGCPtmp.y = sum_y / area;
+				starGCPtmp.V[0] = starCatlog[j].V[0]; starGCPtmp.V[1] = starCatlog[j].V[1]; starGCPtmp.V[2] = starCatlog[j].V[2];
+				starGCPLuojia.push_back(starGCPtmp);
+				}
+			}
+		}
+		OutputGCPForLuojia(starGCPLuojia);
+	//}
+}
+//////////////////////////////////////////////////////////////////////////
+//功能：按照ENVI格式输出控制点
+//输入：getGCP，控制点；index时间指示
+//输出：控制点文件.pts
+//注意：星点存储格式满足StarGCP结构体的要求
+//作者：GZC
+//日期：2017.02.18
+//////////////////////////////////////////////////////////////////////////
+void StarIdentify::OutputGCPForLuojia(vector<StarGCP> &getGCP)
+{
+	//输出控制点
+	int num = getGCP.size();	
+	string GCPpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\星图\\星点提取坐标.pts";
+	FILE *fp = fopen(GCPpath.c_str(), "w");
+	string str1 = "; ENVI Image to Image GCP File";
+	string str2 = "; base file ";
+	string str3 = "; warp file";
+	string str4 = "; Base Image(x, y), Warp Image(x, y)";
+	fprintf(fp, "%s\n%s\n%s\n%s\n", str1.c_str(), str2.c_str(), str3.c_str(), str4.c_str());
+
+	for (int k = 0; k < num; k++)
+	{
+		fprintf(fp, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", getGCP[k].x, getGCP[k].y,
+			getGCP[k].V[0], getGCP[k].V[1], getGCP[k].V[2]);
+	}
+	fclose(fp);
+}
 
 ////////////////////////////////////////
 //基本算法部分：

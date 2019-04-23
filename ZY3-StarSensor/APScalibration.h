@@ -15,6 +15,7 @@ public:
 	string workpath;
 	//三参数或六参数几何纠正
 	void Calibrate3Param(vector<StarGCP> getGCP, int index);
+	void Calibrate3ParamForLuojia(vector<StarGCP> getGCP, int index);
 	void Calibrate5Param(vector<StarGCP>getGCP, int index);
 	void Calibrate6Param(vector<StarGCP> getGCP, int index);
 	void Calibrate3ParamMultiImg(vector < vector<StarGCP>> getGCP, int index);

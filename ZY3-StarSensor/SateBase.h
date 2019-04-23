@@ -119,6 +119,10 @@ struct StarCaliParam
 {
 	double x0, y0;
 	double f, k1,k2;
+	StarCaliParam()
+	{
+		x0 = y0 = f = k1 = k2 = 0;
+	}
 };
 
 //星点控制点转换为 惯性矢量和本体矢量

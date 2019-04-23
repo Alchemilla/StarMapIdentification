@@ -203,6 +203,7 @@ void AttDetermination::ReadCaliParam(vector<StarCaliParam>&caliParam)
 //注意：根据相机模型的不同选择不同参数(5参数或者6参数)
 //作者：GZC
 //日期：2017.01.12，更新：2017.03.16
+//			 2019.04.23更新，根据珞珈一号更改Xp和Yp计算方式
 //////////////////////////////////////////////////////////////////////////
 bool AttDetermination::q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater)
 {
@@ -212,7 +213,8 @@ bool AttDetermination::q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Qua
 	for (int a = 0; a < getGCP.size(); a++)
 	{
 		double Xp, Yp;
-		Xp = 1024 - getGCP[a].y;		Yp = getGCP[a].x;
+		//Xp = Param.x0*2 - getGCP[a].y;		Yp = getGCP[a].x;
+		Xp = getGCP[a].x;		Yp = getGCP[a].y;
 		//畸变模型(5参数情况)
 		double r2 = (Xp - Param.x0)*(Xp - Param.x0) + (Yp - Param.y0)*(Yp - Param.y0);
 		double xreal = -(Xp - Param.x0)*(1 - Param.k1 * r2 - Param.k2 * r2*r2);

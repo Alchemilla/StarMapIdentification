@@ -17,10 +17,18 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////	
 	if (argc == 2 && atoi(argv[1]) == 1)
 	{
-		ParseSTG LJAtt;
-		LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\星敏陀螺数据\\";
-		vector<Quat>LJCamera;
+		ParseSTG LJAtt; StarIdentify LJstar; AttDetermination LJdeter;
+		vector<Quat>LJCamera; vector<StarGCP> starGCPLuojia;
+		StarCaliParam Param;	
+		double f = 0.055086;
+		double pixel = 11 / 1.e6;
+		Param.f = f/pixel; Param.x0=1024, Param.y0 = 1024;
+		Quat quater;
+		LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\";
 		LJAtt.CalcLuojiaCamOpt(LJCamera);
+		LJstar.GetStarGCPForLuojia(LJCamera, starGCPLuojia);
+		LJdeter.q_Method(starGCPLuojia, Param, quater);
+
 		LJAtt.StarMapForLuojia(LJCamera);
 		StarExtract Luojia01;
 		Luojia01.StarCameraBackground(0,9);
