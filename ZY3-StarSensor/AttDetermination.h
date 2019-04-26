@@ -17,7 +17,7 @@ public:
 	void AttDeter4(vector<STGData> AttData);
 	//static attitude determination
 	bool q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater);
-
+	void luojiaAlinFix(vector<Quat>LJCamera, Quat quater, SateEuler &ruEuler);//ĞŞÕıÆ«ÖÃ¾ØÕó
 
 	//¿¨¶ûÂüÂË²¨
 	void EKF6StateV2(vector<STGData> AttData, vector<Quat> &AttDet, int StarTag);

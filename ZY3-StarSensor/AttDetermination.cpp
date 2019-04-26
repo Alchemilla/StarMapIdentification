@@ -171,7 +171,26 @@ void AttDetermination::AttDeter4(vector<STGData> AttData)
 	EKF6StateV3(AttData, Quater, EKFres);
 	OutputFile(EKFres, "EKF滤波结果.txt");
 }
-
+//////////////////////////////////////////////////////////////////////////
+//功能：珞珈一号Ru参数更新
+//输入：
+//输出：
+//注意：
+//作者：GZC
+//日期：2019.04.26
+//////////////////////////////////////////////////////////////////////////
+void AttDetermination::luojiaAlinFix(vector<Quat>LJCamera, Quat quater, SateEuler &ruEuler)
+{
+	Quat quater2 = LJCamera[1];
+	double r1[9], r2[9], r3[9],r4[9],Ru[9];
+	mbase.quat2matrix(quater.Q1, quater.Q2, quater.Q3, quater.Q0, r1);//恒星观测的Ccj
+	mbase.quat2matrix(quater2.Q1, quater2.Q2, quater2.Q3, quater2.Q0, r2);//星敏测量转换的Ccj
+	mbase.rot(-0.005949811481223, 0.015002138143471, 0.003740215940200, r3);//偏置矩阵Cbc
+	mbase.Multi(r3, r2, r4, 3, 3, 3);//星敏测量的Cbj
+	mbase.invers_matrix(r1, 3);//恒星观测的Cjc
+	mbase.Multi(r4, r1, Ru, 3, 3, 3);//新的Ru参数
+	mbase.Matrix2Eulor(Ru,312, ruEuler.R, ruEuler.P, ruEuler.Y);
+}
 //////////////////////////////////////////////////////////////////////////
 //功能：读取定标参数
 //输入：定义类的对象时得到workplace的路径

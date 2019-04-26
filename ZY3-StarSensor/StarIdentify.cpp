@@ -1149,7 +1149,7 @@ void StarIdentify::GetStarGCPForLuojia(vector<Quat> LuojiaCam, vector<StarGCP> &
 
 	//for (i = 0; i < 146; i++)
 	//{
-	i = 0;
+	i = 1;
 		char pathtmp[100];
 		sprintf_s(pathtmp, "%04d_L0_RC.tif", i);
 		string Tifpath = workpath + "LuoJia1-01_LR201904012992_HDR_" + string(pathtmp);

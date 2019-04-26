@@ -23,11 +23,12 @@ int main(int argc, char* argv[])
 		double f = 0.055086;
 		double pixel = 11 / 1.e6;
 		Param.f = f/pixel; Param.x0=1024, Param.y0 = 1024;
-		Quat quater;
+		Quat quater; SateEuler ruEuler;
 		LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\ησημ0Ό¶²ϊΖ·\\";
 		LJAtt.CalcLuojiaCamOpt(LJCamera);
 		LJstar.GetStarGCPForLuojia(LJCamera, starGCPLuojia);
 		LJdeter.q_Method(starGCPLuojia, Param, quater);
+		LJdeter.luojiaAlinFix(LJCamera,quater,ruEuler);
 
 		LJAtt.StarMapForLuojia(LJCamera);
 		StarExtract Luojia01;
