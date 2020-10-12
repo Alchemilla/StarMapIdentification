@@ -40,6 +40,10 @@ struct SateEuler
 {
 	double R,P,Y;
 	double UTC;
+	SateEuler()
+	{
+		R = P = Y = UTC = 0;
+	}
 };
 
 //struct for scan time;
@@ -57,6 +61,15 @@ struct clockInfo
 	int clockFreq;
 };
 
+struct YMD
+{
+	int year;
+	int mon;
+	int day;
+	int hour;
+	int min;
+	double sec;
+};
 //struct for frame data of ZY302
 struct FrameData_ZY302
 {
@@ -72,6 +85,13 @@ struct FrameData_ZY302
 	int frame_lineIndex[15];
 	bool isgpsValid;
 
+};
+
+//吉林一号帧流水号和时间
+struct img
+{
+	int id;
+	double time;
 };
 
 //struct for STG data of ZY302
@@ -130,6 +150,22 @@ struct BmImStar
 {
 	double UT;
 	double Im[3], Bm[3];
+
+};
+
+struct FrameDistortion
+{
+	double px[80]; //(n+1)*(n+2)/2; n less than 10
+	double py[80];
+	int xOrder;
+	int yOrder;
+
+	FrameDistortion()
+	{
+		xOrder = yOrder = 0;
+		memset(px, 0, sizeof(int) * 80);
+		memset(py, 0, sizeof(int) * 80);
+	};
 
 };
 #endif

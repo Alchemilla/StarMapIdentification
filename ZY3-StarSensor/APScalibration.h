@@ -34,6 +34,7 @@ public:
 	//void CalibrateRigorousQuat(vector<StarGCP> getGCP);
 	//控制点精化
 	void OptimizeGCP(vector<StarGCP> &getGCP, int pixel,int index);
+
 	//仿真带一定误差的控制点--根据姿态数据仿真
 	void SimulateGCP(vector<StarGCP> &getGCP,vector<STGData> ZY3_02STGdata, int index);
 	void SimulateGCP_PreRand(vector<vector<StarGCP>> &getGCP,
@@ -43,8 +44,9 @@ public:
 	void SimulateGCP_PreRand6Param(vector<vector<StarGCP>> &getGCP,
 		vector<STGData> ZY3_02STGdata, int *gcpNum, int index);
 	//仿真带一定误差的控制点--随机像点仿真
-	void SimulateGCP_RandomXY(int index, vector<vector<StarGCP>>& getGCP);
+	void SimulateGCP_RandomXY(int index, vector<vector<StarGCP>>& realGCP, vector<vector<StarGCP>>& getGCP);
 	void SimulateGCP_RandomXY5Param(int index, vector<vector<StarGCP>>& getGCP);
+
 	//解算精度
 	void CaliAccuracy(vector<StarGCP> getGCP, double *Xest, int num);
 	void CaliAccuracy3Param(vector<vector<StarGCP>> getGCP, double *Xest, double &RMS);

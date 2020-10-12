@@ -388,11 +388,14 @@ void APScalibration::Calibrate3ParamKalman(vector<vector<StarGCP>>getGCP)
 				for (int b = a + 1; b < numGCP; b++)
 				{
 					//真实数据使用
-					Xa = 1024 - getGCP[i][a].y;		Ya = getGCP[i][a].x;
-					Xb = 1024 - getGCP[i][b].y;		Yb = getGCP[i][b].x;
+					//Xa = 1024 - getGCP[i][a].y;		Ya = getGCP[i][a].x;
+					//Xb = 1024 - getGCP[i][b].y;		Yb = getGCP[i][b].x;
 					//赋值
 					//Xa = 1024 - getGCP[i][a].y - 512;		Ya = getGCP[i][a].x - 512;
 					//Xb = 1024 - getGCP[i][b].y - 512;		Yb = getGCP[i][b].x - 512;
+					//仿真的时候用
+					Xa = getGCP[i][a].x;		Ya = getGCP[i][a].y;
+					Xb = getGCP[i][b].x;		Yb = getGCP[i][b].y;
 					//畸变模型
 					DetX = Xest[0];
 					DetY = Xest[1];
@@ -661,15 +664,16 @@ void APScalibration::Calibrate5ParamKalman(vector<vector<StarGCP>>getGCP)
 	//Detx0	Dety0	 f			  k1		   k1       
 	double Xest[Param];
 	memset(Xest, 0, sizeof(double) * Param);
+	double fest = 2885;
 	Xest[0] = 512;
 	Xest[1] = 512;
-	Xest[2] = 43.3 / 0.015;
+	Xest[2] = fest;
 	//有关法化计算的数组
 	double *ATA = new double[Param*Param];
 	double *ATL = new double[Param];
 	double L;
 	//设置迭代判断初值
-	double iter_x0 = 0, iter_y0 = 0, iter_f = 43.3 / 0.015, iter_k1 = 0, iter_k2 = 0, iter_count = 0;
+	double iter_x0 = 0, iter_y0 = 0, iter_f = fest, iter_k1 = 0, iter_k2 = 0, iter_count = 0;
 	double Xa, Ya, Xb, Yb, DetXa, DetYa, DetXb, DetYb;
 	//Kalman求解
 	int mNum = 3;//观测方程数量
@@ -697,14 +701,14 @@ void APScalibration::Calibrate5ParamKalman(vector<vector<StarGCP>>getGCP)
 				for (int b = a + 1; b < getGCP[i].size(); b++)
 				{
 					//真实数据使用
-					Xa = 1024 - getGCP[i][a].y;		Ya = getGCP[i][a].x;
-					Xb = 1024 - getGCP[i][b].y;		Yb = getGCP[i][b].x;
+					//Xa = 1024 - getGCP[i][a].y;		Ya = getGCP[i][a].x;
+					//Xb = 1024 - getGCP[i][b].y;		Yb = getGCP[i][b].x;
 					//真实数据使用
 					//Xa = 1024 - getGCP[i][a].y - 512;			Ya = getGCP[i][a].x - 512;
 					//Xb = 1024 - getGCP[i][b].y - 512;		Yb = getGCP[i][b].x - 512;
 					//仿真的时候用
-					//Xa = getGCP[i][a].x;		Ya = getGCP[i][a].y;
-					//Xb = getGCP[i][b].x;		Yb = getGCP[i][b].y;
+					Xa = getGCP[i][a].x;		Ya = getGCP[i][a].y;
+					Xb = getGCP[i][b].x;		Yb = getGCP[i][b].y;
 
 					//模型
 					double ra2 = (Xa - Xest[0]) * (Xa - Xest[0]) + (Ya - Xest[1]) * (Ya - Xest[1]);
@@ -795,7 +799,7 @@ void APScalibration::Calibrate5ParamKalman(vector<vector<StarGCP>>getGCP)
 		vector<vector<StarGCP>>getGCPaccu;
 		getGCPaccu.assign(getGCP.begin(), getGCP.begin() + i + 1);
 		CaliAccuracy5Param(getGCPaccu, Xest, Xoutput[5]);
-		Xest[0] = 512;	Xest[1] = 512;	Xest[2] = 43.3 / 0.015; Xest[3] = 0; Xest[4] = 0;
+		//Xest[0] = 512;	Xest[1] = 512;	Xest[2] = fest; Xest[3] = 0; Xest[4] = 0;
 		CaliAccuracy5Param(getGCPaccu, Xest, Xoutput[6]);
 		getGCPaccu.clear();
 		//输出
@@ -1410,11 +1414,11 @@ void APScalibration::CaliAccuracy3Param(vector<vector<StarGCP>> getGCP, double *
 	string path;
 	if (X[0] != 512)
 	{
-		path = workpath + "控制点\\精度-定标后.txt";
+		path = workpath + "精度-3参数定标后.txt";
 	}
 	else
 	{
-		path = workpath + "控制点\\精度-定标前.txt";
+		path = workpath + "精度-3参数定标前.txt";
 	}
 	FILE *fp = fopen(path.c_str(), "w");
 
@@ -1432,9 +1436,11 @@ void APScalibration::CaliAccuracy3Param(vector<vector<StarGCP>> getGCP, double *
 			for (int b = a + 1; b < getGCP[i].size(); b++)
 			{
 				//真实数据使用
-				Xa = 1024 - getGCP[i][a].y;		Ya = getGCP[i][a].x;
-				Xb = 1024 - getGCP[i][b].y;		Yb = getGCP[i][b].x;
-
+				//Xa = 1024 - getGCP[i][a].y;		Ya = getGCP[i][a].x;
+				//Xb = 1024 - getGCP[i][b].y;		Yb = getGCP[i][b].x;
+				//仿真的时候用
+				Xa = getGCP[i][a].x;		Ya = getGCP[i][a].y;
+				Xb = getGCP[i][b].x;		Yb = getGCP[i][b].y;
 				//模型
 				double ra2 = (Xa - Xest[0]) * (Xa - Xest[0]) + (Ya - Xest[1]) * (Ya - Xest[1]);
 				double rb2 = (Xb - Xest[0]) * (Xb - Xest[0]) + (Yb - Xest[1]) * (Yb - Xest[1]);
@@ -1879,54 +1885,59 @@ void APScalibration::SimulateGCP_PreRand(vector<vector<StarGCP>> &getGCP,
 //注意：星点存储格式满足StarGCP结构体的要求
 //作者：GZC
 //日期：2017.02.28
+//更新：2020.08.02
 //////////////////////////////////////////////////////////////////////////
-void APScalibration::SimulateGCP_RandomXY(int index, vector<vector<StarGCP>>& getGCP)
+void APScalibration::SimulateGCP_RandomXY(int index, vector<vector<StarGCP>>& realGCP,vector<vector<StarGCP>>& getGCP)
 {
 	//首先构造50个的像面坐标x,y
-	int num = 50;
+	int num = 15;
 	double V[3], x, y;
 	double *xy = new double[num*index * 2];
 	mBase.AverageRand(0, 1024, num*index * 2, xy);
-	vector<StarGCP> getGCPtmp(50);
+	vector<StarGCP> realGCPtmp(num);
+	vector<StarGCP> getGCPtmp(num);
 	//添加误差
 	int gcpNumAll = num*index;
 	double *randx = new double[gcpNumAll];
 	double *randy = new double[gcpNumAll];
+	double *f = new double[gcpNumAll];
 	double *k1 = new double[gcpNumAll];
-	double *p1 = new double[gcpNumAll];
-	double *p2 = new double[gcpNumAll];
+	double *k2 = new double[gcpNumAll];
 	//设置x和y方向的噪声，并且加在真实数据上
-	mBase.RandomDistribution(1, 0.2, gcpNumAll, 0, randx);
-	mBase.RandomDistribution(3, 0.2, gcpNumAll, 0, randy);
-	mBase.RandomDistribution(5, 0.02, gcpNumAll, 0, k1);
-	mBase.RandomDistribution(5, 0.02, gcpNumAll, 0, p1);
-	mBase.RandomDistribution(5, 0.02, gcpNumAll, 0, p2);
-	StarCaliParam ZY302;
-	ZY302.f = 43.3 / 0.015;
-	ZY302.x0 = 512 + 1;
-	ZY302.y0 = 512 + 3;
-	ZY302.k1 = 5e-9;
-	ZY302.k2 = 5e-14;
+	mBase.RandomDistribution(0, 0.1, gcpNumAll, 0, randx);
+	mBase.RandomDistribution(0, 0.1, gcpNumAll, 0, randy);
+	mBase.RandomDistribution(0, 0.2, gcpNumAll, 0, f);
+	mBase.RandomDistribution(0, 0, gcpNumAll, 0, k1);
+	mBase.RandomDistribution(0, 0, gcpNumAll, 0, k2);
+
 	for (int a = 0; a < index; a++)
 	{
 		for (int b = 0; b < num; b++)
 		{
 			x = xy[a*num + b];
 			y = xy[num*index + a*num + b];
+			realGCPtmp[b].x = x; realGCPtmp[b].y = y;
 			//根据x,y和相机参数得到星点指向V[3]
-			mParse.FromXY2LL(x, y, ZY302, V);
+			double R[9],W[3];
+			mBase.quat2matrix(0.5,0.5,0.5,0.5,R);
+			mParse.FromXY2LL(x, y, ZY302CaliParam, W);
+			mBase.Multi(R, W, V, 3, 3, 1);
+			realGCPtmp[b].V[0] = V[0]; realGCPtmp[b].V[1] = V[1]; realGCPtmp[b].V[2] = V[2];
 			getGCPtmp[b].V[0] = V[0]; getGCPtmp[b].V[1] = V[1]; getGCPtmp[b].V[2] = V[2];
 			//设置畸变模型误差
 			double r2 = x*x + y*y;
-			/*getGCPtmp[b].x = x + randx[a + num];
-			getGCPtmp[b].y = y + randy[a + num];*/
-			getGCPtmp[b].x = x + randx[a*num + b] + k1[a*num + b] * 1e-11*x*r2
-				+ p1[a*num + b] * 1e-8*(3 * x*x + y*y) + 2 * p2[a*num + b] * 1e-8*x*y;
-			getGCPtmp[b].y = y + randy[a*num + b] + k1[a*num + b] * 1e-11*y*r2
-				+ p2[a*num + b] * 1e-8*(3 * y*y + x*x) + 2 * p1[a*num + b] * 1e-8*x*y;
+			//getGCPtmp[b].x = x + randx[a + num];
+			//getGCPtmp[b].y = y + randy[a + num];
+			//getGCPtmp[b].x = x + randx[a*num + b] + k1[a*num + b] * 1e-11*x*r2
+			//	+ p1[a*num + b] * 1e-8*(3 * x*x + y*y) + 2 * p2[a*num + b] * 1e-8*x*y;
+			//getGCPtmp[b].y = y + randy[a*num + b] + k1[a*num + b] * 1e-11*y*r2
+			//	+ p2[a*num + b] * 1e-8*(3 * y*y + x*x) + 2 * p1[a*num + b] * 1e-8*x*y;
+			getGCPtmp[b].x = x + randx[a + num] + k1[a + num] * 1e-8*x*r2 + k2[a + num] * 1e-14*x*r2*r2;
+			getGCPtmp[b].y = y + randy[a + num] + k1[a + num] * 1e-8*y*r2 + k2[a + num] * 1e-14*y*r2*r2;
 			/*getGCPtmp[b].x = x + randx[a + num] + 1e-12*x*r2 + 1e-9*(3 * x*x + y*y) + 4 * 1e-9*x*y;
 			getGCPtmp[b].y = y + randy[a + num] + 1e-12*y*r2 + 2e-9*(3 * y*y + x*x) + 2 * 1e-9*x*y;*/
 		}
+		realGCP.push_back(realGCPtmp);
 		getGCP.push_back(getGCPtmp);
 	}
 }
@@ -1950,7 +1961,7 @@ void APScalibration::SimulateGCP_RandomXY5Param(int index, vector<vector<StarGCP
 	//添加误差
 	int gcpNumAll = num*index;
 	double *randxy = new double[gcpNumAll * 2];
-	//设置x和y方向的噪声，并且加在真实数据上
+	//设置x和y方向的噪声
 	mBase.RandomDistribution(0, 0.3, gcpNumAll * 2, 0, randxy);
 
 	double x0 = ZY302CaliParam.x0;
@@ -1965,7 +1976,7 @@ void APScalibration::SimulateGCP_RandomXY5Param(int index, vector<vector<StarGCP
 			//假设主点随时间在变
 			//ZY302CaliParam.x0 = x0 +  1e-2*a;
 			//ZY302CaliParam.y0 = y0 -  2e-2*a;
-			ZY302CaliParam.f = f -  2e-2*a;
+			//ZY302CaliParam.f = f -  2e-2*a;
 			//根据x,y和相机参数得到星点指向V[3]
 			mParse.FromXY2LL(x, y, ZY302CaliParam, V);
 			getGCPtmp[b].V[0] = V[0]; getGCPtmp[b].V[1] = V[1]; getGCPtmp[b].V[2] = V[2];

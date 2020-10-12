@@ -1,0 +1,199 @@
+void StarMapForLuojia(vector<Quat>LuojiaCam)
+{
+	//打开星表文件
+	string starCatlogpath = "C:\\Users\\wcsgz\\Documents\\OneDrive\\4-项目资料\\20150519-珞珈一号\\20190417-星图拍摄\\星表\\导航星表矢量.txt";
+	FILE *fp;
+	fp = fopen(starCatlogpath.c_str(), "r");
+	if (fp == NULL)
+	{
+		printf("打开%s文件失败,请确认文件路径是否正确!\n", starCatlogpath.c_str());
+		return;
+	}
+	int i, n;
+	fscanf(fp, "%d", &n);//读取星表数据
+	Star *starCatlog = new Star[n];
+	for (i = 0; i < n; i++)
+	{
+		fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &starCatlog[i].ID, &starCatlog[i].phiX,
+			&starCatlog[i].phiY, &starCatlog[i].mag, &starCatlog[i].V[0], &starCatlog[i].V[1], &starCatlog[i].V[2]);
+	}
+	fclose(fp);
+
+	int j, m = LuojiaCam.size();
+	double R[9], za[3] = { 0,0,1 }, zc[3];
+	double px, py, x, y;
+	// 影像的宽度和高度
+	long width = 2048, height = 2048;
+	//创建像平面像素值数组
+	byte *UnitData = new byte[width * height];
+
+	string imgtmp = workpath + "星图";
+	char * imgpath = (char *)imgtmp.data();
+	_mkdir(imgpath);//创建星图文件夹
+	string imgtxt = workpath + "星图\\像面坐标.txt";
+	FILE *fptxt = fopen(imgtxt.c_str(), "w");
+	
+	//根据姿态仿出星图
+	for (i = 0; i < m; i++)
+	{
+		//for (int a = 0; a < 8; a++)
+		{			
+		memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
+		//星敏A即APS星敏仿真
+		mBase.quat2matrix(LuojiaCam[i].Q1, LuojiaCam[i].Q2,LuojiaCam[i].Q3, LuojiaCam[i].Q0, R);//Crj
+		for (j = 0; j < n; j++)
+		{
+			FromLL2XYForLuojia(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
+			if (x > 4 && x < width-4 && y>4 && y < height-4&&starCatlog[j].mag<5)
+			{
+				for (int ii = 0; ii < 5; ii++)//生成5个像素大小的星图
+				{
+					for (int jj = 0; jj < 5; jj++)
+					{
+						//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
+						//将 X↓Y→ 转换为 X→Y↑
+						int xTrans, yTrans;
+						xTrans = int(x);
+						yTrans = int(y);
+						/*switch (a)
+						{
+						case 0:
+							xTrans = int(x + 0.5);
+							yTrans = int(y + 0.5);
+							break;
+						case 1:
+							xTrans = int(y + 0.5);
+							yTrans = height - int(x + 0.5);
+							break;
+						case 2:
+							xTrans = height- int(x + 0.5);
+							yTrans = width - int(y + 0.5);
+							break;
+						case 3:
+							xTrans = width-int(y + 0.5);
+							yTrans = int(x + 0.5);
+							break;
+						case 4:
+							xTrans = int(y + 0.5);
+							yTrans = int(x + 0.5);
+							break;
+						case 5:
+							xTrans = int(x+ 0.5);
+							yTrans = height - int(y + 0.5);
+							break;
+						case 6:
+							xTrans = height - int(y + 0.5);
+							yTrans = width - int(x + 0.5);
+							break;
+						case 7:
+							xTrans = width - int(x + 0.5);
+							yTrans = int(y + 0.5);
+							break;
+						default:
+							break;
+						}*/
+						int DN = Mag2DN(starCatlog[j].mag);
+						if (DN > 255) DN = 255;
+						UnitData[yTrans*width + xTrans] = DN;
+						//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
+						x++;
+					}
+					x -= 5;
+					y++;
+				}
+			}
+		}
+		//创建影像
+		char tempath[100];
+		// 输出影像参数
+		string outdriver = "GTiff";
+		//投影
+		string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
+		//仿射变换
+		double minx = 0, maxy = 2048, resolution = 1;
+		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
+		sprintf_s(tempath, "星图第%04d帧仿真.tiff", i);
+		string imgpath = workpath + "星图\\" + tempath;
+		GeoReadImage m_out;
+		m_out.New(imgpath, outdriver, GDT_Byte, 2*width, height, 1);
+		m_out.poDataset->SetProjection(tarProject.c_str());
+		m_out.poDataset->SetGeoTransform(adfGeoTransform);
+		//更新方式打开影像
+		m_out.Open(imgpath, GA_Update);
+		if (m_out.m_isopen == true)
+			printf("\rUpdate Img (%s)", imgpath.c_str());
+		else
+		{
+			printf("\rUpdate Img (%s) Failed", imgpath.c_str());
+			return;
+		}
+		//建立out数据区
+		m_out.SetBuffer(0, 0, 2*width, height, m_out.pBuffer[0]);
+		double gray;
+		for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
+		{
+			for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
+			{
+				//读入数据
+				gray = UnitData[yPixel*width + xPixel];
+				//gray = 0;
+				m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
+				m_out.SetDataValue(xPixel+width, yPixel, gray, 0);    //赋值
+			}
+		}
+		//写入数据
+		bool iswrite = true;
+		iswrite *= m_out.WriteBlock(0, 0, 2*width, height, 0, m_out.pBuffer[0]);
+		//关闭影像
+		m_out.Destroy();
+		}
+	}
+}
+
+//the struct for quaternion
+struct Quat
+{
+	double Q1,Q2,Q3,Q0;
+	double UTC;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//功能：根据恒星赤经赤纬及星敏姿态，计算星敏像面坐标
+//输入：starCatlog，单颗恒星参数，包括J2000系下的单位矢量V[3]
+//		R，星敏坐标系与J2000系的旋转关系，Crj
+//输出：x,y，像面坐标
+//注意：
+//日期：2019.04.18
+//////////////////////////////////////////////////////////////////////////
+void FromLL2XYForLuojia(Star starCatlog, double *R, double &x, double &y)
+{
+	double V[3], W[3];
+	V[0] = starCatlog.V[0]; V[1] = starCatlog.V[1]; V[2] = starCatlog.V[2];
+	mBase.Multi(R, V, W, 3, 3, 1);
+	//x0=y0=512,f=43.3mm,像元大小0.015mm
+	double x0 = 2048/2, y0 = 2048/2;
+	double f = 0.055086;
+	double pixel = 11 / 1.e6;
+	if (W[2] > 0)
+	{
+		x = (x0 - W[0] / W[2] * f / pixel);
+		y = (y0 - W[1] / W[2] * f / pixel);
+	}
+	else
+	{
+		x = -x0-1, y = -y0-1;
+	}//这个是用来判断是否和星敏指向的半球方向一致
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：根据恒星亮度等级，计算仿真星图的亮度DN值
+//输入：Mag:恒星星等；
+//输出：DN值
+//注意：定义星等3为255亮度，小于星等3的也为255
+//日期：2016.12.08
+//////////////////////////////////////////////////////////////////////////
+int ParseSTG::Mag2DN(double Mag)
+{
+	int DN = 166 * pow(100, (3 - Mag) / 5)+65;
+	return DN;
+}

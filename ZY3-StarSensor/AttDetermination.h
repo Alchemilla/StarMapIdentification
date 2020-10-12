@@ -17,7 +17,11 @@ public:
 	void AttDeter4(vector<STGData> AttData);
 	//static attitude determination
 	bool q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater);
+	bool q_MethodforJL106(vector<StarGCP> getGCP, StarCaliParam Param, Quat& quater);
+	bool q_MethodForLuojia(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater, vector<Orbit_Ep>imgOrb);
 	void luojiaAlinFix(vector<Quat>LJCamera, Quat quater, SateEuler &ruEuler);//修正偏置矩阵
+	void jl106AlinFix(double R, double P, double Y, Quat starsensor, Quat camera, SateEuler& ruEuler);//吉林一号偏置矩阵
+	void CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEuler);//计算光轴夹角
 
 	//卡尔曼滤波
 	void EKF6StateV2(vector<STGData> AttData, vector<Quat> &AttDet, int StarTag);
@@ -41,6 +45,12 @@ public:
 	void GetImBm(vector<vector<StarGCP >>getGCP, const StarCaliParam Param, vector<vector<BmImStar >>&BmIm);
 	void GetImRm(vector<vector<BmImStar >>&BmIm);
 	bool Aberration(vector<vector<BmImStar>>& BmIm, vector<Orbit_Ep> EpDat);
+	bool AberrationForLuojia(StarGCP &Im, vector<Orbit_Ep> EpDat);
+	bool AberrationForLuojia2(StarGCP &Im, vector<Orbit_Ep> EpDat);
+	void CalcXYaccuracy(vector<StarGCP> starCatlog, Quat quater, vector<Orbit_Ep>imgOrb);
+	void CalcStarExtractAccuracy(vector<StarGCP> starCatlog);
+	bool readCompensate(string sPath, FrameDistortion& param);//读取内定标参数
+	void getCoorInCamera(FrameDistortion param, double x, double y, double &cx, double &cy);//畸变校正
 	//添加了陀螺尺度和安装
 	void EKF15State(vector<STGData> AttData, Quat *EKFres, double *xest_store);
 

@@ -12,6 +12,181 @@
 int main(int argc, char* argv[])
 {
 	//////////////////////////////////////////////////////////////////////////
+	//功能：定标仿真
+	//参数：sim
+	//日期：2020.08.01
+	//////////////////////////////////////////////////////////////////////////	
+	if (argc=2&&strcmp(argv[1],"sim")==0)
+	{
+		APScalibration ZY3_calibrate;
+		AttDetermination mDeter;
+		vector<vector<StarGCP>> realGCPall;
+		vector<vector<StarGCP>> getGCPall;
+		int nImg = 2;
+		ZY3_calibrate.workpath = "F:\\珞珈一号\\星图仿真\\";
+		ZY3_calibrate.ZY302CaliParam.f = 28790;
+		ZY3_calibrate.ZY302CaliParam.x0 = 530;
+		ZY3_calibrate.ZY302CaliParam.y0 = 504;
+		ZY3_calibrate.ZY302CaliParam.k1 = -1e-8;
+		ZY3_calibrate.ZY302CaliParam.k2 = 8e-15;
+		//星点随机分布的控制点仿真
+		//ZY3_calibrate.SimulateGCP_RandomXY5Param(nImg, getGCPall);
+		ZY3_calibrate.SimulateGCP_RandomXY(nImg, realGCPall, getGCPall);//这个反而是5参数
+		//printf("\n开始定标\n");
+		//Kalman Filter定标
+		//ZY3_calibrate.Calibrate3ParamKalman(getGCPall);
+		//ZY3_calibrate.Calibrate5ParamKalman(getGCPall);
+
+		
+		Quat realQuat, estQuat;
+		mDeter.q_Method(realGCPall[0], ZY3_calibrate.ZY302CaliParam, realQuat);
+		StarCaliParam estParam;
+		estParam.f = 2879.029;
+		estParam.x0 = 529.946;
+		estParam.y0 = 504.083;
+		estParam.k1 = -0.995e-8;
+		estParam.k2 = 7.96e-15;
+		estParam = ZY3_calibrate.ZY302CaliParam;
+		mDeter.q_Method(getGCPall[0], estParam, estQuat);
+		SateEuler ruEuler;
+		mDeter.CalOptAngle(estQuat, realQuat, ruEuler);
+	}
+	//////////////////////////////////////////////////////////////////////////
+	//功能：吉林一号视频06星恒星拍摄处理
+	//参数：F:\珞珈一号\视频06北极星数据 6
+	//日期：2020.05.06
+	//////////////////////////////////////////////////////////////////////////	
+	if (argc == 3 && atoi(argv[2]) == 6)
+	{
+		BaseFunc mBase;
+		StarExtract mExtract;
+		ParseSTG mStarMap;
+		StarIdentify mStarid;
+		AttDetermination mDeter;
+		vector<string>rawRaw;
+		//mStarMap.StarMapForJL01("");
+
+		string path[5];
+		path[0] = (string)argv[1] + "\\06-602-101-MSS1\\";
+		path[1] = (string)argv[1] + "\\06-606-101-MSS1\\";
+		path[2] = (string)argv[1] + "\\06-617-101-MSS1\\";
+		path[3] = (string)argv[1] + "\\06-653-101-MSS1\\";
+		path[4] = (string)argv[1] + "\\06-696-101-MSS1\\";
+
+		vector<string>rawPath;
+		//mBase.search_directory(path[0].c_str(), "raw", rawPath);
+		//计算吉林一号背景值
+		//mExtract.StarCameraBackgroundForJiLin(rawPath);
+
+		string fresult= (string)argv[1] + "\\result.txt";
+		FILE* fp = fopen(fresult.c_str(),"w");
+
+		for (int k = 0; k < 5; k++)
+		{
+			//mBase.search_directory(path, "raw", rawRaw);
+			vector<string>csvPath;
+			vector<string>ptsPath;
+			mBase.search_directory(path[k], "csv", csvPath);
+			mBase.search_directory(path[k], "pts", ptsPath);
+
+			vector<img> imgJL106; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			StarCaliParam param; Quat camQuat; SateEuler ruEuler;
+			//param.f = 6500 / tan(0.6360615424140929 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
+			param.f = 3.2/5.5*1000000;
+			param.x0 = 6000, param.y0 = 2500;
+			mStarMap.ReadJL106csv(csvPath[0], imgJL106, att, sa, sb, sc);
+			SateEuler attEuler, saEuler, sbEuler, scEuler;
+		
+			fprintf(fp, "第%d组数据结果\n",k+1);
+
+			for (int i = 0; i < ptsPath.size(); i++)
+			{
+			vector<StarGCP> camGCP;
+			mStarid.GetStarGCPforJL106(ptsPath[i], camGCP, imgJL106);//建立相机与恒星控制点
+			mDeter.q_MethodforJL106(camGCP, param, camQuat);//根据qMethod来建立相机在J2000下姿态
+
+			//相机和J2000姿态
+			Quat q_inter ;
+			mBase.QuatInterpolation(att, camQuat.UTC,q_inter);
+			//double R = 0.0080626; double P = 0.0016332; double Y = 1.5318972;//第一组数据
+			//double R = 0.0080833780663713863; double P = 0.0016727918023371185; double Y = 1.5318656051912103;//第二组数据
+			double R = 0; double P = 0; double Y = 0;
+			mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
+			attEuler.R += ruEuler.R; attEuler.P += ruEuler.P; attEuler.Y += ruEuler.Y;
+			
+			//相机和星敏A
+			mBase.QuatInterpolation(sa, camQuat.UTC, q_inter);
+			//R = -2.0519748102509858; P = -0.37776605409000874; Y = 1.7599317995056509;//第一组数据
+			//R = -2.0519494937534994, P = -0.37781030587897191, Y = 1.7602067474217258;
+			mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
+		
+			//相机和星敏B
+			mBase.QuatInterpolation(sb, camQuat.UTC, q_inter);
+			//R =-2.4633377318613845;  P = 1.0430306902972233;  Y = 0.73574831167596222;//第一组数据
+			//R = -2.4632432222205840, P = 1.0429908761382047, Y = 0.73584449129197604;
+			mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
+			
+			//相机和星敏C
+			mBase.QuatInterpolation(sc, camQuat.UTC, q_inter);
+			 //R = 2.2216920686545469;  P = 0.21132185766620937;  Y = -1.4169616320250062;//第一组数据
+			// R = 2.2216750200474640, P = 0.21135179320464545, Y = -1.4170581238980589;
+			mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
+
+			}
+			attEuler.R = attEuler.R / ptsPath.size();
+			attEuler.P = attEuler.P / ptsPath.size();
+			attEuler.Y = attEuler.Y / ptsPath.size();
+
+			for (int i = 0; i < ptsPath.size(); i++)
+			{
+				vector<StarGCP> camGCP;
+				mStarid.GetStarGCPforJL106(ptsPath[i], camGCP, imgJL106);//建立相机与恒星控制点
+				mDeter.q_MethodforJL106(camGCP, param, camQuat);//根据qMethod来建立相机在J2000下姿态
+
+				//相机和J2000姿态
+				Quat q_inter;
+				mBase.QuatInterpolation(att, camQuat.UTC, q_inter);
+				//double R = 0.0080626; double P = 0.0016332; double Y = 1.5318972;//第一组数据
+				//double R = 0.0080833780663713863; double P = 0.0016727918023371185; double Y = 1.5318656051912103;//第二组数据
+				//double R = 0; double P = 0; double Y = 0;
+				mDeter.jl106AlinFix(attEuler.R, attEuler.P, attEuler.Y, q_inter, camQuat, ruEuler);
+				fprintf(fp, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, ruEuler.UTC);
+
+				//相机和星敏A
+				//mBase.QuatInterpolation(sa, camQuat.UTC, q_inter);
+				//R = -2.0519748102509858; P = -0.37776605409000874; Y = 1.7599317995056509;//第一组数据
+				//R = -2.0519494937534994, P = -0.37781030587897191, Y = 1.7602067474217258;
+				//mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
+				//fprintf(fp, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, ruEuler.UTC);
+
+				//相机和星敏B
+				//mBase.QuatInterpolation(sb, camQuat.UTC, q_inter);
+				//R =-2.4633377318613845;  P = 1.0430306902972233;  Y = 0.73574831167596222;//第一组数据
+				//R = -2.4632432222205840, P = 1.0429908761382047, Y = 0.73584449129197604;
+				//mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
+				//fprintf(fp, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, ruEuler.UTC);
+
+				//相机和星敏C
+				//mBase.QuatInterpolation(sc, camQuat.UTC, q_inter);
+				//R = 2.2216920686545469;  P = 0.21132185766620937;  Y = -1.4169616320250062;//第一组数据
+				//R = 2.2216750200474640, P = 0.21135179320464545, Y = -1.4170581238980589;
+				//mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
+				//fprintf(fp, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, ruEuler.UTC);
+
+				//fprintf(fp, "\n");
+			}
+		}
+		fclose(fp);
+		//;
+
+		//给raw图像加上hdr，方便在ENVI上查看
+		//mExtract.addHDRForJiLin(vecRaw);
+		//计算吉林一号背景值
+		//mExtract.StarCameraBackgroundForJiLin(vecRaw);
+
+
+	}
+	//////////////////////////////////////////////////////////////////////////
 	//功能：珞珈一号恒星拍摄处理
 	//日期：2019.04.17
 	//////////////////////////////////////////////////////////////////////////	
@@ -23,12 +198,80 @@ int main(int argc, char* argv[])
 		double f = 0.055086;
 		double pixel = 11 / 1.e6;
 		Param.f = f/pixel; Param.x0=1024, Param.y0 = 1024;
-		Quat quater; SateEuler ruEuler;
-		LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\";
-		LJAtt.CalcLuojiaCamOpt(LJCamera);
-		LJstar.GetStarGCPForLuojia(LJCamera, starGCPLuojia);
-		LJdeter.q_Method(starGCPLuojia, Param, quater);
-		LJdeter.luojiaAlinFix(LJCamera,quater,ruEuler);
+		Quat quater; SateEuler ruEuler; YMD imgTime;  Quat imgAtt; string orbPath; Orbit_Ep imgOrb;
+
+		int cali = 1;
+		if(cali==0)
+		{
+			vector<Orbit_Ep>vecOrb;
+			LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\328\\";
+			LJdeter.workpath = LJAtt.workpath;
+			orbPath = LJAtt.workpath + "LuoJia1-01_LR201904012992.orb";
+			LJAtt.CalcLuojiaCamOpt(LJCamera);
+			LJstar.GetStarGCPForLuojia(LJCamera, starGCPLuojia);
+			LJAtt.ReadLuojiaAllOrb(orbPath, vecOrb);
+			LJdeter.q_MethodForLuojia(starGCPLuojia, Param, quater, vecOrb);
+			LJdeter.CalcXYaccuracy(starGCPLuojia, quater,vecOrb);
+			LJdeter.CalcStarExtractAccuracy(starGCPLuojia);
+			LJdeter.luojiaAlinFix(LJCamera, quater, ruEuler);
+		}
+		
+
+		for (int aa = 0; aa < 5; aa++)
+		{
+			aa = 5;
+			if(aa==0)
+			{ //53
+				LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\53\\";
+				orbPath = LJAtt.workpath + "LuoJia1-01_LR201806284987.orb";
+				imgTime.year = 2018; imgTime.mon = 06; imgTime.day = 27;
+				imgTime.hour = 23; imgTime.min = 43; imgTime.sec = 24.152792;
+			}
+			else if(aa==1)
+			{//237
+				LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\237\\";
+				orbPath = LJAtt.workpath + "LuoJia1-01_LR201811259738.orb";
+				imgTime.year = 2018; imgTime.mon = 11; imgTime.day = 23;
+				imgTime.hour = 22; imgTime.min = 45; imgTime.sec = 5.287655;
+			}
+			else if (aa == 2)
+			{//315
+				LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\315\\";
+				orbPath = LJAtt.workpath + "LuoJia1-01_LR201903232988.orb";
+				imgTime.year = 2019; imgTime.mon = 03; imgTime.day = 22;
+				imgTime.hour = 17; imgTime.min = 40; imgTime.sec = 19.187868;
+			}
+			else if (aa == 3)
+			{//21
+				LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\21\\";
+				orbPath = LJAtt.workpath + "LuoJia1-01_LR201806109671.orb";
+				imgTime.year = 2018; imgTime.mon = 06; imgTime.day = 10;
+				imgTime.hour = 8; imgTime.min = 4; imgTime.sec = 10.652282;
+			}
+			else if (aa == 4)
+			{//21
+				LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\328\\";
+				orbPath = LJAtt.workpath + "LuoJia1-01_LR201904012992.orb";
+				imgTime.year = 2019; imgTime.mon = 04; imgTime.day = 1;
+				imgTime.hour = 3; imgTime.min = 33; imgTime.sec = 15.696408;
+			}
+			else if (aa == 5)
+			{//521
+				LJAtt.workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\521\\";
+				orbPath = LJAtt.workpath + "LuoJia1-01_LR000000000000.orb";
+				imgTime.year = 2019; imgTime.mon = 05; imgTime.day = 21;
+				imgTime.hour = 15; imgTime.min = 3; imgTime.sec = 0.148440;
+			}
+			LJAtt.CalcLuojiaCamOpt(LJCamera);
+			LJAtt.ReadLuojiaAtt(LJCamera, imgTime, imgAtt);
+			LJAtt.ReadLuojiaOrb(orbPath, imgTime, imgOrb);
+			LJAtt.GetEuler(imgTime, imgOrb);
+			LJAtt.MoonDirectionForLuojia(imgOrb, imgAtt, imgTime);
+		}
+		
+
+	
+
 
 		LJAtt.StarMapForLuojia(LJCamera);
 		StarExtract Luojia01;

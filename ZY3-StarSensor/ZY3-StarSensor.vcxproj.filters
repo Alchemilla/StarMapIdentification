@@ -58,6 +58,9 @@
     <ClInclude Include="EOP_files.h">
       <Filter>0-基本函数</Filter>
     </ClInclude>
+    <ClInclude Include="tinyxml.h">
+      <Filter>0-基本函数</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StarIdentify.cpp">
@@ -89,6 +92,15 @@
     </ClCompile>
     <ClCompile Include="AttSim.cpp">
       <Filter>1-姿态数据</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml.cpp">
+      <Filter>0-基本函数</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxmlerror.cpp">
+      <Filter>0-基本函数</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxmlparser.cpp">
+      <Filter>0-基本函数</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

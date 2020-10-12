@@ -779,6 +779,61 @@ void BaseFunc::QuatInterpolation(vector<Quat>Att, double *UTC, int interNum, Qua
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：单个四元数内插
+//输入：Att：原始四元数；UTC：内插时间点；
+//输出：m_att：内插后四元数
+//注意：四元数时间范围要大于陀螺时间UTC范围
+//作者：GZC
+//日期：2020.07.30
+//////////////////////////////////////////////////////////////////////////
+void BaseFunc::QuatInterpolation(vector<Quat>Att, double UTC, Quat &m_att)
+{
+	int AttNum = Att.size();
+	if (AttNum < 2) { printf("QuatInterpolation Error：AttNum is less than 2, can't interpolation!\n");	return; }
+	// 寻找临近的两个点(对分查找)
+	Quat attleft, attright, att;
+	long posstart, posend, pos;
+		posstart = 0, posend = AttNum - 1, pos = 0;
+		while (posstart < posend)
+		{
+			pos = (posstart + posend) / 2;
+			if (pos == posstart) break;	// 记得加上这句判断,否则会陷入死循环
+			if ((Att[pos].UTC <= UTC) && (Att[pos + 1].UTC > UTC))
+				break;
+			if (Att[pos].UTC <= UTC)
+				posstart = pos;
+			else
+				posend = pos;
+		}
+		if (pos < 0)	pos = 0;
+		if (pos >= AttNum - 1)		pos = AttNum - 2;
+		attleft = Att[pos];		attright = Att[pos + 1];
+
+		// 进行内插
+		double sp, sq;
+		double t = (UTC - attleft.UTC) / (attright.UTC - attleft.UTC);
+		double cosa = attleft.Q0 * attright.Q0 + attleft.Q1 * attright.Q1 + attleft.Q2 * attright.Q2 + attleft.Q3 * attright.Q3;
+		// 这个错误需要注意了,防止邻近两个值互为反号的情况,需要确保length>0
+		if (cosa < 0)
+		{
+			cosa = -cosa;
+			attright.Q0 = -attright.Q0;	attright.Q1 = -attright.Q1;	attright.Q2 = -attright.Q2;	attright.Q3 = -attright.Q3;
+		}
+		if (cosa > 0.9999f)
+		{
+			sp = 1.0 - t;	sq = t;
+		}
+		else
+		{
+			double sina = sqrt(1.0 - pow(cosa, 2));	double a = atan2(sina, cosa);	double invSina = 1.0 / sina;
+			sp = sin((1.0 - t) * a) * invSina;			sq = sin(t * a) * invSina;
+		}
+		m_att.Q0 = sp * attleft.Q0 + sq * attright.Q0;	m_att.Q1 = sp * attleft.Q1 + sq * attright.Q1;
+		m_att.Q2 = sp * attleft.Q2 + sq * attright.Q2;	m_att.Q3 = sp * attleft.Q3 + sq * attright.Q3;
+		m_att.UTC = UTC;
+
+}
+//////////////////////////////////////////////////////////////////////////
 //功能：轨道拉格朗日内插
 // 输入:
 //		StrOrbitPoint *Eph：存储轨道点的结构体数组指针
@@ -954,3 +1009,78 @@ double BaseFunc::AverageRand(double min, double max, int num, double * randnum)
 	return 0.0;
 }
 
+double  BaseFunc::getValue_poly(double* px, int order, double x, double y)
+{
+	double value = 0;
+	int nIndex = 0;
+	for (int ny = 0; ny <= order; ny++)
+	{
+		int endx = order - ny;
+		double powy = pow(y, ny);
+		for (int nx = 0; nx <= endx; nx++)
+		{
+			value += px[nIndex] * powy*pow(x, nx);
+			nIndex++;
+		}
+	}
+	return value;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//搜索文件
+//////////////////////////////////////////////////////////////////////////
+void BaseFunc::search_directory(const string& caseFileName, char *File_ext, vector<string>& ResPath)
+{
+	if (GetFileAttributes(caseFileName.c_str()) & FILE_ATTRIBUTE_DIRECTORY)
+	{
+		char path[MAX_PATH];
+		WIN32_FIND_DATA fData;
+		HANDLE handle;
+
+		string strFile;
+		int  pos;
+		string  strFileExt;
+
+		sprintf(path, "%s/*", caseFileName.c_str());
+		handle = FindFirstFile(path, &fData);
+
+		if (INVALID_HANDLE_VALUE == handle)
+		{
+			return;
+		}
+
+		do {
+			if (fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				if (!strcmp(fData.cFileName, ".") || !strcmp(fData.cFileName, ".."))
+				{
+					continue;
+				}
+
+				search_directory(caseFileName + string(fData.cFileName) + string("\\"), File_ext, ResPath);
+			}
+			else
+			{
+				strFile = fData.cFileName;
+				pos = strFile.find_last_of('.');
+				if (pos > 0)
+				{
+					strFileExt = strFile.substr(pos + 1);
+					if (0 == strcmp(File_ext, _strlwr((char *)strFileExt.c_str())))
+					{
+						char temp[1024];
+						sprintf(temp, "%s%s", caseFileName.c_str(), fData.cFileName);
+						ResPath.push_back(temp);
+					}
+				}
+			}
+		} while (FindNextFile(handle, &fData));
+
+		FindClose(handle);
+	}
+	else
+	{
+		printf("%s\n", caseFileName.c_str());
+	}
+
+}

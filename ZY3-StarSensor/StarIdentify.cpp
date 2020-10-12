@@ -1137,7 +1137,7 @@ void StarIdentify::GetStarGCPForLuojia(vector<Quat> LuojiaCam, vector<StarGCP> &
 	double R[9];
 	double x, y;
 	char GCPpathtmp[100];
-	workpath = "D:\\珞珈一号恒星\\";
+	workpath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\328\\RC产品\\";
 	
 	// 影像的宽度和高度
 	long width = 2048, height = 2048;
@@ -1147,6 +1147,9 @@ void StarIdentify::GetStarGCPForLuojia(vector<Quat> LuojiaCam, vector<StarGCP> &
 	ParseSTG pLuojia; StarGCP starGCPtmp;
 	GeoReadImage ImgStarMap;
 
+	FrameDistortion param;
+	string cbrPath = "C:\\Users\\wcsgz\\Downloads\\珞珈0级产品\\328\\2018-06-28.cbr";
+	mAtt.readCompensate(cbrPath, param);
 	//for (i = 0; i < 146; i++)
 	//{
 	i = 1;
@@ -1198,21 +1201,28 @@ void StarIdentify::GetStarGCPForLuojia(vector<Quat> LuojiaCam, vector<StarGCP> &
 					for (int b = 0; b < 5; b++)
 					{
 						DN = ImgStarMap.GetDataValue(xMax, yMax++, 0, 0);
-						sum_x += xMax * pow(DN, 3);//这里x定义为沿轨向
-						sum_y += yMax * pow(DN, 3);//这里y定义为垂轨向
+						sum_x += (xMax+0.5) * pow(DN, 3);//这里x定义为沿轨向
+						sum_y += (yMax-0.5) * pow(DN, 3);//这里y定义为垂轨向
 						area += pow(DN, 3);
 					}
 					yMax -= 5;
 					xMax++;
 				}
+				starGCPtmp.UTC = LuojiaCam[i + 7].UTC;
 				starGCPtmp.x = sum_x / area;
 				starGCPtmp.y = sum_y / area;
+				double cx, cy;
+				double f = 0.055086;
+				double pixel = 11 / 1.e6;
+				mAtt.getCoorInCamera(param, starGCPtmp.x, starGCPtmp.y, cx,cy);
+				starGCPtmp.x = 1024 - cx * f / pixel;
+				starGCPtmp.y = 1024 - cy * f / pixel;
 				starGCPtmp.V[0] = starCatlog[j].V[0]; starGCPtmp.V[1] = starCatlog[j].V[1]; starGCPtmp.V[2] = starCatlog[j].V[2];
 				starGCPLuojia.push_back(starGCPtmp);
 				}
 			}
 		}
-		OutputGCPForLuojia(starGCPLuojia);
+		//OutputGCPForLuojia(starGCPLuojia);
 	//}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1242,6 +1252,45 @@ void StarIdentify::OutputGCPForLuojia(vector<StarGCP> &getGCP)
 	}
 	fclose(fp);
 }
+
+//////////////////////////////////////////////////////////////////////////
+//功能：读取吉林一号控制点
+//输入：存储控制点文件
+//输出：StarGCP控制点vector
+//注意：星点存储格式满足StarGCP结构体的要求
+//作者：GZC
+//日期：2020.07.28
+//////////////////////////////////////////////////////////////////////////
+void StarIdentify::GetStarGCPforJL106(string gcpPath, vector<StarGCP>&JLcam, vector<img> imgJL106)
+{
+	string strID = gcpPath.substr(gcpPath.rfind('-') + 1);
+	strID = strID.substr(0, strID.rfind('.'));
+	int id = atoi(strID.c_str());
+	FILE* fp = fopen(gcpPath.c_str(),"r");
+	int m;
+	fscanf(fp,"%d\n",&m);
+	for (int i = 0; i < m; i++)
+	{
+		StarGCP gcptmp;
+		float ra,dec;
+		fscanf(fp,"%lf\t%lf\t%f\t%f\n",&gcptmp.x,&gcptmp.y,&ra,&dec);
+		gcptmp.V[0] = cos(ra / 180 * PI)*cos(dec / 180 * PI);
+		gcptmp.V[1] = sin(ra / 180 * PI)*cos(dec / 180 * PI);
+		gcptmp.V[2] = sin(dec / 180 * PI);
+		JLcam.push_back(gcptmp);
+	}
+	fclose(fp);
+	fp = NULL;
+	for (int i = 0; i < imgJL106.size(); i++)
+	{
+		if (imgJL106[i].id == id)
+		{
+			JLcam[0].UTC = imgJL106[i].time;
+			break;
+		}
+	}
+}
+
 
 ////////////////////////////////////////
 //基本算法部分：

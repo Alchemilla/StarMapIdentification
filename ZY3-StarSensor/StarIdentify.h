@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include"ParseSTG.h"
+#include"AttDetermination.h"
 using namespace Eigen;
 using namespace std;
 
@@ -46,6 +47,7 @@ public:
 	//恒星控制点提取
 	ParseSTG mSTGfunc;
 	BaseFunc mBase;
+	AttDetermination mAtt;
 	void GetStarGCP(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
 	void GetStarGCP0702(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
 	void GetStarGCP0707(vector<STGData> ZY3_02STGdata, vector<StarPoint> StarPointExtract, int index);
@@ -54,6 +56,8 @@ public:
 	void OutputGCPForLuojia(vector<StarGCP> &getGCP);
 	vector<StarGCP> getGCP;
 	string workpath;
+	//吉林一号恒星控制点获取
+	void GetStarGCPforJL106(string gcpPath, vector<StarGCP>& JLcam, vector<img> imgJL106);
 private: 
 		 //升序降序函数
 	bool static LessSort (vector<double> a,vector<double> b);

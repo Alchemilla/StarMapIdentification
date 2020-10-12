@@ -95,7 +95,180 @@ void StarExtract::StarCameraBackground(int index1,int index2)
 	ImgBackground.Destroy();
 	ImgBW.Destroy();
 }
+void StarExtract::addHDRForJiLin(vector<string>vecRaw)
+{
+	for (int i = 0; i < vecRaw.size(); i++)
+	{
+		string tmp = vecRaw[i].substr(0, vecRaw[i].rfind('.')+1)+"hdr";
+		FILE *fp = fopen(tmp.c_str(),"w");
+		string hdr= R"(ENVI
+description = {
+  File Imported into ENVI.}
+samples = 12000
+lines   = 5000
+bands   = 1
+header offset = 0
+file type = ENVI Standard
+data type = 1
+interleave = bsq
+sensor type = Unknown
+byte order = 0
+wavelength units = Unknown
+   )";
+		fprintf(fp,hdr.c_str());
+		fclose(fp);
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+//功能：提取吉林一号06视频星星图的背底噪声
+//输入：相机拍摄的序列星图
+//输出：背底噪声
+//注意：
+//作者：GZC
+//日期：2020.05.06
+//////////////////////////////////////////////////////////////////////////
+void StarExtract::StarCameraBackgroundForJiLin(vector<string>vecRaw)
+{
+	GeoReadImage ImgStarMap, ImgBack, ImgBW;
+	char pathtmp[512];
+	width = 12000;
+	height = 5000;
+	string path = vecRaw[0].substr(0,vecRaw[0].rfind('\\')+1);
 
+	int *ImgDN = new int[width * height];
+	int* ImgDNnew = new int[width * height];
+	int *ImgDNcount = new int[width * height];
+	int* ImgDNequal = new int[width];
+	int* ImgDNequal2 = new int[width];
+	int* ImgDNequalcount = new int[width];
+	memset(ImgDN, 0, sizeof(int) * width * height);
+	memset(ImgDNnew, 0, sizeof(int) * width * height);
+	memset(ImgDNcount, 0, sizeof(int) * width * height);
+	memset(ImgDNequal, 0, sizeof(int) * width );
+	memset(ImgDNequal2, 0, sizeof(int) * width);
+	memset(ImgDNequalcount, 0, sizeof(int) * width);
+	//for (int a = 0; a < vecRaw.size(); a++)
+	////{
+	//	if (a % 10 == 0)
+	//	{
+	//		printf("\r正在读取第%d景", a);
+	//	}
+	//	
+		ImgStarMap.Open(vecRaw[0], GA_ReadOnly);
+		ImgStarMap.ReadBlock(0, 0, width, height, 0, ImgStarMap.pBuffer[0]);
+
+		//先把所有影像加起来
+		for (long i = 0; i < height; i++)
+		{
+			for (long j = 0; j < width; j++)
+			{
+				ImgDN[width * i + j] += ImgStarMap.GetDataValue(j, i, 0, 0);
+				ImgDNcount[width * i + j]++;
+			}
+		}
+	//}
+	//平均一下每个像素的值
+	for (long i = 0; i < height; i++)
+	{
+		for (long j = 0; j < width; j++)
+		{
+			ImgDN[width * i + j] = ImgDN[width * i + j]/ ImgDNcount[width * i + j];
+		}
+	}
+	//计算每一列的均值
+	for (long i = 0; i < width; i++)
+	{
+		for (long j = 0; j < height; j++)
+		{
+			ImgDNequal[i] += ImgDN[i + width * j];
+		}
+	}
+	for (long i = 0; i < width; i++)
+	{
+		ImgDNequal[i] = ImgDNequal[i] / height;
+	}
+	//大于均值一定阈值的不参与背景均值计算
+	for (long i = 0; i < width; i++)
+	{
+		for (long j = 0; j < height; j++)
+		{
+			if (ImgDN[ i + width * j]<ImgDNequal[i]+3&& ImgDN[i + width * j] > ImgDNequal[i] -3)
+			{
+				ImgDNequal2[i]+=ImgDN[i + width* j] ;
+				ImgDNequalcount[i]++;
+			}
+		}
+	}
+	//重新给每个像素赋值
+	for (long i = 0; i < width; i++)
+	{
+		for (long j = 0; j < height; j++)
+		{
+			ImgDNnew[i + width* j] = ImgDNequal2[i] / ImgDNequalcount[i];
+		}
+	}
+	sprintf_s(pathtmp, "吉林一号背景值.tiff");
+	string pathres = path + (string)pathtmp;
+	ImgBack.New(pathres, "GTiff", GDT_Byte, width, height, 1);
+	ImgBack.Destroy();
+	ImgBack.Open(pathres, GA_Update);
+	ImgBack.SetBuffer(0, 0, width, height, ImgBack.pBuffer[0]);
+	for (long i = 0; i < height; i++)
+	{
+		for (long j = 0; j < width; j++)
+		{
+			if (ImgDNcount[width * i + j] != 0)
+			{
+				double DN = ImgDNnew[width * i + j];
+				ImgBack.SetDataValue(j, i, DN, 0);
+			}
+			else
+			{
+				ImgBack.SetDataValue(j, i, 0, 0);
+			}
+		}
+	}
+	ImgBack.WriteBlock(0, 0, width, height, 0, ImgBack.pBuffer[0]);
+
+	sprintf_s(pathtmp, "星点提取值.tiff");
+	pathres = path + (string)pathtmp;
+	ImgBW.New(pathres, "GTiff", GDT_Byte, width, height, 1);
+	ImgBW.Destroy();
+	ImgBW.Open(pathres, GA_Update);
+	ImgBW.SetBuffer(0, 0, width, height, ImgBW.pBuffer[0]);
+	for (long i = 0; i < height; i++)
+	{
+		for (long j = 0; j < width; j++)
+		{
+			if (ImgDNcount[width * i + j] != 0)
+			{				
+				if (ImgDNnew[width * i + j]- ImgDN[width * i + j]>3|| ImgDNnew[width * i + j] - ImgDN[width * i + j]<-3)
+				{
+					ImgBW.SetDataValue(j, i, ImgDN[width * i + j], 0);
+				}
+				else
+				{
+					ImgBW.SetDataValue(j, i, 0, 0);
+				}
+			}
+			else
+			{
+				ImgBW.SetDataValue(j, i, 0, 0);
+			}
+		}
+	}
+	ImgBW.WriteBlock(0, 0, width, height, 0, ImgBW.pBuffer[0]);
+
+	free(ImgDN);
+	free(ImgDNnew);
+	free(ImgDNcount);
+	free(ImgDNequal);
+	free(ImgDNequal2);
+	free(ImgDNequalcount);
+	ImgStarMap.Destroy();
+	ImgBack.Destroy();
+	ImgBW.Destroy();
+}
 //////////////////////////////////////////////////////////////////////////
 //功能：提取星点坐标
 //输入：在主函数中输入工作路径
