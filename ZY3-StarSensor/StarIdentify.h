@@ -58,6 +58,8 @@ public:
 	string workpath;
 	//吉林一号恒星控制点获取
 	void GetStarGCPforJL106(string gcpPath, vector<StarGCP>& JLcam, vector<img> imgJL106);
+	void GetStarGCPforJL106(string gcpPath, vector<StarGCP>& JLcam, vector<img> imgJL106, img& imgLat);
+	void GetCamOptforJL107(string optPath, StarGCP& JLcam, vector<img> imgJL107);
 private: 
 		 //升序降序函数
 	bool static LessSort (vector<double> a,vector<double> b);

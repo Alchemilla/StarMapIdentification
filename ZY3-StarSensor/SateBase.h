@@ -92,6 +92,9 @@ struct img
 {
 	int id;
 	double time;
+	double lon, lat;
+	double sst[3];//3¿ÅĞÇÃôÎÂ¶È
+	double inst[3];//3¿ÅĞÇÃôÖ§¼ÜÎÂ¶È
 };
 
 //struct for STG data of ZY302

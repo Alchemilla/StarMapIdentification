@@ -22,6 +22,7 @@ public:
 	void luojiaAlinFix(vector<Quat>LJCamera, Quat quater, SateEuler &ruEuler);//ĞŞÕıÆ«ÖÃ¾ØÕó
 	void jl106AlinFix(double R, double P, double Y, Quat starsensor, Quat camera, SateEuler& ruEuler);//¼ªÁÖÒ»ºÅÆ«ÖÃ¾ØÕó
 	void CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEuler);//¼ÆËã¹âÖá¼Ğ½Ç
+	void CalOptAngleforJL107(StarGCP cam, Quat starsensor, double& theta);
 
 	//¿¨¶ûÂüÂË²¨
 	void EKF6StateV2(vector<STGData> AttData, vector<Quat> &AttDet, int StarTag);

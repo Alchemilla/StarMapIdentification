@@ -1290,7 +1290,76 @@ void StarIdentify::GetStarGCPforJL106(string gcpPath, vector<StarGCP>&JLcam, vec
 		}
 	}
 }
+//////////////////////////////////////////////////////////////////////////
+//功能：读取吉林一号控制点
+//输入：存储控制点文件
+//输出：StarGCP控制点vector
+//注意：星点存储格式满足StarGCP结构体的要求
+//作者：GZC
+//日期：2020.07.28
+//////////////////////////////////////////////////////////////////////////
+void StarIdentify::GetStarGCPforJL106(string gcpPath, vector<StarGCP>& JLcam, vector<img> imgJL106, img &imgLat)
+{
+	string strID = gcpPath.substr(gcpPath.rfind('-') + 1);
+	strID = strID.substr(0, strID.rfind('.'));
+	int id = atoi(strID.c_str());
+	FILE* fp = fopen(gcpPath.c_str(), "r");
+	int m;
+	fscanf(fp, "%d\n", &m);
+	for (int i = 0; i < m; i++)
+	{
+		StarGCP gcptmp;
+		float ra, dec;
+		fscanf(fp, "%lf\t%lf\t%f\t%f\n", &gcptmp.x, &gcptmp.y, &ra, &dec);
+		gcptmp.V[0] = cos(ra / 180 * PI) * cos(dec / 180 * PI);
+		gcptmp.V[1] = sin(ra / 180 * PI) * cos(dec / 180 * PI);
+		gcptmp.V[2] = sin(dec / 180 * PI);
+		JLcam.push_back(gcptmp);
+	}
+	fclose(fp);
+	fp = NULL;
+	for (int i = 0; i < imgJL106.size(); i++)
+	{
+		if (imgJL106[i].id == id)
+		{
+			JLcam[0].UTC = imgJL106[i].time;
+			imgLat.lat = imgJL106[i].lat;
+			break;
+		}
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+//功能：读取吉林一号控制点
+//输入：存储控制点文件
+//输出：StarGCP控制点vector
+//注意：星点存储格式满足StarGCP结构体的要求
+//作者：GZC
+//日期：2020.10.13
+//////////////////////////////////////////////////////////////////////////
+void StarIdentify::GetCamOptforJL107(string optPath, StarGCP & JLcam, vector<img> imgJL107)
+{
+	FILE* fp = fopen(optPath.c_str(),"r");
+	if (fp!=NULL)
+	{
+		fscanf(fp, "%lf\n%lf\n", &JLcam.x, &JLcam.y);
+	}
+	string strID = optPath.substr(0, optPath.rfind("_001_L1A_MSS"));
+	strID = strID.substr(strID.rfind('_')+1);
+	int id = atoi(strID.c_str());
 
+	JLcam.V[0] = cos(JLcam.x / 180 * PI) * cos(JLcam.y / 180 * PI);
+	JLcam.V[1] = sin(JLcam.x / 180 * PI) * cos(JLcam.y / 180 * PI);
+	JLcam.V[2] = sin(JLcam.y / 180 * PI);
+
+	for (int i = 0; i < imgJL107.size(); i++)
+	{
+		if (imgJL107[i].id == id)
+		{
+			JLcam.UTC = imgJL107[i].time;
+			break;
+		}
+	}
+}
 
 ////////////////////////////////////////
 //基本算法部分：

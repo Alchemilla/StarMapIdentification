@@ -861,7 +861,7 @@ void ParseSTG::ReadJL106csv(string csv, vector<img>&imgJL106, vector<Quat>& att,
 	char buffer[4096];
 	img imgtmp;
 	Quat qtmp;
-	if ((fp = fopen(csv.c_str(), "at+")) != NULL)
+	if ((fp = fopen(csv.c_str(), "r")) != NULL)
 	{
 		line = fgets(buffer, sizeof(buffer), fp);  //跳过第一行
 		int tint;
@@ -970,6 +970,154 @@ void ParseSTG::ReadJL106csv(string csv, vector<img>&imgJL106, vector<Quat>& att,
 			qtmp.Q3 = atof(record);
 			qtmp.Q0 = sqrt(1 - pow(qtmp.Q1, 2) - pow(qtmp.Q2, 2) - pow(qtmp.Q3, 2));
 			att.push_back(qtmp);
+		}
+	}
+	fclose(fp);
+	fp = NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+//功能：读取吉林一号07星csv文件内容
+//输入：csv文件路径
+//输出：吉林一号成像时间，J2000姿态，星敏ABC姿态
+//注意：
+//日期：2020.10.13
+//////////////////////////////////////////////////////////////////////////
+void ParseSTG::ReadJL107csv(string csv, vector<img>& imgJL107, vector<Quat>& att, vector<Quat>& sa, vector<Quat>& sb, vector<Quat>& sc)
+{
+	FILE* fp = NULL;
+	char* line, * record;
+	char buffer[8192];
+	img imgtmp;
+	Quat qtmp;
+	if ((fp = fopen(csv.c_str(), "r")) != NULL)
+	{
+		line = fgets(buffer, sizeof(buffer), fp);  //跳过第一行
+		int tint;
+		double tfloat;
+		int j = 0;
+		while ((line = fgets(buffer, sizeof(buffer), fp)) != NULL)//当没有读取到文件末尾时循环继续
+		{
+			record = strtok(line, ",");
+			record = strtok(NULL, ",");
+			imgtmp.id = atoi(record);
+
+			record = strtok(NULL, ",");
+			record = strtok(NULL, ",");
+			record = strtok(NULL, ",");
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			imgtmp.time = tint + tfloat;
+
+			for (int i = 0; i < 49; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			for (int i = 0; i < 6; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q0 = atof(record);
+			sa.push_back(qtmp);
+
+			record = strtok(NULL, ",");
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			for (int i = 0; i < 6; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q0 = atof(record);
+			sb.push_back(qtmp);
+
+			record = strtok(NULL, ",");
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			for (int i = 0; i < 6; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q0 = atof(record);
+			sc.push_back(qtmp);
+
+			for (int i = 0; i < 7; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			//获取经纬度信息
+			imgtmp.lat = atof(record) / PI * 180;
+			record = strtok(NULL, ",");
+			imgtmp.lon = atof(record) / PI * 180;
+
+			for (int i = 0; i < 26; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			record = strtok(NULL, ",");
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			qtmp.Q0 = sqrt(1 - pow(qtmp.Q1, 2) - pow(qtmp.Q2, 2) - pow(qtmp.Q3, 2));
+			att.push_back(qtmp);
+
+			for (int i = 0; i < 96; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.sst[1]= atof(record);
+			record = strtok(NULL, ",");
+			imgtmp.sst[2] = atof(record);
+			for (int i = 0; i < 4; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.inst[0] = atof(record);
+			for (int i = 0; i < 7; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.sst[0] = atof(record);
+			for (int i = 0; i < 5; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.inst[1] = atof(record);
+			record = strtok(NULL, ",");
+			imgtmp.inst[2] = atof(record);
+
+			imgJL107.push_back(imgtmp);
 		}
 	}
 	fclose(fp);

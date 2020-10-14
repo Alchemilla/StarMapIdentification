@@ -218,7 +218,7 @@ void AttDetermination::jl106AlinFix(double R, double P, double Y, Quat starsenso
 	//夹角
 	double opt[3] = { 0,0,1 };
 	double vstar[3], vcam[3];
-	mbase.invers_matrix(r1, 3);
+	mbase.invers_matrix(r4, 3);//这里用Cjc也就是星敏光轴
 	mbase.Multi(r1, opt, vcam, 3, 3, 1);
 	mbase.Multi(r4, opt, vstar, 3, 3, 1);
 	double ab = vcam[0] * vstar[0] + vcam[1] * vstar[1] + vcam[2] * vstar[2];
@@ -265,6 +265,30 @@ void AttDetermination::CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEu
 
 
 	//printf("%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, theta);
+}
+//////////////////////////////////////////////////////////////////////////
+//功能：吉林一号107光轴角度计算
+//输入：
+//输出：
+//注意：
+//作者：GZC
+//日期：2020.10.13
+//////////////////////////////////////////////////////////////////////////
+void AttDetermination::CalOptAngleforJL107(StarGCP cam, Quat starsensor, double &theta)
+{
+	double r2[9];
+	double opt[3] = { 0,0,1 };
+	double vstar[3], vcam[3];
+	mbase.quat2matrix(starsensor.Q1, starsensor.Q2, starsensor.Q3, starsensor.Q0, r2);//星敏测量转换的Ccj
+	mbase.invers_matrix(r2, 3);
+	//夹角
+	vcam[0] = cam.V[0]; vcam[1] = cam.V[1]; vcam[2] = cam.V[2];
+	mbase.Multi(r2, opt, vstar, 3, 3, 1);
+	double ab = vcam[0] * vstar[0] + vcam[1] * vstar[1] + vcam[2] * vstar[2];
+	double abm = sqrt(vcam[0] * vcam[0] + vcam[1] * vcam[1] + vcam[2] * vcam[2]) * sqrt(vstar[0] * vstar[0] + vstar[1] * vstar[1] + vstar[2] * vstar[2]);
+	double alpha = ab / abm;
+	theta = acos((alpha > 0.999999999999999) ? 0.999999999999999 : (alpha < -0.999999999999999) ? -0.999999999999999 : alpha);
+	theta = theta / PI * 180 * 3600;
 }
 
 //////////////////////////////////////////////////////////////////////////

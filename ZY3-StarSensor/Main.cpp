@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	//参数：sim
 	//日期：2020.08.01
 	//////////////////////////////////////////////////////////////////////////	
-	if (argc=2&&strcmp(argv[1],"sim")==0)
+	if (argc==2&&strcmp(argv[1],"sim")==0)
 	{
 		APScalibration ZY3_calibrate;
 		AttDetermination mDeter;
@@ -50,6 +50,99 @@ int main(int argc, char* argv[])
 		mDeter.q_Method(getGCPall[0], estParam, estQuat);
 		SateEuler ruEuler;
 		mDeter.CalOptAngle(estQuat, realQuat, ruEuler);
+	}
+	//////////////////////////////////////////////////////////////////////////
+	//功能：吉林一号视频07星恒星拍摄处理
+	//参数：F:\视频07星
+	//日期：2020.10.13
+	//////////////////////////////////////////////////////////////////////////	
+	if (argc == 3 && atoi(argv[2]) == 7)
+	{
+		BaseFunc mBase;
+		ParseSTG mStarMap;
+		StarIdentify mStarid;
+		AttDetermination mDeter;
+
+		vector<string>csvPath;
+		vector<string>ptsPath;
+		string tmp = string(argv[1]) + "\\";
+		mBase.search_directory(tmp, "csv", csvPath);
+		mBase.search_directory(tmp, "pts", ptsPath);
+
+
+		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
+		//param.f = 6500 / tan(0.6360615424140929 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
+		param.f = 3.2 / 5.5 * 1000000;
+		param.x0 = 6000, param.y0 = 2500;
+
+		string fresult = (string)argv[1] + "\\result.txt";
+		FILE* fp = fopen(fresult.c_str(), "w");
+
+		for (int i = 0; i < ptsPath.size(); i++)
+		{
+			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			mStarMap.ReadJL107csv(csvPath[i], imgJL107, att, sa, sb, sc);
+
+			vector<StarGCP> camGCP;
+			mStarid.GetStarGCPforJL106(ptsPath[i], camGCP, imgJL107);//建立相机与恒星控制点
+			mDeter.q_MethodforJL106(camGCP, param, camQuat);//根据qMethod来建立相机在J2000下姿态
+
+			//相机和J2000姿态
+			Quat q_inter;
+			mBase.QuatInterpolation(att, camQuat.UTC, q_inter);
+			mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\t", camQuat.UTC, imgJL107[0].lat, ruEuler.UTC);
+
+			//相机和星敏A
+			mBase.QuatInterpolation(sa, camQuat.UTC, q_inter);
+			mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\t", imgJL107[0].sst[0], imgJL107[0].inst[0], ruEuler.UTC);
+
+			//相机和星敏B
+			mBase.QuatInterpolation(sb, camQuat.UTC, q_inter);
+			mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\t", imgJL107[0].sst[1], imgJL107[0].inst[1], ruEuler.UTC);
+
+			//相机和星敏C
+			mBase.QuatInterpolation(sc, camQuat.UTC, q_inter);
+			mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\n", imgJL107[0].sst[2], imgJL107[0].inst[2], ruEuler.UTC);
+		}
+		fclose(fp);
+
+		for (int k = 0; k < csvPath.size(); k++)
+		{
+			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			mStarMap.ReadJL107csv(csvPath[k], imgJL107, att, sa, sb, sc);
+
+			StarGCP camOpt;
+			string optPath = csvPath[k].substr(0, csvPath[k].rfind('\\') + 1) + "指向信息.txt";
+			mStarid.GetCamOptforJL107(optPath, camOpt, imgJL107);
+			fprintf(fp, "第%d组数据结果\n", k + 1);
+
+			//相机和J2000姿态
+			double theta; Quat q_inter;
+			mBase.QuatInterpolation(att, camOpt.UTC, q_inter);
+			mDeter.CalOptAngleforJL107(camOpt,q_inter, theta);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\t", camOpt.UTC, imgJL107[0].lat, theta);
+
+			//相机和星敏A
+			mBase.QuatInterpolation(sa, camOpt.UTC, q_inter);
+			mDeter.CalOptAngleforJL107(camOpt, q_inter, theta);
+			fprintf(fp, "%.9f\t", theta);
+
+			//相机和星敏B
+			mBase.QuatInterpolation(sb, camOpt.UTC, q_inter);
+			mDeter.CalOptAngleforJL107(camOpt, q_inter, theta);
+			fprintf(fp, "%.9f\t", theta);
+
+			//相机和星敏C
+			mBase.QuatInterpolation(sc, camOpt.UTC, q_inter);
+			mDeter.CalOptAngleforJL107(camOpt, q_inter, theta);
+			fprintf(fp, "%.9f\n", theta);
+
+		}
+		fclose(fp);
 	}
 	//////////////////////////////////////////////////////////////////////////
 	//功能：吉林一号视频06星恒星拍摄处理
@@ -94,6 +187,54 @@ int main(int argc, char* argv[])
 			//param.f = 6500 / tan(0.6360615424140929 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
 			param.f = 3.2/5.5*1000000;
 			param.x0 = 6000, param.y0 = 2500;
+			mStarMap.ReadJL107csv(csvPath[0], imgJL106, att, sa, sb, sc);
+			SateEuler attEuler, saEuler, sbEuler, scEuler;
+
+			fprintf(fp, "第%d组数据结果\n", k + 1);
+
+			for (int i = 0; i < ptsPath.size(); i++)
+			{
+				vector<StarGCP> camGCP; img imgLat;
+				mStarid.GetStarGCPforJL106(ptsPath[i], camGCP, imgJL106, imgLat);//建立相机与恒星控制点
+				mDeter.q_MethodforJL106(camGCP, param, camQuat);//根据qMethod来建立相机在J2000下姿态
+
+				//相机和J2000姿态
+				Quat q_inter;
+				mBase.QuatInterpolation(att, camQuat.UTC, q_inter);
+				mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+				fprintf(fp,"%.9f\t%.9f\t%.9f\t", camQuat.UTC, imgLat.lat,ruEuler.UTC);
+
+				//相机和星敏A
+				mBase.QuatInterpolation(sa, camQuat.UTC, q_inter);
+				mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+				fprintf(fp, "%.9f\t", ruEuler.UTC);
+
+				//相机和星敏B
+				mBase.QuatInterpolation(sb, camQuat.UTC, q_inter);
+				mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+				fprintf(fp, "%.9f\t", ruEuler.UTC);
+
+				//相机和星敏C
+				mBase.QuatInterpolation(sc, camQuat.UTC, q_inter);
+				mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+				fprintf(fp, "%.9f\n", ruEuler.UTC);
+			}
+
+		}
+		fclose(fp);
+		for (int k = 0; k < 5; k++)
+		{
+			//mBase.search_directory(path, "raw", rawRaw);
+			vector<string>csvPath;
+			vector<string>ptsPath;
+			mBase.search_directory(path[k], "csv", csvPath);
+			mBase.search_directory(path[k], "pts", ptsPath);
+
+			vector<img> imgJL106; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			StarCaliParam param; Quat camQuat; SateEuler ruEuler;
+			param.f = 6500 / tan(0.6360615424140929 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
+			//param.f = 3.2/5.5*1000000;
+			param.x0 = 6000, param.y0 = 2500;
 			mStarMap.ReadJL106csv(csvPath[0], imgJL106, att, sa, sb, sc);
 			SateEuler attEuler, saEuler, sbEuler, scEuler;
 		
@@ -113,6 +254,7 @@ int main(int argc, char* argv[])
 			double R = 0; double P = 0; double Y = 0;
 			mDeter.jl106AlinFix(R, P, Y, q_inter, camQuat, ruEuler);
 			attEuler.R += ruEuler.R; attEuler.P += ruEuler.P; attEuler.Y += ruEuler.Y;
+			mDeter.CalOptAngle(q_inter,camQuat,ruEuler);
 			
 			//相机和星敏A
 			mBase.QuatInterpolation(sa, camQuat.UTC, q_inter);
@@ -146,7 +288,7 @@ int main(int argc, char* argv[])
 				//相机和J2000姿态
 				Quat q_inter;
 				mBase.QuatInterpolation(att, camQuat.UTC, q_inter);
-				//double R = 0.0080626; double P = 0.0016332; double Y = 1.5318972;//第一组数据
+				//attEuler.R = 0.0080471673058139168; attEuler.P = 0.0016345353160141744; attEuler.Y = 1.5319002547936083;//第一组数据
 				//double R = 0.0080833780663713863; double P = 0.0016727918023371185; double Y = 1.5318656051912103;//第二组数据
 				//double R = 0; double P = 0; double Y = 0;
 				mDeter.jl106AlinFix(attEuler.R, attEuler.P, attEuler.Y, q_inter, camQuat, ruEuler);
