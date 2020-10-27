@@ -1324,6 +1324,13 @@ void StarIdentify::GetStarGCPforJL106(string gcpPath, vector<StarGCP>& JLcam, ve
 		{
 			JLcam[0].UTC = imgJL106[i].time;
 			imgLat.lat = imgJL106[i].lat;
+			imgLat.lon = imgJL106[i].lon;
+			imgLat.sst[0] = imgJL106[i].sst[0];
+			imgLat.sst[1] = imgJL106[i].sst[1];
+			imgLat.sst[2] = imgJL106[i].sst[2];
+			imgLat.inst[0] = imgJL106[i].inst[0];
+			imgLat.inst[1] = imgJL106[i].inst[1];
+			imgLat.inst[2] = imgJL106[i].inst[2];
 			break;
 		}
 	}

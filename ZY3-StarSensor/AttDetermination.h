@@ -21,6 +21,7 @@ public:
 	bool q_MethodForLuojia(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater, vector<Orbit_Ep>imgOrb);
 	void luojiaAlinFix(vector<Quat>LJCamera, Quat quater, SateEuler &ruEuler);//修正偏置矩阵
 	void jl106AlinFix(double R, double P, double Y, Quat starsensor, Quat camera, SateEuler& ruEuler);//吉林一号偏置矩阵
+	void jl106CamQuat(double R, double P, double Y, Quat starsensor, Quat& camera, double& ra, double& dec);//吉林一号相机四元数
 	void CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEuler);//计算光轴夹角
 	void CalOptAngleforJL107(StarGCP cam, Quat starsensor, double& theta);
 

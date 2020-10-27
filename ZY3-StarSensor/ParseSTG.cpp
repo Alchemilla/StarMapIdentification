@@ -7,7 +7,7 @@
 //注意：该星敏为APS星敏数据
 //日期：2016.07.01
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
+void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData>& ZY3_02STGdata)
 {
 	ifstream in;
 	in.open(STGpath.c_str(), ios::binary);
@@ -21,7 +21,7 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 	int i;
 	double ta, tb, tc;
 	int ka = 0, kb = 0, kc = 0;
-	STGData *ZY_3Data = new STGData[nSize];
+	STGData* ZY_3Data = new STGData[nSize];
 	memset(ZY_3Data, 0, 4096);
 	for (i = 0; i < nSize; i++)
 	{
@@ -43,7 +43,7 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 		ZY_3Data[i].StarA.Q2 = mBase.ReverseQ(Q2temp);
 		in.read((char*)&Q3temp, 4);
 		ZY_3Data[i].StarA.Q3 = mBase.ReverseQ(Q3temp);
-		ZY_3Data[i].StarA.Q0 = sqrt(1 - ZY_3Data[i].StarA.Q1*ZY_3Data[i].StarA.Q1 - ZY_3Data[i].StarA.Q2*ZY_3Data[i].StarA.Q2 - ZY_3Data[i].StarA.Q3*ZY_3Data[i].StarA.Q3);
+		ZY_3Data[i].StarA.Q0 = sqrt(1 - ZY_3Data[i].StarA.Q1 * ZY_3Data[i].StarA.Q1 - ZY_3Data[i].StarA.Q2 * ZY_3Data[i].StarA.Q2 - ZY_3Data[i].StarA.Q3 * ZY_3Data[i].StarA.Q3);
 
 		in.read((char*)&a, 8);
 		tb = mBase.RevDouble(a);
@@ -60,7 +60,7 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 		ZY_3Data[i].StarB.Q2 = mBase.ReverseQ(Q2temp);
 		in.read((char*)&Q3temp, 4);
 		ZY_3Data[i].StarB.Q3 = mBase.ReverseQ(Q3temp);
-		ZY_3Data[i].StarB.Q0 = sqrt(1 - ZY_3Data[i].StarB.Q1*ZY_3Data[i].StarB.Q1 - ZY_3Data[i].StarB.Q2*ZY_3Data[i].StarB.Q2 - ZY_3Data[i].StarB.Q3*ZY_3Data[i].StarB.Q3);
+		ZY_3Data[i].StarB.Q0 = sqrt(1 - ZY_3Data[i].StarB.Q1 * ZY_3Data[i].StarB.Q1 - ZY_3Data[i].StarB.Q2 * ZY_3Data[i].StarB.Q2 - ZY_3Data[i].StarB.Q3 * ZY_3Data[i].StarB.Q3);
 
 		in.read((char*)&a, 8);
 		tc = mBase.RevDouble(a);
@@ -77,32 +77,32 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 		ZY_3Data[i].StarC.Q2 = mBase.ReverseQ(Q2temp);
 		in.read((char*)&Q3temp, 4);
 		ZY_3Data[i].StarC.Q3 = mBase.ReverseQ(Q3temp);
-		ZY_3Data[i].StarC.Q0 = sqrt(1 - ZY_3Data[i].StarC.Q1*ZY_3Data[i].StarC.Q1 - ZY_3Data[i].StarC.Q2*ZY_3Data[i].StarC.Q2 - ZY_3Data[i].StarC.Q3*ZY_3Data[i].StarC.Q3);
+		ZY_3Data[i].StarC.Q0 = sqrt(1 - ZY_3Data[i].StarC.Q1 * ZY_3Data[i].StarC.Q1 - ZY_3Data[i].StarC.Q2 * ZY_3Data[i].StarC.Q2 - ZY_3Data[i].StarC.Q3 * ZY_3Data[i].StarC.Q3);
 
 		in.read((char*)&a, 8);
 		ZY_3Data[i].utgyro = mBase.RevDouble(a);
 		short gy;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g1 = gy*0.000022 / 0.25;
+		ZY_3Data[i].g1 = gy * 0.000022 / 0.25;
 		//ZY_3Data[i].g1=gy*0.000022/0.25*1.115454545;//ZY3-01星陀螺的比例系数
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g2 = gy*0.000022 / 0.25;
+		ZY_3Data[i].g2 = gy * 0.000022 / 0.25;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g3 = gy*0.000022 / 0.25;
+		ZY_3Data[i].g3 = gy * 0.000022 / 0.25;
 		//ZY_3Data[i].g3=gy*0.000022/0.25*1.073181818;//ZY3-01星陀螺的比例系数
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g4 = gy*0.000022 / 0.25;
+		ZY_3Data[i].g4 = gy * 0.000022 / 0.25;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g5 = gy*0.000022 / 0.25;
+		ZY_3Data[i].g5 = gy * 0.000022 / 0.25;
 		//ZY_3Data[i].g5=gy*0.000022/0.25*1.103181818;//ZY3-01星陀螺的比例系数
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g6 = gy*0.000022 / 0.25;
+		ZY_3Data[i].g6 = gy * 0.000022 / 0.25;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g7 = gy*0.00005 / 0.25;
+		ZY_3Data[i].g7 = gy * 0.00005 / 0.25;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g8 = gy*0.00005 / 0.25;
+		ZY_3Data[i].g8 = gy * 0.00005 / 0.25;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g9 = gy*0.00005 / 0.25;
+		ZY_3Data[i].g9 = gy * 0.00005 / 0.25;
 
 		long bsx, bsy, bsz;
 		in.read((char*)&bsx, 4);
@@ -114,11 +114,11 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 
 		in.seekg(3, ios::cur);
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g10 = gy*0.000025 / 0.25;
+		ZY_3Data[i].g10 = gy * 0.000025 / 0.25;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g11 = gy*0.000025 / 0.25;
+		ZY_3Data[i].g11 = gy * 0.000025 / 0.25;
 		in.read((char*)&gy, 2);
-		ZY_3Data[i].g12 = gy*0.000025 / 0.25;
+		ZY_3Data[i].g12 = gy * 0.000025 / 0.25;
 
 		char sign;
 		in.read((char*)&sign, 1);
@@ -146,8 +146,8 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 	string path = string(STGpath);
 	path = path.substr(0, path.rfind('.'));
 	string strpath = path + "_STG_parse.txt";
-	FILE *fpres = fopen(strpath.c_str(), "w");
-	fprintf(fpres,"%d\n",nSize);
+	FILE* fpres = fopen(strpath.c_str(), "w");
+	fprintf(fpres, "%d\n", nSize);
 	for (i = 0; i < nSize; i++)
 	{
 		fprintf(fpres, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t", ZY_3Data[i].StarA.UTC, ZY_3Data[i].StarA.Q0, ZY_3Data[i].StarA.Q1, ZY_3Data[i].StarA.Q2, ZY_3Data[i].StarA.Q3);
@@ -170,7 +170,7 @@ void ParseSTG::ParseZY302_STG(string STGpath, vector<STGData> &ZY3_02STGdata)
 //////////////////////////////////////////////////////////////////////////
 bool ParseSTG::ParseZY302_STI(string STIpath)
 {
-	FILE *fp = fopen(STIpath.c_str(), "rb");
+	FILE* fp = fopen(STIpath.c_str(), "rb");
 	if (!fp)
 	{
 		printf("Failed to open the RAW File(%s)\n", STIpath.c_str());
@@ -180,7 +180,7 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 	_fseeki64(fp, 0, SEEK_END);
 	__int64 nSize = _ftelli64(fp);
 	_fseeki64(fp, 0, SEEK_SET);
-	byte *pData = new byte[nSize];
+	byte* pData = new byte[nSize];
 	if (fread(pData, sizeof(byte), nSize, fp) != nSize)
 	{
 		fclose(fp);
@@ -188,32 +188,32 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 	}
 	fclose(fp);	fp = NULL;
 	long width = 1024, height = 1024;// 影像的宽度和高度
-	unsigned short *pFred = new unsigned short[width * height];	     //像素值
+	unsigned short* pFred = new unsigned short[width * height];	     //像素值
 	int nSizeFred = nSize / 1310736;   //帧数
-	
+
 	//创建星图文件夹
 	workpath = STIpath.substr(0, STIpath.rfind('\\'));
 	string imgtmp = workpath + "\\Bouguet";
-	char * imgpath = (char *)imgtmp.data();
+	char* imgpath = (char*)imgtmp.data();
 	if (_mkdir(imgpath) == 0);
 	string imgtxt = workpath + "\\Bouguet\\像面坐标.txt";
 	// 累计秒从2009年1月1日0时开始计数
 	double jd0, refMJD;
 	Cal2JD(2009, 1, 1, 0, &jd0, &refMJD);
 	string outpath = workpath + "\\星时.txt";
-	FILE *ftime = fopen(outpath.c_str(), "w");
+	FILE* ftime = fopen(outpath.c_str(), "w");
 	if (!ftime)
 	{
 		printf("Failed to open the RAW File(%s)\n", outpath);
 		return false;
 	}
-	fprintf(ftime, "帧号\t 星时1(累计秒，与姿态轨道文件对应)\t星时2（YYYY:MM:DD）\n");	
+	fprintf(ftime, "帧号\t 星时1(累计秒，与姿态轨道文件对应)\t星时2（YYYY:MM:DD）\n");
 	char chr[41], c[10];
 	bitset<8> bit8;
 	string str;
 	unsigned int tmp, tmps = 0, tmpms = 0;
 	double  second;
-	double *UT = new double[nSizeFred];
+	double* UT = new double[nSizeFred];
 	int year, month, day, hour, minute;
 	//输出影像格式
 	string outdriver = "GTiff";	    //也可以存为bmp
@@ -223,20 +223,20 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 		//星时
 		//整秒
 		memcpy(&bit8, pData + i * 1310736 + 4, sizeof(byte));
-		tmps = pow(2, 24)* bit8.to_ulong();
+		tmps = pow(2, 24) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 5, sizeof(byte));
-		tmps += pow(2, 16)* bit8.to_ulong();
+		tmps += pow(2, 16) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 6, sizeof(byte));
-		tmps += pow(2, 8)* bit8.to_ulong();
+		tmps += pow(2, 8) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 7, sizeof(byte));
-		tmps += pow(2, 0)* bit8.to_ulong();
+		tmps += pow(2, 0) * bit8.to_ulong();
 		//微妙
 		memcpy(&bit8, pData + i * 1310736 + 8, sizeof(byte));
-		tmpms = pow(2, 16)* bit8.to_ulong();
+		tmpms = pow(2, 16) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 9, sizeof(byte));
-		tmpms += pow(2, 8)* bit8.to_ulong();
+		tmpms += pow(2, 8) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 10, sizeof(byte));
-		tmpms += pow(2, 0)* bit8.to_ulong();
+		tmpms += pow(2, 0) * bit8.to_ulong();
 		//累计秒
 		UT[i] = tmps + tmpms / 1000000.0;
 		//历书时
@@ -263,8 +263,8 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 		}
 		//创建影像
 		char tempath[100];
-		sprintf_s(tempath, "\\Bouguet\\星图%d.tiff", i/5 + 1);
-		string imgpath = workpath +  tempath;
+		sprintf_s(tempath, "\\Bouguet\\星图%d.tiff", i / 5 + 1);
+		string imgpath = workpath + tempath;
 		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);
 
 		//更新方式打开影像
@@ -284,7 +284,7 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 			for (long x = 0; x < width; x++)   //x坐标
 			{
 				//读入数据
-				gray = pFred[y*width + x];
+				gray = pFred[y * width + x];
 				if (gray > 255)gray = 255;
 				//输出图像坐标系顺时针90度转为星敏像平面坐标系
 				m_out.SetDataValue(x, y, gray, 0);    //赋值
@@ -295,9 +295,9 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 		iswrite *= m_out.WriteBlock(0, 0, width, height, 0, m_out.pBuffer[0]);
 		//关闭影像
 		m_out.Destroy();
-			
-		int rate = 100 * (i+1) / nSizeFred;
-		printf("\r已处理行数：%d;  Process:%d%%", i+1, rate);               //进度输出
+
+		int rate = 100 * (i + 1) / nSizeFred;
+		printf("\r已处理行数：%d;  Process:%d%%", i + 1, rate);               //进度输出
 		i = i + 5;//每五景输出一次
 	}
 	if (pFred != NULL)		delete[]pFred;       pFred = NULL;
@@ -315,7 +315,7 @@ bool ParseSTG::ParseZY302_STI(string STIpath)
 //////////////////////////////////////////////////////////////////////////
 bool ParseSTG::ParseZY302_STI_10B(string STIpath)
 {
-	FILE *fp = fopen(STIpath.c_str(), "rb");
+	FILE* fp = fopen(STIpath.c_str(), "rb");
 	if (!fp)
 	{
 		printf("Failed to open the RAW File(%s)\n", STIpath.c_str());
@@ -323,12 +323,12 @@ bool ParseSTG::ParseZY302_STI_10B(string STIpath)
 	}
 
 	long width = 1024, height = 1024;// 影像的宽度和高度
-	unsigned short *pFred = new unsigned short[width * height];	     //像素值	
+	unsigned short* pFred = new unsigned short[width * height];	     //像素值	
 	//一次将文件全部读入内存pData
 	_fseeki64(fp, 0, SEEK_END);
 	__int64 nSize = _ftelli64(fp);
 	_fseeki64(fp, 0, SEEK_SET);
-	byte *pData = new byte[nSize];
+	byte* pData = new byte[nSize];
 	if (fread(pData, sizeof(byte), nSize, fp) != nSize)
 	{
 		fclose(fp);
@@ -336,12 +336,12 @@ bool ParseSTG::ParseZY302_STI_10B(string STIpath)
 	}
 	fclose(fp);	fp = NULL;
 	int nSizeFred = nSize / 1310736;   //帧数
-		
+
 	 // 累计秒从2009年1月1日0时开始计数
 	double jd0, refMJD;
 	Cal2JD(2009, 1, 1, 0, &jd0, &refMJD);
 	string outpath = workpath + "星时.txt";
-	FILE *ftime = fopen(outpath.c_str(), "w");
+	FILE* ftime = fopen(outpath.c_str(), "w");
 	if (!ftime)
 	{
 		printf("Failed to open the RAW File(%s)\n", outpath);
@@ -349,11 +349,11 @@ bool ParseSTG::ParseZY302_STI_10B(string STIpath)
 	}
 	fprintf(ftime, "帧号\t 星时1(累计秒，与姿态轨道文件对应)\t星时2（YYYY:MM:DD）\n");
 	char chr[41], c[10];
-	
+
 	string str;
 	unsigned int tmp, tmps = 0, tmpms = 0;
 	double  second;
-	double *UT = new double[nSizeFred];
+	double* UT = new double[nSizeFred];
 	int year, month, day, hour, minute;
 	GeoReadImage m_out;
 	bitset<8>bit8;
@@ -366,27 +366,27 @@ bool ParseSTG::ParseZY302_STI_10B(string STIpath)
 		//星时
 		//整秒
 		memcpy(&bit8, pData + i * 1310736 + 4, sizeof(byte));
-		tmps = pow(2, 24)* bit8.to_ulong();
+		tmps = pow(2, 24) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 5, sizeof(byte));
-		tmps += pow(2, 16)* bit8.to_ulong();
+		tmps += pow(2, 16) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 6, sizeof(byte));
-		tmps += pow(2, 8)* bit8.to_ulong();
+		tmps += pow(2, 8) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 7, sizeof(byte));
-		tmps += pow(2, 0)* bit8.to_ulong();
+		tmps += pow(2, 0) * bit8.to_ulong();
 		//微妙
 		memcpy(&bit8, pData + i * 1310736 + 8, sizeof(byte));
-		tmpms = pow(2, 16)* bit8.to_ulong();
+		tmpms = pow(2, 16) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 9, sizeof(byte));
-		tmpms += pow(2, 8)* bit8.to_ulong();
+		tmpms += pow(2, 8) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 10, sizeof(byte));
-		tmpms += pow(2, 0)* bit8.to_ulong();
+		tmpms += pow(2, 0) * bit8.to_ulong();
 		//累计秒
 		UT[i] = tmps + tmpms / 1000000.0;
 		//历书时
 		FromSecondtoYMD(refMJD, UT[i], year, month, day, hour, minute, second);
 		fprintf(ftime, "%3d\t%16.6lf\n", i + 1, UT[i]);
 		//fprintf(ftime, "%04d:%02d:%02d:%02d:%02d:%06.3lf\n", year, month, day, hour, minute, second);
-				
+
 		//重新组织一帧数据
 		for (int j = 0; j < 262144; j++)
 		{
@@ -427,7 +427,7 @@ bool ParseSTG::ParseZY302_STI_10B(string STIpath)
 			for (long x = 0; x < width; x++)   //x坐标
 			{
 				//读入数据
-				gray = pFred[y*width + x];
+				gray = pFred[y * width + x];
 				if (gray > 255)gray = 255;
 				//输出图像坐标系顺时针90度转为星敏像平面坐标系
 				m_out.SetDataValue(x, y, gray, 0);    //赋值
@@ -455,7 +455,7 @@ bool ParseSTG::ParseZY302_STI_10B(string STIpath)
 //作者：jianwen0529，http://bbs.csdn.net/topics/392089574
 //日期：2017.02.23
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::Get4_10Bit(const unsigned char *p, unsigned short(&arr)[4])
+void ParseSTG::Get4_10Bit(const unsigned char* p, unsigned short(&arr)[4])
 {
 	const unsigned short bit_mask = 0x00ff; // 0000 0011 1111 1111
 	arr[0] = (unsigned short)(p[0] | (p[1] << 8)) & bit_mask;
@@ -472,7 +472,7 @@ void ParseSTG::Get4_10Bit(const unsigned char *p, unsigned short(&arr)[4])
 //////////////////////////////////////////////////////////////////////////
 bool ParseSTG::ParseZY302_STItime(string STIpath)
 {
-	FILE *fp = fopen(STIpath.c_str(), "rb");
+	FILE* fp = fopen(STIpath.c_str(), "rb");
 	if (!fp)
 	{
 		printf("Failed to open the RAW File(%s)\n", STIpath.c_str());
@@ -483,7 +483,7 @@ bool ParseSTG::ParseZY302_STItime(string STIpath)
 	_fseeki64(fp, 0, SEEK_END);
 	__int64 nSize = _ftelli64(fp);
 	_fseeki64(fp, 0, SEEK_SET);
-	byte *pData = new byte[nSize];
+	byte* pData = new byte[nSize];
 	if (fread(pData, sizeof(byte), nSize, fp) != nSize)
 	{
 		fclose(fp);
@@ -496,7 +496,7 @@ bool ParseSTG::ParseZY302_STItime(string STIpath)
 	double jd0, refMJD;
 	Cal2JD(2009, 1, 1, 0, &jd0, &refMJD);
 	string outpath = workpath + "星时.txt";
-	FILE *ftime = fopen(outpath.c_str(), "w");
+	FILE* ftime = fopen(outpath.c_str(), "w");
 	if (!ftime)
 	{
 		printf("Failed to open the RAW File(%s)\n", outpath);
@@ -507,27 +507,27 @@ bool ParseSTG::ParseZY302_STItime(string STIpath)
 	string str;
 	unsigned int tmp, tmps = 0, tmpms = 0;
 	double  second;
-	double *UT = new double[nSizeFred];
+	double* UT = new double[nSizeFred];
 	int year, month, day, hour, minute;
 	for (int i = 0; i < nSizeFred; i++)
 	{
 		//星时
 		//整秒
 		memcpy(&bit8, pData + i * 1310736 + 4, sizeof(byte));
-		tmps = pow(2, 24)* bit8.to_ulong();
+		tmps = pow(2, 24) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 5, sizeof(byte));
-		tmps += pow(2, 16)* bit8.to_ulong();
+		tmps += pow(2, 16) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 6, sizeof(byte));
-		tmps += pow(2, 8)* bit8.to_ulong();
+		tmps += pow(2, 8) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 7, sizeof(byte));
-		tmps += pow(2, 0)* bit8.to_ulong();
+		tmps += pow(2, 0) * bit8.to_ulong();
 		//微妙
 		memcpy(&bit8, pData + i * 1310736 + 8, sizeof(byte));
-		tmpms = pow(2, 16)* bit8.to_ulong();
+		tmpms = pow(2, 16) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 9, sizeof(byte));
-		tmpms += pow(2, 8)* bit8.to_ulong();
+		tmpms += pow(2, 8) * bit8.to_ulong();
 		memcpy(&bit8, pData + i * 1310736 + 10, sizeof(byte));
-		tmpms += pow(2, 0)* bit8.to_ulong();
+		tmpms += pow(2, 0) * bit8.to_ulong();
 		//累计秒
 		UT[i] = tmps + tmpms / 1000000.0;
 		//历书时
@@ -546,19 +546,19 @@ bool ParseSTG::ParseZY302_STItime(string STIpath)
 //注意：该星敏为APS星敏数据
 //日期：2017.11.29
 //////////////////////////////////////////////////////////////////////////
-bool ParseSTG::ParseZY302_SoftStarData(string StarDataPath, vector<vector<StarGCP>>&StarData)
+bool ParseSTG::ParseZY302_SoftStarData(string StarDataPath, vector<vector<StarGCP>>& StarData)
 {
-	FILE *fp = fopen(StarDataPath.c_str(), "r");
+	FILE* fp = fopen(StarDataPath.c_str(), "r");
 	StarGCP StarTmp;	vector<StarGCP > StarTmp2;
 	fscanf(fp, "%lf\t%lf\t%lf\t%*f\t%*f\t%*f\t%*f\t%lf\t%lf\t%lf\n", &StarTmp.UTC
 		, &StarTmp.x, &StarTmp.y, &StarTmp.V[0], &StarTmp.V[1], &StarTmp.V[2]);
 	StarTmp2.push_back(StarTmp);
-	double utIndex;	
+	double utIndex;
 	while (!feof(fp))
 	{
 		utIndex = StarTmp.UTC;
 		fscanf(fp, "%lf\t%lf\t%lf\t%*f\t%*f\t%*f\t%*f\t%lf\t%lf\t%lf\n", &StarTmp.UTC
-		, &StarTmp.x, &StarTmp.y, &StarTmp.V[0], &StarTmp.V[1], &StarTmp.V[2]);
+			, &StarTmp.x, &StarTmp.y, &StarTmp.V[0], &StarTmp.V[1], &StarTmp.V[2]);
 		if (StarTmp.UTC == utIndex)
 		{
 			StarTmp2.push_back(StarTmp);
@@ -574,10 +574,10 @@ bool ParseSTG::ParseZY302_SoftStarData(string StarDataPath, vector<vector<StarGC
 	return false;
 }
 
-bool ParseSTG::ReadLuojiaAtt(vector<Quat>LuojiaCam, YMD imgTime, Quat &imgAtt)
+bool ParseSTG::ReadLuojiaAtt(vector<Quat>LuojiaCam, YMD imgTime, Quat& imgAtt)
 {
 	double jd0, mjd, UTC;
-	Quat *quatTmp=new Quat[1];
+	Quat* quatTmp = new Quat[1];
 	Cal2JD(2000, 1, 1, 0.5, &jd0, &mjd);
 	FromYMDtoSecond(mjd, imgTime.year, imgTime.mon, imgTime.day, imgTime.hour, imgTime.min, imgTime.sec, UTC);
 	mBase.QuatInterpolation(LuojiaCam, &UTC, 1, quatTmp);
@@ -593,11 +593,11 @@ bool ParseSTG::ReadLuojiaAtt(vector<Quat>LuojiaCam, YMD imgTime, Quat &imgAtt)
 //注意：这个是星上GPS数据
 //日期：2017.04.25
 //////////////////////////////////////////////////////////////////////////
-bool  ParseSTG::ReadZY302OrbTXT2(string sOrb, vector<Orbit_Ep> &arr_Orb)
+bool  ParseSTG::ReadZY302OrbTXT2(string sOrb, vector<Orbit_Ep>& arr_Orb)
 {
 	if (sOrb.empty())
 		return false;
-	FILE *fp = fopen(sOrb.c_str(), "r");
+	FILE* fp = fopen(sOrb.c_str(), "r");
 	if (!fp)
 		return false;
 	arr_Orb.clear();
@@ -626,7 +626,7 @@ bool  ParseSTG::ReadZY302OrbTXT2(string sOrb, vector<Orbit_Ep> &arr_Orb)
 //注意：
 //日期：2019.06.03
 //////////////////////////////////////////////////////////////////////////
-bool ParseSTG::ReadLuojiaOrb(string orbPath, YMD imgTime, Orbit_Ep &imgOrb)
+bool ParseSTG::ReadLuojiaOrb(string orbPath, YMD imgTime, Orbit_Ep& imgOrb)
 {
 	//parse frame index;
 	TiXmlDocument doc;
@@ -638,8 +638,8 @@ bool ParseSTG::ReadLuojiaOrb(string orbPath, YMD imgTime, Orbit_Ep &imgOrb)
 		printf("=>failed to open ep XML(%s)!\n", orbPath.c_str());
 		return false;
 	}
-	TiXmlElement*	eleRoot = doc.RootElement();
-	TiXmlElement*  nodeProductInfo = eleRoot->FirstChildElement("ProductInfo");
+	TiXmlElement* eleRoot = doc.RootElement();
+	TiXmlElement* nodeProductInfo = eleRoot->FirstChildElement("ProductInfo");
 	eleRoot = doc.RootElement();  //<Content>
 	if (eleRoot == NULL)
 	{
@@ -647,11 +647,11 @@ bool ParseSTG::ReadLuojiaOrb(string orbPath, YMD imgTime, Orbit_Ep &imgOrb)
 		return false;
 	}
 
-	TiXmlElement *GpsData = eleRoot->FirstChildElement("GpsData");
+	TiXmlElement* GpsData = eleRoot->FirstChildElement("GpsData");
 	TiXmlElement* nextGpsData = GpsData;
 	while (nextGpsData)
 	{
-		TiXmlElement *UTC = nextGpsData->FirstChildElement("UTC");
+		TiXmlElement* UTC = nextGpsData->FirstChildElement("UTC");
 		if (UTC == NULL)
 		{
 			nextGpsData = nextGpsData->NextSiblingElement();
@@ -659,28 +659,28 @@ bool ParseSTG::ReadLuojiaOrb(string orbPath, YMD imgTime, Orbit_Ep &imgOrb)
 		}
 		string tmpStr = UTC->GetText();
 		perEp.UTC = atof(tmpStr.c_str());
-		
-		TiXmlElement *PosX = nextGpsData->FirstChildElement("PosX");
+
+		TiXmlElement* PosX = nextGpsData->FirstChildElement("PosX");
 		tmpStr = PosX->GetText();
 		perEp.X = atof(tmpStr.c_str());
 
-		TiXmlElement *PosY = nextGpsData->FirstChildElement("PosY");
+		TiXmlElement* PosY = nextGpsData->FirstChildElement("PosY");
 		tmpStr = PosY->GetText();
 		perEp.Y = atof(tmpStr.c_str());
 
-		TiXmlElement *PosZ = nextGpsData->FirstChildElement("PosZ");
+		TiXmlElement* PosZ = nextGpsData->FirstChildElement("PosZ");
 		tmpStr = PosZ->GetText();
 		perEp.Z = atof(tmpStr.c_str());
 
-		TiXmlElement *VelX = nextGpsData->FirstChildElement("VelX");
+		TiXmlElement* VelX = nextGpsData->FirstChildElement("VelX");
 		tmpStr = VelX->GetText();
 		perEp.Xv = atof(tmpStr.c_str());
 
-		TiXmlElement *VelY = nextGpsData->FirstChildElement("VelY");
+		TiXmlElement* VelY = nextGpsData->FirstChildElement("VelY");
 		tmpStr = VelY->GetText();
 		perEp.Yv = atof(tmpStr.c_str());
 
-		TiXmlElement *VelZ = nextGpsData->FirstChildElement("VelZ");
+		TiXmlElement* VelZ = nextGpsData->FirstChildElement("VelZ");
 		tmpStr = VelZ->GetText();
 		perEp.Zv = atof(tmpStr.c_str());
 
@@ -688,13 +688,13 @@ bool ParseSTG::ReadLuojiaOrb(string orbPath, YMD imgTime, Orbit_Ep &imgOrb)
 
 		nextGpsData = nextGpsData->NextSiblingElement();
 	}
-	Orbit_Ep *Eph = new Orbit_Ep[allEp.size()];
+	Orbit_Ep* Eph = new Orbit_Ep[allEp.size()];
 	for (int i = 0; i < allEp.size(); i++)
 	{
 		Eph[i] = allEp[i];
 	}
-	double jd0, mjd,UTC;
-	Cal2JD(2000, 1, 1, 0.5, &jd0, &mjd); 
+	double jd0, mjd, UTC;
+	Cal2JD(2000, 1, 1, 0.5, &jd0, &mjd);
 	FromYMDtoSecond(mjd, imgTime.year, imgTime.mon, imgTime.day, imgTime.hour, imgTime.min, imgTime.sec, UTC);
 	mBase.LagrangianInterpolation(Eph, allEp.size(), UTC, imgOrb, 5);
 	delete[]Eph; Eph = NULL;
@@ -707,7 +707,7 @@ bool ParseSTG::ReadLuojiaOrb(string orbPath, YMD imgTime, Orbit_Ep &imgOrb)
 //注意：
 //日期：2019.06.03
 //////////////////////////////////////////////////////////////////////////
-bool ParseSTG::ReadLuojiaAllOrb(string orbPath, vector<Orbit_Ep>&imgOrb)
+bool ParseSTG::ReadLuojiaAllOrb(string orbPath, vector<Orbit_Ep>& imgOrb)
 {
 	//parse frame index;
 	TiXmlDocument doc;
@@ -718,8 +718,8 @@ bool ParseSTG::ReadLuojiaAllOrb(string orbPath, vector<Orbit_Ep>&imgOrb)
 		printf("=>failed to open ep XML(%s)!\n", orbPath.c_str());
 		return false;
 	}
-	TiXmlElement*	eleRoot = doc.RootElement();
-	TiXmlElement*  nodeProductInfo = eleRoot->FirstChildElement("ProductInfo");
+	TiXmlElement* eleRoot = doc.RootElement();
+	TiXmlElement* nodeProductInfo = eleRoot->FirstChildElement("ProductInfo");
 	eleRoot = doc.RootElement();  //<Content>
 	if (eleRoot == NULL)
 	{
@@ -727,11 +727,11 @@ bool ParseSTG::ReadLuojiaAllOrb(string orbPath, vector<Orbit_Ep>&imgOrb)
 		return false;
 	}
 
-	TiXmlElement *GpsData = eleRoot->FirstChildElement("GpsData");
+	TiXmlElement* GpsData = eleRoot->FirstChildElement("GpsData");
 	TiXmlElement* nextGpsData = GpsData;
 	while (nextGpsData)
 	{
-		TiXmlElement *UTC = nextGpsData->FirstChildElement("UTC");
+		TiXmlElement* UTC = nextGpsData->FirstChildElement("UTC");
 		if (UTC == NULL)
 		{
 			nextGpsData = nextGpsData->NextSiblingElement();
@@ -740,27 +740,27 @@ bool ParseSTG::ReadLuojiaAllOrb(string orbPath, vector<Orbit_Ep>&imgOrb)
 		string tmpStr = UTC->GetText();
 		perEp.UTC = atof(tmpStr.c_str());
 
-		TiXmlElement *PosX = nextGpsData->FirstChildElement("PosX");
+		TiXmlElement* PosX = nextGpsData->FirstChildElement("PosX");
 		tmpStr = PosX->GetText();
 		perEp.X = atof(tmpStr.c_str());
 
-		TiXmlElement *PosY = nextGpsData->FirstChildElement("PosY");
+		TiXmlElement* PosY = nextGpsData->FirstChildElement("PosY");
 		tmpStr = PosY->GetText();
 		perEp.Y = atof(tmpStr.c_str());
 
-		TiXmlElement *PosZ = nextGpsData->FirstChildElement("PosZ");
+		TiXmlElement* PosZ = nextGpsData->FirstChildElement("PosZ");
 		tmpStr = PosZ->GetText();
 		perEp.Z = atof(tmpStr.c_str());
 
-		TiXmlElement *VelX = nextGpsData->FirstChildElement("VelX");
+		TiXmlElement* VelX = nextGpsData->FirstChildElement("VelX");
 		tmpStr = VelX->GetText();
 		perEp.Xv = atof(tmpStr.c_str());
 
-		TiXmlElement *VelY = nextGpsData->FirstChildElement("VelY");
+		TiXmlElement* VelY = nextGpsData->FirstChildElement("VelY");
 		tmpStr = VelY->GetText();
 		perEp.Yv = atof(tmpStr.c_str());
 
-		TiXmlElement *VelZ = nextGpsData->FirstChildElement("VelZ");
+		TiXmlElement* VelZ = nextGpsData->FirstChildElement("VelZ");
 		tmpStr = VelZ->GetText();
 		perEp.Zv = atof(tmpStr.c_str());
 
@@ -777,7 +777,7 @@ bool ParseSTG::ReadLuojiaAllOrb(string orbPath, vector<Orbit_Ep>&imgOrb)
 //注意：
 //日期：2019.06.19
 //////////////////////////////////////////////////////////////////////////
-bool ParseSTG::GetEuler(YMD imgTime,  Orbit_Ep imgOrb)
+bool ParseSTG::GetEuler(YMD imgTime, Orbit_Ep imgOrb)
 {
 	//WGS84
 	char* JPLpath = "C:\\Users\\wcsgz\\Documents\\OneDrive\\2-CProject\\13-Luojia-1\\LJ01_GeoProcess\\ExtDlls\\2000_2020_421";
@@ -789,12 +789,12 @@ bool ParseSTG::GetEuler(YMD imgTime,  Orbit_Ep imgOrb)
 	int year, month, day, hour, minute;
 	double sec, R84toJ2000[9];
 	IAU2000ABaseCIOTerToCel(imgTime.year, imgTime.mon, imgTime.day, imgTime.hour, imgTime.min, imgTime.sec, EOPpath, 2, R84toJ2000, pos, vel);
-	
+
 	double X2[3], Y2[3], Z2[3], Rorbit2J2000[9];
 	Z2[0] = -pos[0];
 	Z2[1] = -pos[1];
 	Z2[2] = -pos[2];
-	mBase.NormVector(Z2,3);
+	mBase.NormVector(Z2, 3);
 	//norn(Z2);
 	mBase.crossmultnorm(Z2, vel, Y2);
 	mBase.crossmultnorm(Y2, Z2, X2);
@@ -804,11 +804,11 @@ bool ParseSTG::GetEuler(YMD imgTime,  Orbit_Ep imgOrb)
 
 	double RJ2000tobody[9];
 	string path = workpath + "\\EKFJitterquater.txt";
-	FILE *fp = fopen(path.c_str(), "r");
+	FILE* fp = fopen(path.c_str(), "r");
 	int m;
 	double Ru[9], Cbj[9], Cjc[9];//Cjc，相机到惯性坐标系
 	//mBase.rot(-0.005949811481223, 0.015002138143471, 0.003740215940200, Ru);
-	mBase.rot(-0.0064844833548677629,0.015811419942494780,0.0028100102543587727, Ru);//328轨定标
+	mBase.rot(-0.0064844833548677629, 0.015811419942494780, 0.0028100102543587727, Ru);//328轨定标
 	fscanf(fp, "%d\n%*s\n", &m);
 	Quat EKFres; vector<Quat>LuojiaStar; Quat LuojiaStarInter;
 	for (int a = 0; a < m; a++)
@@ -822,7 +822,7 @@ bool ParseSTG::GetEuler(YMD imgTime,  Orbit_Ep imgOrb)
 	double RorbitToBody[9];
 	mBase.Multi(RJ2000tobody, Rorbit2J2000, RorbitToBody, 3, 3, 3);
 	SateEuler eulerLuojia;
-	mBase.Matrix2Eulor(RorbitToBody,213, eulerLuojia.R, eulerLuojia.P, eulerLuojia.Y);
+	mBase.Matrix2Eulor(RorbitToBody, 213, eulerLuojia.R, eulerLuojia.P, eulerLuojia.Y);
 	eulerLuojia.R = eulerLuojia.R / PI * 180;
 	eulerLuojia.P = eulerLuojia.P / PI * 180;
 	eulerLuojia.Y = eulerLuojia.Y / PI * 180;
@@ -835,11 +835,11 @@ bool ParseSTG::GetEuler(YMD imgTime,  Orbit_Ep imgOrb)
 //注意：该星敏为APS星敏数据
 //日期：2017.01.08
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::ReadZY302_STItime(double *UTC)
+void ParseSTG::ReadZY302_STItime(double* UTC)
 {
 	string STItimepath = workpath + "星时.txt";
-	FILE *fp = fopen(STItimepath.c_str(), "r");
-	int num,index;
+	FILE* fp = fopen(STItimepath.c_str(), "r");
+	int num, index;
 	fscanf(fp, "%d", num);
 	for (int a = 0; a < num; a++)
 	{
@@ -854,7 +854,7 @@ void ParseSTG::ReadZY302_STItime(double *UTC)
 //注意：
 //日期：2020.07.28
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::ReadJL106csv(string csv, vector<img>&imgJL106, vector<Quat>& att, vector<Quat>& sa, vector<Quat>& sb, vector<Quat>& sc)
+void ParseSTG::ReadJL106csv(string csv, vector<img>& imgJL106, vector<Quat>& att, vector<Quat>& sa, vector<Quat>& sb, vector<Quat>& sc)
 {
 	FILE* fp = NULL;
 	char* line, * record;
@@ -872,9 +872,9 @@ void ParseSTG::ReadJL106csv(string csv, vector<img>&imgJL106, vector<Quat>& att,
 			record = strtok(line, ",");
 			imgtmp.id = atoi(record);
 			record = strtok(NULL, ",");
-			tint= atoi(record);
+			tint = atoi(record);
 			record = strtok(NULL, ",");
-			tfloat= atof(record)/1000000.;
+			tfloat = atof(record) / 1000000.;
 			imgtmp.time = tint + tfloat;
 			imgJL106.push_back(imgtmp);
 
@@ -976,7 +976,7 @@ void ParseSTG::ReadJL106csv(string csv, vector<img>&imgJL106, vector<Quat>& att,
 	fp = NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-//功能：读取吉林一号07星csv文件内容
+//功能：读取吉林一号07星csv文件内容//06星也可以用这个
 //输入：csv文件路径
 //输出：吉林一号成像时间，J2000姿态，星敏ABC姿态
 //注意：
@@ -1096,7 +1096,7 @@ void ParseSTG::ReadJL107csv(string csv, vector<img>& imgJL107, vector<Quat>& att
 			{
 				record = strtok(NULL, ",");
 			}
-			imgtmp.sst[1]= atof(record);
+			imgtmp.sst[1] = atof(record);
 			record = strtok(NULL, ",");
 			imgtmp.sst[2] = atof(record);
 			for (int i = 0; i < 4; i++)
@@ -1132,7 +1132,7 @@ void ParseSTG::ReadJL107csv(string csv, vector<img>& imgJL107, vector<Quat>& att
 //注意：该星敏为APS星敏数据
 //日期：2016.11.01
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::FromLL2XY(Star starCatlog, double *R, double &x, double &y)
+void ParseSTG::FromLL2XY(Star starCatlog, double* R, double& x, double& y)
 {
 	double V[3], W[3];
 	V[0] = starCatlog.V[0]; V[1] = starCatlog.V[1]; V[2] = starCatlog.V[2];
@@ -1142,8 +1142,8 @@ void ParseSTG::FromLL2XY(Star starCatlog, double *R, double &x, double &y)
 	double px = 11 / 1.e6;
 	if (W[2] > 0)
 	{
-		x = (512 - W[0] / W[2] * 43.3/0.015) ;
-		y = (512 - W[1] / W[2] * 43.3/0.015) ;
+		x = (512 - W[0] / W[2] * 43.3 / 0.015);
+		y = (512 - W[1] / W[2] * 43.3 / 0.015);
 	}
 	//if (W[2] > 0)
 	//{
@@ -1164,13 +1164,13 @@ void ParseSTG::FromLL2XY(Star starCatlog, double *R, double &x, double &y)
 //注意：
 //日期：2019.04.18
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::FromLL2XYForLuojia(Star starCatlog, double *R, double &x, double &y)
+void ParseSTG::FromLL2XYForLuojia(Star starCatlog, double* R, double& x, double& y)
 {
 	double V[3], W[3];
 	V[0] = starCatlog.V[0]; V[1] = starCatlog.V[1]; V[2] = starCatlog.V[2];
 	mBase.Multi(R, V, W, 3, 3, 1);
 	//x0=y0=512,f=43.3mm,像元大小0.015mm
-	double x0 = 2048/2, y0 = 2048/2;
+	double x0 = 2048 / 2, y0 = 2048 / 2;
 	double f = 0.055086;
 	double pixel = 11 / 1.e6;
 	if (W[2] > 0)
@@ -1180,7 +1180,7 @@ void ParseSTG::FromLL2XYForLuojia(Star starCatlog, double *R, double &x, double 
 	}
 	else
 	{
-		x = -x0-1, y = -y0-1;
+		x = -x0 - 1, y = -y0 - 1;
 	}//这个是用来判断是否和星敏指向的半球方向一致
 }
 
@@ -1199,7 +1199,7 @@ void ParseSTG::FromLL2XYForJL01(Star starCatlog, double* R, double& x, double& y
 	mBase.Multi(R, V, W, 3, 3, 1);
 	//x0=y0=512,f=43.3mm,像元大小0.015mm
 	double x0 = 12000 / 2, y0 = 5000 / 2;
-	double f,pixel;
+	double f, pixel;
 	double fpixel = 3.2 / 5.5 * 1000000;
 	if (W[2] > 0)
 	{
@@ -1212,7 +1212,7 @@ void ParseSTG::FromLL2XYForJL01(Star starCatlog, double* R, double& x, double& y
 	}//这个是用来判断是否和星敏指向的半球方向一致
 }
 
-void ParseSTG::FromLL2XYForLuojia(double *starCatlog, double *R, double &x, double &y)
+void ParseSTG::FromLL2XYForLuojia(double* starCatlog, double* R, double& x, double& y)
 {
 	double V[3], W[3];
 	V[0] = starCatlog[0]; V[1] = starCatlog[1]; V[2] = starCatlog[2];
@@ -1241,17 +1241,17 @@ void ParseSTG::FromLL2XYForLuojia(double *starCatlog, double *R, double &x, doub
 //注意：与上面函数名相同，用到了函数重载
 //日期：2017.03.07
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::FromLL2XY(double *W, StarCaliParam Param, double *x, double *y)
-{	
+void ParseSTG::FromLL2XY(double* W, StarCaliParam Param, double* x, double* y)
+{
 	//没有畸变的情况
 	x[0] = Param.x0 - W[0] / W[2] * Param.f;
 	y[0] = Param.y0 - W[1] / W[2] * Param.f;
 
 	//有畸变的情况
-	double r2 = (x[0] - Param.x0)*(x[0] - Param.x0) + (y[0] - Param.y0)*(y[0] - Param.y0);
-	x[1] = Param.x0 - W[0] / W[2] * Param.f * (1 - Param.k1 * r2 - Param.k2 * r2*r2);
-	y[1] = Param.y0 - W[1] / W[2] * Param.f * (1 - Param.k1 * r2 - Param.k2 * r2*r2);
-	
+	double r2 = (x[0] - Param.x0) * (x[0] - Param.x0) + (y[0] - Param.y0) * (y[0] - Param.y0);
+	x[1] = Param.x0 - W[0] / W[2] * Param.f * (1 - Param.k1 * r2 - Param.k2 * r2 * r2);
+	y[1] = Param.y0 - W[1] / W[2] * Param.f * (1 - Param.k1 * r2 - Param.k2 * r2 * r2);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1262,7 +1262,7 @@ void ParseSTG::FromLL2XY(double *W, StarCaliParam Param, double *x, double *y)
 //作者：GZC
 //日期：2017.03.02
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::FromXY2LL(double x, double y, StarCaliParam Param, double * V)
+void ParseSTG::FromXY2LL(double x, double y, StarCaliParam Param, double* V)
 {
 	/*double p1 = 1e-7, p2 = 1e-7;
 	double xp = x - Param.x0;
@@ -1278,11 +1278,11 @@ void ParseSTG::FromXY2LL(double x, double y, StarCaliParam Param, double * V)
 	V[1] = yreal / sum;
 	V[2] = freal / sum;*/
 
-	double r2 = (x - Param.x0)*(x - Param.x0) + (y - Param.y0)*(y - Param.y0);
-	double xreal = -(x - Param.x0)*(1 - Param.k1 * r2 - Param.k2 * r2*r2);
-	double yreal = -(y - Param.y0)*(1 - Param.k1 * r2 - Param.k2 * r2*r2);
+	double r2 = (x - Param.x0) * (x - Param.x0) + (y - Param.y0) * (y - Param.y0);
+	double xreal = -(x - Param.x0) * (1 - Param.k1 * r2 - Param.k2 * r2 * r2);
+	double yreal = -(y - Param.y0) * (1 - Param.k1 * r2 - Param.k2 * r2 * r2);
 	double freal = Param.f;
-	double sum = sqrt(xreal*xreal + yreal*yreal + freal*freal);
+	double sum = sqrt(xreal * xreal + yreal * yreal + freal * freal);
 	V[0] = xreal / sum;
 	V[1] = yreal / sum;
 	V[2] = freal / sum;
@@ -1293,11 +1293,11 @@ void ParseSTG::FromXY2LL(double x, double y, StarCaliParam Param, double * V)
 //输入：Mag:恒星星等；
 //输出：DN值
 //注意：定义星等3为255亮度，小于星等3的也为255
-//日期：2016.12.08
+//日期：2016.12.08  更新：2020.10.22，小于7等的为255
 //////////////////////////////////////////////////////////////////////////
 int ParseSTG::Mag2DN(double Mag)
 {
-	int DN = 166 * pow(100, (3 - Mag) / 5)+65;
+	int DN = 166 * pow(100, (7 - Mag) / 5) + 65;
 	return DN;
 }
 
@@ -1312,7 +1312,7 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 {
 	//打开星表文件
 	string starCatlogpath = "D:\\2_ImageData\\ZY3-02\\星图处理\\星表\\导航星表矢量.txt";
-	FILE *fp;
+	FILE* fp;
 	fp = fopen(starCatlogpath.c_str(), "r");
 	if (fp == NULL)
 	{
@@ -1321,7 +1321,7 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 	}
 	int i, n;
 	fscanf(fp, "%d", &n);//读取星表数据
-	Star *starCatlog = new Star[n];
+	Star* starCatlog = new Star[n];
 	for (i = 0; i < n; i++)
 	{
 		fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &starCatlog[i].ID, &starCatlog[i].phiX,
@@ -1335,16 +1335,16 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 	// 影像的宽度和高度
 	long width = 1024, height = 1024;
 	//创建像平面像素值数组
-	byte *UnitData = new byte[1024 * 1024];
-		
+	byte* UnitData = new byte[1024 * 1024];
+
 	string imgtmp = workpath + "星图";
-	char * imgpath = (char *)imgtmp.data();
+	char* imgpath = (char*)imgtmp.data();
 	_mkdir(imgpath);//创建星图文件夹
 	imgtmp = workpath + "星图\\星图仿真\\";
-	imgpath = (char *)imgtmp.data();
+	imgpath = (char*)imgtmp.data();
 	_mkdir(imgpath);//创建星图仿真文件夹
 	string imgtxt = workpath + "星图\\像面坐标.txt";
-	FILE *fptxt = fopen(imgtxt.c_str(), "w");
+	FILE* fptxt = fopen(imgtxt.c_str(), "w");
 
 	//给出第一帧的星像点坐标和亮度	
 	//int aa = 2;
@@ -1367,13 +1367,13 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 
 	//根据姿态仿出星图
 	m = 40;
-	for (i=0;i<m;i++)
-	//for (i = 900; i < 1100; i++)
+	for (i = 0; i < m; i++)
+		//for (i = 900; i < 1100; i++)
 	{
 		memset(UnitData, 0, sizeof(byte) * 1024 * 1024);//影像像素值置为0
 		//星敏A即APS星敏仿真
-		mBase.quat2matrix(ZY3_02STGdata[i].StarA.Q1,ZY3_02STGdata[i].StarA.Q2,
-			ZY3_02STGdata[i].StarA.Q3,ZY3_02STGdata[i].StarA.Q0,R);//Crj
+		mBase.quat2matrix(ZY3_02STGdata[i].StarA.Q1, ZY3_02STGdata[i].StarA.Q2,
+			ZY3_02STGdata[i].StarA.Q3, ZY3_02STGdata[i].StarA.Q0, R);//Crj
 		//星敏B仿真
 		//mBase.quat2matrix(ZY3_02STGdata[i].StarB.Q1, ZY3_02STGdata[i].StarB.Q2,
 		//	ZY3_02STGdata[i].StarB.Q3, ZY3_02STGdata[i].StarB.Q0, R);//Crj
@@ -1381,7 +1381,7 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 		{
 			FromLL2XY(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
 			if (x > 4 && x < 1020 && y>4 && y < 1020)
-			//if (x > -510 && x < 510 && y>-510 && y < 510)
+				//if (x > -510 && x < 510 && y>-510 && y < 510)
 			{
 				for (int ii = 0; ii < 5; ii++)//生成5个像素大小的星图
 				{
@@ -1389,11 +1389,11 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 					{
 						//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
 						//将 X↓Y→ 转换为 X→Y↑
-						int xTrans = int(y+0.5);
-						int yTrans = 1024-int(x+0.5);
+						int xTrans = int(y + 0.5);
+						int yTrans = 1024 - int(x + 0.5);
 						int DN = Mag2DN(starCatlog[j].mag);
 						if (DN > 255) DN = 255;
-						UnitData[yTrans*width + xTrans] = DN;
+						UnitData[yTrans * width + xTrans] = DN;
 						//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
 						x++;
 					}
@@ -1411,7 +1411,7 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 		//仿射变换
 		double minx = 0, maxy = 1024, resolution = 1;
 		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-		sprintf_s(tempath, "星图 (%d) APS仿.tiff", i+1);
+		sprintf_s(tempath, "星图 (%d) APS仿.tiff", i + 1);
 		//sprintf_s(tempath, "星敏B仿真 (%d).tiff", i + 1, ZY3_02STGdata[i].StarB.UTC);
 		string imgpath = workpath + "星图\\星图仿真\\" + tempath;
 		GeoReadImage m_out;
@@ -1435,7 +1435,7 @@ void ParseSTG::StarMap(vector<STGData> ZY3_02STGdata)
 			for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
 			{
 				//读入数据
-				gray = UnitData[yPixel*width + xPixel];
+				gray = UnitData[yPixel * width + xPixel];
 				//gray = 0;
 				m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
 			}
@@ -1458,7 +1458,7 @@ void ParseSTG::StarMapForLuojia(vector<Quat>LuojiaCam)
 {
 	//打开星表文件
 	string starCatlogpath = "C:\\Users\\wcsgz\\Documents\\OneDrive\\4-项目资料\\20150519-珞珈一号\\20190417-星图拍摄\\星表\\导航星表矢量.txt";
-	FILE *fp;
+	FILE* fp;
 	fp = fopen(starCatlogpath.c_str(), "r");
 	if (fp == NULL)
 	{
@@ -1467,7 +1467,7 @@ void ParseSTG::StarMapForLuojia(vector<Quat>LuojiaCam)
 	}
 	int i, n;
 	fscanf(fp, "%d", &n);//读取星表数据
-	Star *starCatlog = new Star[n];
+	Star* starCatlog = new Star[n];
 	for (i = 0; i < n; i++)
 	{
 		fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", &starCatlog[i].ID, &starCatlog[i].phiX,
@@ -1481,127 +1481,127 @@ void ParseSTG::StarMapForLuojia(vector<Quat>LuojiaCam)
 	// 影像的宽度和高度
 	long width = 2048, height = 2048;
 	//创建像平面像素值数组
-	byte *UnitData = new byte[width * height];
+	byte* UnitData = new byte[width * height];
 
 	string imgtmp = workpath + "星图";
-	char * imgpath = (char *)imgtmp.data();
+	char* imgpath = (char*)imgtmp.data();
 	_mkdir(imgpath);//创建星图文件夹
 	string imgtxt = workpath + "星图\\像面坐标.txt";
-	FILE *fptxt = fopen(imgtxt.c_str(), "w");
-	
+	FILE* fptxt = fopen(imgtxt.c_str(), "w");
+
 	//根据姿态仿出星图
 	for (i = 0; i < m; i++)
 	{
 		//for (int a = 0; a < 8; a++)
-		{			
-		memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
-		//星敏A即APS星敏仿真
-		mBase.quat2matrix(LuojiaCam[i].Q1, LuojiaCam[i].Q2,LuojiaCam[i].Q3, LuojiaCam[i].Q0, R);//Crj
-		for (j = 0; j < n; j++)
 		{
-			FromLL2XYForLuojia(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
-			if (x > 4 && x < width-4 && y>4 && y < height-4&&starCatlog[j].mag<5)
+			memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
+			//星敏A即APS星敏仿真
+			mBase.quat2matrix(LuojiaCam[i].Q1, LuojiaCam[i].Q2, LuojiaCam[i].Q3, LuojiaCam[i].Q0, R);//Crj
+			for (j = 0; j < n; j++)
 			{
-				for (int ii = 0; ii < 5; ii++)//生成5个像素大小的星图
+				FromLL2XYForLuojia(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
+				if (x > 4 && x < width - 4 && y>4 && y < height - 4 && starCatlog[j].mag < 5)
 				{
-					for (int jj = 0; jj < 5; jj++)
+					for (int ii = 0; ii < 5; ii++)//生成5个像素大小的星图
 					{
-						//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
-						//将 X↓Y→ 转换为 X→Y↑
-						int xTrans, yTrans;
-						xTrans = int(x);
-						yTrans = int(y);
-						/*switch (a)
+						for (int jj = 0; jj < 5; jj++)
 						{
-						case 0:
-							xTrans = int(x + 0.5);
-							yTrans = int(y + 0.5);
-							break;
-						case 1:
-							xTrans = int(y + 0.5);
-							yTrans = height - int(x + 0.5);
-							break;
-						case 2:
-							xTrans = height- int(x + 0.5);
-							yTrans = width - int(y + 0.5);
-							break;
-						case 3:
-							xTrans = width-int(y + 0.5);
-							yTrans = int(x + 0.5);
-							break;
-						case 4:
-							xTrans = int(y + 0.5);
-							yTrans = int(x + 0.5);
-							break;
-						case 5:
-							xTrans = int(x+ 0.5);
-							yTrans = height - int(y + 0.5);
-							break;
-						case 6:
-							xTrans = height - int(y + 0.5);
-							yTrans = width - int(x + 0.5);
-							break;
-						case 7:
-							xTrans = width - int(x + 0.5);
-							yTrans = int(y + 0.5);
-							break;
-						default:
-							break;
-						}*/
-						int DN = Mag2DN(starCatlog[j].mag);
-						if (DN > 255) DN = 255;
-						UnitData[yTrans*width + xTrans] = DN;
-						//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
-						x++;
+							//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
+							//将 X↓Y→ 转换为 X→Y↑
+							int xTrans, yTrans;
+							xTrans = int(x);
+							yTrans = int(y);
+							/*switch (a)
+							{
+							case 0:
+								xTrans = int(x + 0.5);
+								yTrans = int(y + 0.5);
+								break;
+							case 1:
+								xTrans = int(y + 0.5);
+								yTrans = height - int(x + 0.5);
+								break;
+							case 2:
+								xTrans = height- int(x + 0.5);
+								yTrans = width - int(y + 0.5);
+								break;
+							case 3:
+								xTrans = width-int(y + 0.5);
+								yTrans = int(x + 0.5);
+								break;
+							case 4:
+								xTrans = int(y + 0.5);
+								yTrans = int(x + 0.5);
+								break;
+							case 5:
+								xTrans = int(x+ 0.5);
+								yTrans = height - int(y + 0.5);
+								break;
+							case 6:
+								xTrans = height - int(y + 0.5);
+								yTrans = width - int(x + 0.5);
+								break;
+							case 7:
+								xTrans = width - int(x + 0.5);
+								yTrans = int(y + 0.5);
+								break;
+							default:
+								break;
+							}*/
+							int DN = Mag2DN(starCatlog[j].mag);
+							if (DN > 255) DN = 255;
+							UnitData[yTrans * width + xTrans] = DN;
+							//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
+							x++;
+						}
+						x -= 5;
+						y++;
 					}
-					x -= 5;
-					y++;
 				}
 			}
-		}
-		//创建影像
-		char tempath[100];
-		// 输出影像参数
-		string outdriver = "GTiff";
-		//投影
-		string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
-		//仿射变换
-		double minx = 0, maxy = 2048, resolution = 1;
-		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-		sprintf_s(tempath, "星图第%04d帧仿真.tiff", i);
-		string imgpath = workpath + "星图\\" + tempath;
-		GeoReadImage m_out;
-		m_out.New(imgpath, outdriver, GDT_Byte, 2*width, height, 1);
-		m_out.poDataset->SetProjection(tarProject.c_str());
-		m_out.poDataset->SetGeoTransform(adfGeoTransform);
-		//更新方式打开影像
-		m_out.Open(imgpath, GA_Update);
-		if (m_out.m_isopen == true)
-			printf("\rUpdate Img (%s)", imgpath.c_str());
-		else
-		{
-			printf("\rUpdate Img (%s) Failed", imgpath.c_str());
-			return;
-		}
-		//建立out数据区
-		m_out.SetBuffer(0, 0, 2*width, height, m_out.pBuffer[0]);
-		double gray;
-		for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
-		{
-			for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
+			//创建影像
+			char tempath[100];
+			// 输出影像参数
+			string outdriver = "GTiff";
+			//投影
+			string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
+			//仿射变换
+			double minx = 0, maxy = 2048, resolution = 1;
+			double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
+			sprintf_s(tempath, "星图第%04d帧仿真.tiff", i);
+			string imgpath = workpath + "星图\\" + tempath;
+			GeoReadImage m_out;
+			m_out.New(imgpath, outdriver, GDT_Byte, 2 * width, height, 1);
+			m_out.poDataset->SetProjection(tarProject.c_str());
+			m_out.poDataset->SetGeoTransform(adfGeoTransform);
+			//更新方式打开影像
+			m_out.Open(imgpath, GA_Update);
+			if (m_out.m_isopen == true)
+				printf("\rUpdate Img (%s)", imgpath.c_str());
+			else
 			{
-				//读入数据
-				gray = UnitData[yPixel*width + xPixel];
-				//gray = 0;
-				m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
-				m_out.SetDataValue(xPixel+width, yPixel, gray, 0);    //赋值
+				printf("\rUpdate Img (%s) Failed", imgpath.c_str());
+				return;
 			}
-		}
-		//写入数据
-		bool iswrite = true;
-		iswrite *= m_out.WriteBlock(0, 0, 2*width, height, 0, m_out.pBuffer[0]);
-		//关闭影像
-		m_out.Destroy();
+			//建立out数据区
+			m_out.SetBuffer(0, 0, 2 * width, height, m_out.pBuffer[0]);
+			double gray;
+			for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
+			{
+				for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
+				{
+					//读入数据
+					gray = UnitData[yPixel * width + xPixel];
+					//gray = 0;
+					m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
+					m_out.SetDataValue(xPixel + width, yPixel, gray, 0);    //赋值
+				}
+			}
+			//写入数据
+			bool iswrite = true;
+			iswrite *= m_out.WriteBlock(0, 0, 2 * width, height, 0, m_out.pBuffer[0]);
+			//关闭影像
+			m_out.Destroy();
 		}
 	}
 }
@@ -1670,151 +1670,305 @@ void ParseSTG::StarMapForJL01(string txtPath)
 	char* imgpath = (char*)imgtmp.data();
 	_mkdir(imgpath);//创建星图文件夹
 	string imgtxt = mapPath + "星图\\像面坐标.txt";
-	
+
 
 	//根据姿态仿出星图
 	for (i = 0; i < num; i++)
 	{
 
-			memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
-			//星敏A即APS星敏仿真
-			mBase.quat2matrix(qJ2000[i].Q1, qJ2000[i].Q2, qJ2000[i].Q3, qJ2000[i].Q0, R);//Crj
-			FILE* fptxt = fopen(imgtxt.c_str(), "w+");
-			for (j = 0; j < n; j++)
+		memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
+		//星敏A即APS星敏仿真
+		mBase.quat2matrix(qJ2000[i].Q1, qJ2000[i].Q2, qJ2000[i].Q3, qJ2000[i].Q0, R);//Crj
+		FILE* fptxt = fopen(imgtxt.c_str(), "w+");
+		for (j = 0; j < n; j++)
+		{
+			FromLL2XYForJL01(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
+			int edge = 16;
+			if (x > edge && x < width - edge && y>edge && y < height - edge && starCatlog[j].mag < 6)
 			{
-				FromLL2XYForJL01(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
-				int edge = 16;
-				if (x > edge && x < width - edge && y>edge && y < height - edge && starCatlog[j].mag < 6)
-				{
-					int DN = Mag2DN(starCatlog[j].mag);
+				int DN = Mag2DN(starCatlog[j].mag);
 
-					int maxLength;
-					if (DN>255)
-					{
-						maxLength = 64;
-					}
-					else if(DN > 169&&DN<=255)
-					{
-						maxLength = 13;
-					}
-					else if (DN > 100 && DN <= 169)
-					{
-						maxLength = 10;
-					}
-					else if (DN > 49 && DN <= 100)
-					{
-						maxLength = 7;
-					}
-					else if (DN > 16 && DN <= 49)
-					{
-						maxLength = 4;
-					}
-					else
-					{
-						maxLength = 1;
-					}
-					fprintf(fptxt, "%d\t%d\t%.8f\t%.8f\t%.8f\n", int(x), int(y), starCatlog[j].phiX, starCatlog[j].phiY, starCatlog[j].mag);
-					for (int ii = 0; ii < maxLength; ii++)//生成maxLength个像素大小的星图
-					{
-						for (int jj = 0; jj < maxLength; jj++)
-						{
-							//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
-							//将 X↓Y→ 转换为 X→Y↑
-							int xTrans, yTrans;
-							xTrans = int(x-maxLength/2);
-							yTrans = int(y- maxLength / 2);
-							/*switch (a)
-							{
-							case 0:
-								xTrans = int(x + 0.5);
-								yTrans = int(y + 0.5);
-								break;
-							case 1:
-								xTrans = int(y + 0.5);
-								yTrans = height - int(x + 0.5);
-								break;
-							case 2:
-								xTrans = height- int(x + 0.5);
-								yTrans = width - int(y + 0.5);
-								break;
-							case 3:
-								xTrans = width-int(y + 0.5);
-								yTrans = int(x + 0.5);
-								break;
-							case 4:
-								xTrans = int(y + 0.5);
-								yTrans = int(x + 0.5);
-								break;
-							case 5:
-								xTrans = int(x+ 0.5);
-								yTrans = height - int(y + 0.5);
-								break;
-							case 6:
-								xTrans = height - int(y + 0.5);
-								yTrans = width - int(x + 0.5);
-								break;
-							case 7:
-								xTrans = width - int(x + 0.5);
-								yTrans = int(y + 0.5);
-								break;
-							default:
-								break;
-							}*/							
-							if (DN > 255) DN = 255;
-							UnitData[yTrans * width + xTrans] = DN;							
-							
-							//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
-							x++;
-						}
-						x -= maxLength;
-						y++;
-					}
-				}
-			}
-			fclose(fptxt);
-			//创建影像
-			char tempath[100];
-			// 输出影像参数
-			string outdriver = "GTiff";
-			//投影
-			string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
-			//仿射变换
-			double minx = 0, maxy = 12000, resolution = 1;
-			double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-			sprintf_s(tempath, "星图第%04d帧仿真.tiff", i);
-			string imgpath = mapPath + "星图\\" + tempath;
-			GeoReadImage m_out;
-			m_out.New(imgpath, outdriver, GDT_Byte,  width, height, 1);
-			m_out.poDataset->SetProjection(tarProject.c_str());
-			m_out.poDataset->SetGeoTransform(adfGeoTransform);
-			//更新方式打开影像
-			m_out.Open(imgpath, GA_Update);
-			if (m_out.m_isopen == true)
-				printf("\rUpdate Img (%s)", imgpath.c_str());
-			else
-			{
-				printf("\rUpdate Img (%s) Failed", imgpath.c_str());
-				return;
-			}
-			//建立out数据区
-			m_out.SetBuffer(0, 0, width, height, m_out.pBuffer[0]);
-			double gray;
-			for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
-			{
-				for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
+				int maxLength;
+				if (DN > 255)
 				{
-					//读入数据
-					gray = UnitData[yPixel * width + xPixel];
-					//gray = 0;
-					m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
-					m_out.SetDataValue(xPixel + width, yPixel, gray, 0);    //赋值
+					maxLength = 64;
+				}
+				else if (DN > 169 && DN <= 255)
+				{
+					maxLength = 13;
+				}
+				else if (DN > 100 && DN <= 169)
+				{
+					maxLength = 10;
+				}
+				else if (DN > 49 && DN <= 100)
+				{
+					maxLength = 7;
+				}
+				else if (DN > 16 && DN <= 49)
+				{
+					maxLength = 4;
+				}
+				else
+				{
+					maxLength = 1;
+				}
+				fprintf(fptxt, "%d\t%d\t%.8f\t%.8f\t%.8f\n", int(x), int(y), starCatlog[j].phiX, starCatlog[j].phiY, starCatlog[j].mag);
+				for (int ii = 0; ii < maxLength; ii++)//生成maxLength个像素大小的星图
+				{
+					for (int jj = 0; jj < maxLength; jj++)
+					{
+						//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
+						//将 X↓Y→ 转换为 X→Y↑
+						int xTrans, yTrans;
+						xTrans = int(x - maxLength / 2);
+						yTrans = int(y - maxLength / 2);
+						/*switch (a)
+						{
+						case 0:
+							xTrans = int(x + 0.5);
+							yTrans = int(y + 0.5);
+							break;
+						case 1:
+							xTrans = int(y + 0.5);
+							yTrans = height - int(x + 0.5);
+							break;
+						case 2:
+							xTrans = height- int(x + 0.5);
+							yTrans = width - int(y + 0.5);
+							break;
+						case 3:
+							xTrans = width-int(y + 0.5);
+							yTrans = int(x + 0.5);
+							break;
+						case 4:
+							xTrans = int(y + 0.5);
+							yTrans = int(x + 0.5);
+							break;
+						case 5:
+							xTrans = int(x+ 0.5);
+							yTrans = height - int(y + 0.5);
+							break;
+						case 6:
+							xTrans = height - int(y + 0.5);
+							yTrans = width - int(x + 0.5);
+							break;
+						case 7:
+							xTrans = width - int(x + 0.5);
+							yTrans = int(y + 0.5);
+							break;
+						default:
+							break;
+						}*/
+						if (DN > 255) DN = 255;
+						UnitData[yTrans * width + xTrans] = DN;
+
+						//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
+						x++;
+					}
+					x -= maxLength;
+					y++;
 				}
 			}
-			//写入数据
-			bool iswrite = true;
-			iswrite *= m_out.WriteBlock(0, 0, width, height, 0, m_out.pBuffer[0]);
-			//关闭影像
-			m_out.Destroy();
+		}
+		fclose(fptxt);
+		//创建影像
+		char tempath[100];
+		// 输出影像参数
+		string outdriver = "GTiff";
+		//投影
+		string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
+		//仿射变换
+		double minx = 0, maxy = 12000, resolution = 1;
+		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
+		sprintf_s(tempath, "星图第%04d帧仿真.tiff", i);
+		string imgpath = mapPath + "星图\\" + tempath;
+		GeoReadImage m_out;
+		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);
+		m_out.poDataset->SetProjection(tarProject.c_str());
+		m_out.poDataset->SetGeoTransform(adfGeoTransform);
+		//更新方式打开影像
+		m_out.Open(imgpath, GA_Update);
+		if (m_out.m_isopen == true)
+			printf("\rUpdate Img (%s)", imgpath.c_str());
+		else
+		{
+			printf("\rUpdate Img (%s) Failed", imgpath.c_str());
+			return;
+		}
+		//建立out数据区
+		m_out.SetBuffer(0, 0, width, height, m_out.pBuffer[0]);
+		double gray;
+		for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
+		{
+			for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
+			{
+				//读入数据
+				gray = UnitData[yPixel * width + xPixel];
+				//gray = 0;
+				m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
+				m_out.SetDataValue(xPixel + width, yPixel, gray, 0);    //赋值
+			}
+		}
+		//写入数据
+		bool iswrite = true;
+		iswrite *= m_out.WriteBlock(0, 0, width, height, 0, m_out.pBuffer[0]);
+		//关闭影像
+		m_out.Destroy();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//功能：仿真吉林一号06星星图
+//输入：星敏J2000姿态，成像时间
+//输出：四元数对应星图
+//注意：
+//日期：2020.10.21
+//////////////////////////////////////////////////////////////////////////
+void ParseSTG::StarMapForJL01(string outPath, vector<Quat>jlCam)
+{
+	//打开星表文件
+	string starCatlogpath = "C:\\Users\\GZC\\OneDrive\\2-CProject\\18-Att_LFreq\\Data\\star_cat_lt10.txt";
+	FILE* fp;
+	fp = fopen(starCatlogpath.c_str(), "r");
+	if (fp == NULL)
+	{
+		printf("打开%s文件失败,请确认文件路径是否正确!\n", starCatlogpath.c_str());
+		return;
+	}
+	int i, n;
+	fscanf(fp, "%d", &n);//读取星表数据
+	Star* starCatlog = new Star[n];
+	for (i = 0; i < n; i++)
+	{
+		double a, b, c, d;
+		fscanf(fp, "%lf\t%lf\t%lf\t%lf\n", &a, &c, &d, &b);
+		starCatlog[i].mag = b;
+		starCatlog[i].phiX = c;
+		starCatlog[i].phiY = d;
+		starCatlog[i].V[0] = cos(c / 180 * PI) * cos(d / 180 * PI);
+		starCatlog[i].V[1] = sin(c / 180 * PI) * cos(d / 180 * PI);
+		starCatlog[i].V[2] = sin(d / 180 * PI);
+	}
+	fclose(fp);
+
+	int j, m;
+	double R[9];
+	double  za[3] = { 0,0,1 }, zc[3];
+	double px, py, x, y;
+	// 影像的宽度和高度
+	long width = 12000, height = 5000;
+	//创建像平面像素值数组
+	byte* UnitData = new byte[width * height];
+
+	string imgtmp = outPath + "星图";
+	char* imgpath = (char*)imgtmp.data();
+	_mkdir(imgpath);//创建星图文件夹
+
+
+
+	//根据姿态仿出星图
+	for (i = 0; i < jlCam.size(); i++)
+	{
+
+		memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
+		mBase.quat2matrix(jlCam[i].Q1, jlCam[i].Q2, jlCam[i].Q3, jlCam[i].Q0, R);//Cbj
+
+		char tmp[256];
+		sprintf_s(tmp, "星图\\像面坐标%04d.txt", i);
+		string imgtxt = outPath + tmp;
+		FILE* fptxt = fopen(imgtxt.c_str(), "w+");
+
+		for (j = 0; j < n; j++)
+		{
+			FromLL2XYForJL01(starCatlog[j], R, x, y);
+			int edge = 41;
+			if (x > edge && x < width - edge && y>edge && y < height - edge)
+			{
+				int DN = Mag2DN(starCatlog[j].mag);
+				int maxLength;
+				if (DN > 255)
+				{
+					maxLength = 80;
+				}
+				else if (DN > 100 && DN <= 255)
+				{
+					maxLength = 60;
+				}
+				else if (DN > 16 && DN <= 100)
+				{
+					maxLength = 40;
+				}
+				else
+				{
+					maxLength = 20;
+				}
+				y = height - y;
+				fprintf(fptxt, "%d\t%d\t%.8f\t%.8f\t%.8f\n", int(x), int(y), starCatlog[j].phiX, starCatlog[j].phiY, starCatlog[j].mag);
+				
+				for (int ii = 0; ii < maxLength; ii++)//生成maxLength个像素大小的星图
+				{
+					for (int jj = 0; jj < maxLength; jj++)
+					{
+						//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
+						//将 X↓Y→ 转换为 X→Y↑
+						int xTrans, yTrans;
+						xTrans = int(x - maxLength / 2);
+						yTrans = int(y - maxLength / 2);
+						UnitData[yTrans * width + xTrans] = 255;
+
+						//UnitData[yTrans*width + xTrans] = starCatlog[j].mag*10;
+						x++;
+					}
+					x -= maxLength;
+					y++;
+				}
+			}
+		}
+		fclose(fptxt);
+		// 输出影像参数
+		string outdriver = "GTiff";
+		//投影
+		string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
+		//仿射变换
+		double minx = 0, maxy = 12000, resolution = 1;
+		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
+		//创建影像
+		char tempath[100];
+		sprintf_s(tempath, "星图第%04d帧仿真.tiff", i);
+		string imgpath = outPath + "星图\\" + tempath;
+		GeoReadImage m_out;
+		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);
+		m_out.poDataset->SetProjection(tarProject.c_str());
+		m_out.poDataset->SetGeoTransform(adfGeoTransform);
+		//更新方式打开影像
+		m_out.Open(imgpath, GA_Update);
+		if (m_out.m_isopen == true)
+			printf("\rUpdate Img (%s)", imgpath.c_str());
+		else
+		{
+			printf("\rUpdate Img (%s) Failed", imgpath.c_str());
+			return;
+		}
+		//建立out数据区
+		m_out.SetBuffer(0, 0, width, height, m_out.pBuffer[0]);
+		double gray;
+		for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
+		{
+			for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
+			{
+				//读入数据
+				gray = UnitData[yPixel * width + xPixel];
+				//gray = 0;
+				m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
+				m_out.SetDataValue(xPixel + width, yPixel, gray, 0);    //赋值
+			}
+		}
+		//写入数据
+		bool iswrite = true;
+		iswrite *= m_out.WriteBlock(0, 0, width, height, 0, m_out.pBuffer[0]);
+		//关闭影像
+		m_out.Destroy();
 	}
 }
 
@@ -1830,7 +1984,7 @@ void ParseSTG::MoonDirectionForLuojia(Orbit_Ep imgOrb, Quat imgAtt, YMD imgTime)
 	//设置JPL文件路径
 	char* JPLpath = "C:\\Users\\wcsgz\\Documents\\OneDrive\\2-CProject\\13-Luojia-1\\LJ01_GeoProcess\\ExtDlls\\2000_2020_421";
 	char* EOPpath = "C:\\Users\\wcsgz\\Documents\\OneDrive\\2-CProject\\13-Luojia-1\\LJ01_GeoProcess\\ExtDlls\\EOP00.txt";
-	double *MoonPos=new double[3];
+	double* MoonPos = new double[3];
 	//315
 	//double Rsate[9] = { 0 }, Pos[3] = {1988141.75, 6156936.84, 2700405.95}, Vel[3] = { 0 };
 	//PlanetEph(2019, 3, 22, 17, 40, 18.187471,  JPLpath, EOPpath, 9, 2, MoonPos);//月球位置
@@ -1845,7 +1999,7 @@ void ParseSTG::MoonDirectionForLuojia(Orbit_Ep imgOrb, Quat imgAtt, YMD imgTime)
 	//IAU2000ABaseCIOTerToCel(2018, 06, 27, 23, 43, 24, EOPpath, 8, Rsate, Pos, Vel);//卫星位置
 		//53
 	double Rsate[9] = { 0 }, Pos[3] = { imgOrb.X, imgOrb.Y, imgOrb.Z }, Vel[3] = { 0 };
-	PlanetEph(imgTime.year, imgTime.mon,imgTime.day,imgTime.hour,imgTime.min,imgTime.sec, JPLpath, EOPpath, 9, 2, MoonPos);//月球位置
+	PlanetEph(imgTime.year, imgTime.mon, imgTime.day, imgTime.hour, imgTime.min, imgTime.sec, JPLpath, EOPpath, 9, 2, MoonPos);//月球位置
 	IAU2000ABaseCIOTerToCel(imgTime.year, imgTime.mon, imgTime.day, imgTime.hour, imgTime.min, imgTime.sec, EOPpath, 8, Rsate, Pos, Vel);//卫星位置
 	double moonPosInCam[3];//月球在卫星的视位置
 	moonPosInCam[0] = MoonPos[0] - Pos[0];
@@ -1853,87 +2007,87 @@ void ParseSTG::MoonDirectionForLuojia(Orbit_Ep imgOrb, Quat imgAtt, YMD imgTime)
 	moonPosInCam[2] = MoonPos[2] - Pos[2];
 	mBase.Norm(moonPosInCam, 3);
 	//delete []MoonPos; MoonPos = NULL;
-	
+
 	double R[9], za[3] = { 0,0,1 }, zc[3];
 	double px, py, x, y;
 	// 影像的宽度和高度
 	long width = 2048, height = 2048;
 	//创建像平面像素值数组
-	byte *UnitData = new byte[width * height];
+	byte* UnitData = new byte[width * height];
 
 	string imgtxt = workpath + "像面坐标.txt";
-	FILE *fptxt = fopen(imgtxt.c_str(), "w");
+	FILE* fptxt = fopen(imgtxt.c_str(), "w");
 
 	//根据姿态仿出星图
-	
-			memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
-			//星敏A即APS星敏仿真
-			int i = 0;
-			mBase.quat2matrix(imgAtt.Q1, imgAtt.Q2, imgAtt.Q3, imgAtt.Q0, R);//Crj
-			FromLL2XYForLuojia(moonPosInCam, R, x, y);//对星表每颗星遍历，计算像面坐标
-			fprintf(fptxt, "%lf\t%lf\t", x, y);
-			fclose(fptxt);
-			//delete []MoonPos; MoonPos = NULL;
-			delete []UnitData; UnitData = NULL;
-					//for (int ii = 0; ii < 5; ii++)//生成5个像素大小的星图
-					//{
-					//	for (int jj = 0; jj < 5; jj++)
-					//	{
-					//		//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
-					//		//将 X↓Y→ 转换为 X→Y↑
-					//		int xTrans, yTrans;
-					//		xTrans = int(x);
-					//		yTrans = int(y);
-					//		x++;
-					//	}
-					//	x -= 5;
-					//	y++;
-					//}
 
-	
-			////创建影像
-			//char tempath[100];
-			//// 输出影像参数
-			//string outdriver = "GTiff";
-			////投影
-			//string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
-			////仿射变换
-			//double minx = 0, maxy = 2048, resolution = 1;
-			//double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
-			//string imgpath = workpath + "图像仿真.tiff";
-			//GeoReadImage m_out;
-			//m_out.New(imgpath, outdriver, GDT_Byte, 2 * width, height, 1);
-			//m_out.poDataset->SetProjection(tarProject.c_str());
-			//m_out.poDataset->SetGeoTransform(adfGeoTransform);
-			////更新方式打开影像
-			//m_out.Open(imgpath, GA_Update);
-			//if (m_out.m_isopen == true)
-			//	printf("\rUpdate Img (%s)", imgpath.c_str());
-			//else
-			//{
-			//	printf("\rUpdate Img (%s) Failed", imgpath.c_str());
-			//	return;
-			//}
-			////建立out数据区
-			//m_out.SetBuffer(0, 0, 2 * width, height, m_out.pBuffer[0]);
-			//double gray;
-			//for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
-			//{
-			//	for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
-			//	{
-			//		//读入数据
-			//		gray = UnitData[yPixel*width + xPixel];
-			//		//gray = 0;
-			//		m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
-			//		m_out.SetDataValue(xPixel + width, yPixel, gray, 0);    //赋值
-			//	}
-			//}
-			////写入数据
-			//bool iswrite = true;
-			//iswrite *= m_out.WriteBlock(0, 0, 2 * width, height, 0, m_out.pBuffer[0]);
-			////关闭影像
-			//m_out.Destroy();
-	
+	memset(UnitData, 0, sizeof(byte) * width * height);//影像像素值置为0
+	//星敏A即APS星敏仿真
+	int i = 0;
+	mBase.quat2matrix(imgAtt.Q1, imgAtt.Q2, imgAtt.Q3, imgAtt.Q0, R);//Crj
+	FromLL2XYForLuojia(moonPosInCam, R, x, y);//对星表每颗星遍历，计算像面坐标
+	fprintf(fptxt, "%lf\t%lf\t", x, y);
+	fclose(fptxt);
+	//delete []MoonPos; MoonPos = NULL;
+	delete[]UnitData; UnitData = NULL;
+	//for (int ii = 0; ii < 5; ii++)//生成5个像素大小的星图
+	//{
+	//	for (int jj = 0; jj < 5; jj++)
+	//	{
+	//		//UnitData[yPixel*width + xPixel] = starCatlog[j].DN;
+	//		//将 X↓Y→ 转换为 X→Y↑
+	//		int xTrans, yTrans;
+	//		xTrans = int(x);
+	//		yTrans = int(y);
+	//		x++;
+	//	}
+	//	x -= 5;
+	//	y++;
+	//}
+
+
+////创建影像
+//char tempath[100];
+//// 输出影像参数
+//string outdriver = "GTiff";
+////投影
+//string tarProject = "PROJCS[\"UTM_Zone_50N\", GEOGCS[\"GCS_WGS_1984\", DATUM[\"WGS_1984\", SPHEROID[\"WGS_1984\", 6378137.0, 298.2572235630016],TOWGS84[0,0,0,0,0,0,0]], PRIMEM[\"Greenwich\", 0.0], UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"Transverse_Mercator\"], PARAMETER[\"False_Easting\", 500000.0], PARAMETER[\"False_Northing\", 0.0], PARAMETER[\"Central_Meridian\", 117.0], PARAMETER[\"Scale_Factor\", 0.9996], PARAMETER[\"Latitude_Of_Origin\", 0.0], UNIT[\"Meter\", 1.0]]";
+////仿射变换
+//double minx = 0, maxy = 2048, resolution = 1;
+//double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
+//string imgpath = workpath + "图像仿真.tiff";
+//GeoReadImage m_out;
+//m_out.New(imgpath, outdriver, GDT_Byte, 2 * width, height, 1);
+//m_out.poDataset->SetProjection(tarProject.c_str());
+//m_out.poDataset->SetGeoTransform(adfGeoTransform);
+////更新方式打开影像
+//m_out.Open(imgpath, GA_Update);
+//if (m_out.m_isopen == true)
+//	printf("\rUpdate Img (%s)", imgpath.c_str());
+//else
+//{
+//	printf("\rUpdate Img (%s) Failed", imgpath.c_str());
+//	return;
+//}
+////建立out数据区
+//m_out.SetBuffer(0, 0, 2 * width, height, m_out.pBuffer[0]);
+//double gray;
+//for (int yPixel = 0; yPixel < height; yPixel++)       //y坐标
+//{
+//	for (int xPixel = 0; xPixel < width; xPixel++)   //x坐标
+//	{
+//		//读入数据
+//		gray = UnitData[yPixel*width + xPixel];
+//		//gray = 0;
+//		m_out.SetDataValue(xPixel, yPixel, gray, 0);    //赋值
+//		m_out.SetDataValue(xPixel + width, yPixel, gray, 0);    //赋值
+//	}
+//}
+////写入数据
+//bool iswrite = true;
+//iswrite *= m_out.WriteBlock(0, 0, 2 * width, height, 0, m_out.pBuffer[0]);
+////关闭影像
+//m_out.Destroy();
+
 }
 //////////////////////////////////////////////////////////////////////////
 //功能：计算珞珈光轴指向
@@ -1942,24 +2096,24 @@ void ParseSTG::MoonDirectionForLuojia(Orbit_Ep imgOrb, Quat imgAtt, YMD imgTime)
 //注意：
 //日期：2019.04.18
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::CalcLuojiaCamOpt(vector<Quat>&LuojiaCam)
+void ParseSTG::CalcLuojiaCamOpt(vector<Quat>& LuojiaCam)
 {
 	string path = workpath + "\\EKFJitterquater.txt";
-	FILE *fp = fopen(path.c_str(),"r");
-	int m; 
+	FILE* fp = fopen(path.c_str(), "r");
+	int m;
 	double Ru[9], Cbj[9], Cjc[9];//Cjc，相机到惯性坐标系
 	//mBase.rot(-0.005949811481223, 0.015002138143471, 0.003740215940200, Ru);
 	//mBase.rot(-0.0064844833548677629,0.015811419942494780,0.0028100102543587727, Ru);//328轨定标
 	//mBase.rot(-0.0064565699898673579,0.015781333769491767,0.0028112778767313733, Ru);//328轨定标光行差
 	mBase.rot(0, 0, 0, Ru);
-	fscanf(fp,"%d\n%*s\n",&m);
+	fscanf(fp, "%d\n%*s\n", &m);
 	Quat EKFres;
 	LuojiaCam.clear();
 	for (int a = 0; a < m; a++)
 	{
 		fscanf(fp, "%lf\t%lf\t%lf\t%lf\t%lf\n", &EKFres.UTC, &EKFres.Q1, &EKFres.Q2, &EKFres.Q3, &EKFres.Q0);
 		mBase.quat2matrix(EKFres.Q1, EKFres.Q2, EKFres.Q3, EKFres.Q0, Cbj);//Cbj
-		mBase.invers_matrix(Cbj,3);
+		mBase.invers_matrix(Cbj, 3);
 		mBase.Multi(Cbj, Ru, Cjc, 3, 3, 3);//获取相机到惯性系的旋转矩阵
 		mBase.invers_matrix(Cjc, 3);//Ccj;惯性到相机旋转矩阵;
 		mBase.matrix2quat(Cjc, EKFres.Q1, EKFres.Q2, EKFres.Q3, EKFres.Q0);
@@ -2027,95 +2181,95 @@ void ParseSTG::CalcLuojiaCamOpt(vector<Quat>&LuojiaCam)
 //////////////////////////////////////////////////////////////////////////
 void ParseSTG::StarAngleAPS_B_C(vector<STGData> ZY3_02STGdata, int StarTag)
 {
-	int i,m,n;
-	m=ZY3_02STGdata.size();	
+	int i, m, n;
+	m = ZY3_02STGdata.size();
 	//string IDpath = workpath + "0830_STG_parse.txt";
 	//FILE *fp = fopen(IDpath.c_str(),"r");
 	/*fscanf(fp,"%d\n",&n);*/
-	Quat *StarA = new Quat[m];
-	Quat *StarB = new Quat[m];
-	Quat *StarC = new Quat[m];
-	Quat *StarAi = new Quat[m];
-	Quat *StarCi = new Quat[m];
-	double *UT = new double[m];
+	Quat* StarA = new Quat[m];
+	Quat* StarB = new Quat[m];
+	Quat* StarC = new Quat[m];
+	Quat* StarAi = new Quat[m];
+	Quat* StarCi = new Quat[m];
+	double* UT = new double[m];
 	/*for (i=0;i<n;i++)
 	{
 		fscanf(fp,"%lf\t%lf\t%lf\t%lf\t%lf\t%*lf\t%*lf\n",&StarA[i].UTC,&StarA[i].Q0,&StarA[i].Q1,&StarA[i].Q2,&StarA[i].Q3);
 	}*/
-	double mz[3]={0,0,1},RA[9],RB[9],za[3],zb[3],Angle;
+	double mz[3] = { 0,0,1 }, RA[9], RB[9], za[3], zb[3], Angle;
 	string strpath;
-	if (StarTag==23)
+	if (StarTag == 23)
 	{
-		for (i=0;i<m;i++)//星敏B和C数据，以B为时间基准
+		for (i = 0; i < m; i++)//星敏B和C数据，以B为时间基准
 		{
-			UT[i]=ZY3_02STGdata.at(i).StarB.UTC;
-			StarB[i].Q1=ZY3_02STGdata.at(i).StarB.Q1;StarB[i].Q2=ZY3_02STGdata.at(i).StarB.Q2;
-			StarB[i].Q3=ZY3_02STGdata.at(i).StarB.Q3,StarB[i].Q0=ZY3_02STGdata.at(i).StarB.Q0;
-			StarC[i].UTC=ZY3_02STGdata.at(i).StarC.UTC;
-			StarC[i].Q1=ZY3_02STGdata.at(i).StarC.Q1;StarC[i].Q2=ZY3_02STGdata.at(i).StarC.Q2;
-			StarC[i].Q3=ZY3_02STGdata.at(i).StarC.Q3,StarC[i].Q0=ZY3_02STGdata.at(i).StarC.Q0;
+			UT[i] = ZY3_02STGdata.at(i).StarB.UTC;
+			StarB[i].Q1 = ZY3_02STGdata.at(i).StarB.Q1; StarB[i].Q2 = ZY3_02STGdata.at(i).StarB.Q2;
+			StarB[i].Q3 = ZY3_02STGdata.at(i).StarB.Q3, StarB[i].Q0 = ZY3_02STGdata.at(i).StarB.Q0;
+			StarC[i].UTC = ZY3_02STGdata.at(i).StarC.UTC;
+			StarC[i].Q1 = ZY3_02STGdata.at(i).StarC.Q1; StarC[i].Q2 = ZY3_02STGdata.at(i).StarC.Q2;
+			StarC[i].Q3 = ZY3_02STGdata.at(i).StarC.Q3, StarC[i].Q0 = ZY3_02STGdata.at(i).StarC.Q0;
 		}
-		mBase.QuatInterpolation(StarC, m, UT, m,StarCi);
-		strpath = workpath+"Star23Angle.txt";	
-		FILE *fpres=fopen(strpath.c_str(),"w");
-		for(int i=0;i<m;i++)
+		mBase.QuatInterpolation(StarC, m, UT, m, StarCi);
+		strpath = workpath + "Star23Angle.txt";
+		FILE* fpres = fopen(strpath.c_str(), "w");
+		for (int i = 0; i < m; i++)
 		{
-			mBase.quat2matrix(StarB[i].Q1,StarB[i].Q2,StarB[i].Q3,StarB[i].Q0,RA);
-			mBase.quat2matrix(StarCi[i].Q1,StarCi[i].Q2,StarCi[i].Q3,StarCi[i].Q0,RB);//Crj
-			mBase.invers_matrix(RA,3);
-			mBase.invers_matrix(RB,3);//Cjr
-			mBase.Multi(RA,mz,za,3,3,1);
-			mBase.Multi(RB,mz,zb,3,3,1);//星敏光轴在惯性系中的坐标值
-			Angle=acos((za[0]*zb[0]+za[1]*zb[1]+za[2]*zb[2])/sqrt(za[0]*za[0]+za[1]*za[1]+za[2]*za[2])/sqrt(zb[0]*zb[0]+zb[1]*zb[1]+zb[2]*zb[2]))/PI*180;
-			fprintf(fpres,"%.9f\t%.9f\n",UT[i],Angle);
+			mBase.quat2matrix(StarB[i].Q1, StarB[i].Q2, StarB[i].Q3, StarB[i].Q0, RA);
+			mBase.quat2matrix(StarCi[i].Q1, StarCi[i].Q2, StarCi[i].Q3, StarCi[i].Q0, RB);//Crj
+			mBase.invers_matrix(RA, 3);
+			mBase.invers_matrix(RB, 3);//Cjr
+			mBase.Multi(RA, mz, za, 3, 3, 1);
+			mBase.Multi(RB, mz, zb, 3, 3, 1);//星敏光轴在惯性系中的坐标值
+			Angle = acos((za[0] * zb[0] + za[1] * zb[1] + za[2] * zb[2]) / sqrt(za[0] * za[0] + za[1] * za[1] + za[2] * za[2]) / sqrt(zb[0] * zb[0] + zb[1] * zb[1] + zb[2] * zb[2])) / PI * 180;
+			fprintf(fpres, "%.9f\t%.9f\n", UT[i], Angle);
 		}
-	} 
-	else if(StarTag==12)
+	}
+	else if (StarTag == 12)
 	{
-		for (i=0;i<m;i++)//星敏A和B数据，以B为时间基准
+		for (i = 0; i < m; i++)//星敏A和B数据，以B为时间基准
 		{
-			UT[i]=ZY3_02STGdata.at(i).StarB.UTC;
-			StarB[i].Q1=ZY3_02STGdata.at(i).StarB.Q1;StarB[i].Q2=ZY3_02STGdata.at(i).StarB.Q2;
-			StarB[i].Q3=ZY3_02STGdata.at(i).StarB.Q3,StarB[i].Q0=ZY3_02STGdata.at(i).StarB.Q0;
+			UT[i] = ZY3_02STGdata.at(i).StarB.UTC;
+			StarB[i].Q1 = ZY3_02STGdata.at(i).StarB.Q1; StarB[i].Q2 = ZY3_02STGdata.at(i).StarB.Q2;
+			StarB[i].Q3 = ZY3_02STGdata.at(i).StarB.Q3, StarB[i].Q0 = ZY3_02STGdata.at(i).StarB.Q0;
 		}
 		mBase.QuatInterpolation(StarA, m, UT, m, StarAi);
-		strpath =workpath+"Star12Angle.txt";
-		FILE *fpres=fopen(strpath.c_str(),"w");
-		for(int i=0;i<m;i++)
+		strpath = workpath + "Star12Angle.txt";
+		FILE* fpres = fopen(strpath.c_str(), "w");
+		for (int i = 0; i < m; i++)
 		{
-			mBase.quat2matrix(StarAi[i].Q1,StarAi[i].Q2,StarAi[i].Q3,StarAi[i].Q0,RA);
-			mBase.quat2matrix(StarB[i].Q1,StarB[i].Q2,StarB[i].Q3,StarB[i].Q0,RB);//Crj
-			mBase.invers_matrix(RA,3);
-			mBase.invers_matrix(RB,3);//Cjr
-			mBase.Multi(RA,mz,za,3,3,1);
-			mBase.Multi(RB,mz,zb,3,3,1);//星敏光轴在惯性系中的坐标值
-			Angle=acos((za[0]*zb[0]+za[1]*zb[1]+za[2]*zb[2])/sqrt(za[0]*za[0]+za[1]*za[1]+za[2]*za[2])/sqrt(zb[0]*zb[0]+zb[1]*zb[1]+zb[2]*zb[2]))/PI*180;
-			fprintf(fpres,"%.9f\t%.9f\n",UT[i],Angle);
+			mBase.quat2matrix(StarAi[i].Q1, StarAi[i].Q2, StarAi[i].Q3, StarAi[i].Q0, RA);
+			mBase.quat2matrix(StarB[i].Q1, StarB[i].Q2, StarB[i].Q3, StarB[i].Q0, RB);//Crj
+			mBase.invers_matrix(RA, 3);
+			mBase.invers_matrix(RB, 3);//Cjr
+			mBase.Multi(RA, mz, za, 3, 3, 1);
+			mBase.Multi(RB, mz, zb, 3, 3, 1);//星敏光轴在惯性系中的坐标值
+			Angle = acos((za[0] * zb[0] + za[1] * zb[1] + za[2] * zb[2]) / sqrt(za[0] * za[0] + za[1] * za[1] + za[2] * za[2]) / sqrt(zb[0] * zb[0] + zb[1] * zb[1] + zb[2] * zb[2])) / PI * 180;
+			fprintf(fpres, "%.9f\t%.9f\n", UT[i], Angle);
 		}
-	} 
-	else if(StarTag==13)
+	}
+	else if (StarTag == 13)
 	{
-		for (i=0;i<m;i++)//星敏A和C数据，以C为时间基准
+		for (i = 0; i < m; i++)//星敏A和C数据，以C为时间基准
 		{
-			UT[i]=ZY3_02STGdata.at(i).StarC.UTC;
-			StarC[i].Q1=ZY3_02STGdata.at(i).StarC.Q1;StarC[i].Q2=ZY3_02STGdata.at(i).StarC.Q2;
-			StarC[i].Q3=ZY3_02STGdata.at(i).StarC.Q3,StarC[i].Q0=ZY3_02STGdata.at(i).StarC.Q0;
+			UT[i] = ZY3_02STGdata.at(i).StarC.UTC;
+			StarC[i].Q1 = ZY3_02STGdata.at(i).StarC.Q1; StarC[i].Q2 = ZY3_02STGdata.at(i).StarC.Q2;
+			StarC[i].Q3 = ZY3_02STGdata.at(i).StarC.Q3, StarC[i].Q0 = ZY3_02STGdata.at(i).StarC.Q0;
 		}
 		mBase.QuatInterpolation(StarA, m, UT, m, StarAi);
-		strpath =workpath+"Star13Angle.txt";
-		FILE *fpres=fopen(strpath.c_str(),"w");
-		for(int i=0;i<m;i++)
+		strpath = workpath + "Star13Angle.txt";
+		FILE* fpres = fopen(strpath.c_str(), "w");
+		for (int i = 0; i < m; i++)
 		{
-			mBase.quat2matrix(StarAi[i].Q1,StarAi[i].Q2,StarAi[i].Q3,StarAi[i].Q0,RA);
-			mBase.quat2matrix(StarC[i].Q1,StarC[i].Q2,StarC[i].Q3,StarC[i].Q0,RB);//Crj
-			mBase.invers_matrix(RA,3);
-			mBase.invers_matrix(RB,3);//Cjr
-			mBase.Multi(RA,mz,za,3,3,1);
-			mBase.Multi(RB,mz,zb,3,3,1);//星敏光轴在惯性系中的坐标值
-			Angle=acos((za[0]*zb[0]+za[1]*zb[1]+za[2]*zb[2])/sqrt(za[0]*za[0]+za[1]*za[1]+za[2]*za[2])/sqrt(zb[0]*zb[0]+zb[1]*zb[1]+zb[2]*zb[2]))/PI*180;
-			fprintf(fpres,"%.9f\t%.9f\n",UT[i],Angle);
+			mBase.quat2matrix(StarAi[i].Q1, StarAi[i].Q2, StarAi[i].Q3, StarAi[i].Q0, RA);
+			mBase.quat2matrix(StarC[i].Q1, StarC[i].Q2, StarC[i].Q3, StarC[i].Q0, RB);//Crj
+			mBase.invers_matrix(RA, 3);
+			mBase.invers_matrix(RB, 3);//Cjr
+			mBase.Multi(RA, mz, za, 3, 3, 1);
+			mBase.Multi(RB, mz, zb, 3, 3, 1);//星敏光轴在惯性系中的坐标值
+			Angle = acos((za[0] * zb[0] + za[1] * zb[1] + za[2] * zb[2]) / sqrt(za[0] * za[0] + za[1] * za[1] + za[2] * za[2]) / sqrt(zb[0] * zb[0] + zb[1] * zb[1] + zb[2] * zb[2])) / PI * 180;
+			fprintf(fpres, "%.9f\t%.9f\n", UT[i], Angle);
 		}
-	} 	
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2130,15 +2284,15 @@ void ParseSTG::StarAngle(vector<STGData> StarDat, int StarTag)
 {
 	int m, n;
 	m = StarDat.size();
-	Quat *StarX = new Quat[m];
-	Quat *StarY = new Quat[m];
-	Quat *StarYi = new Quat[m];
-	double *UTC = new double[m];
+	Quat* StarX = new Quat[m];
+	Quat* StarY = new Quat[m];
+	Quat* StarYi = new Quat[m];
+	double* UTC = new double[m];
 	string strpath;
 
 	if (StarTag == 23)
 	{
-		for (int i = 0; i<m; i++)//星敏2和3数据
+		for (int i = 0; i < m; i++)//星敏2和3数据
 		{
 			UTC[i] = StarDat.at(i).StarB.UTC;
 			StarX[i].Q1 = StarDat.at(i).StarB.Q1; StarX[i].Q2 = StarDat.at(i).StarB.Q2; StarX[i].Q3 = StarDat.at(i).StarB.Q3, StarX[i].Q0 = StarDat.at(i).StarB.Q0;
@@ -2150,7 +2304,7 @@ void ParseSTG::StarAngle(vector<STGData> StarDat, int StarTag)
 	}
 	else if (StarTag == 12)
 	{
-		for (int i = 0; i<m; i++)//星敏1和2数据
+		for (int i = 0; i < m; i++)//星敏1和2数据
 		{
 			UTC[i] = StarDat.at(i).StarA.UTC;
 			StarX[i].Q1 = StarDat.at(i).StarA.Q1; StarX[i].Q2 = StarDat.at(i).StarA.Q2; StarX[i].Q3 = StarDat.at(i).StarA.Q3, StarX[i].Q0 = StarDat.at(i).StarA.Q0;
@@ -2162,7 +2316,7 @@ void ParseSTG::StarAngle(vector<STGData> StarDat, int StarTag)
 	}
 	else if (StarTag == 13)
 	{
-		for (int i = 0; i<m; i++)//星敏1和3数据
+		for (int i = 0; i < m; i++)//星敏1和3数据
 		{
 			UTC[i] = StarDat.at(i).StarA.UTC;
 			StarX[i].Q1 = StarDat.at(i).StarA.Q1; StarX[i].Q2 = StarDat.at(i).StarA.Q2; StarX[i].Q3 = StarDat.at(i).StarA.Q3, StarX[i].Q0 = StarDat.at(i).StarA.Q0;
@@ -2173,10 +2327,10 @@ void ParseSTG::StarAngle(vector<STGData> StarDat, int StarTag)
 		strpath = workpath + "Star13Angle.txt";
 	}
 
-	FILE *fpres = fopen(strpath.c_str(), "w");
+	FILE* fpres = fopen(strpath.c_str(), "w");
 	fprintf(fpres, "星敏%d定姿\n", StarTag);
 	double mz[3] = { 0,0,1 }, RA[9], RB[9], za[3], zb[3], Angle;
-	for (int i = 0; i<m; i++)
+	for (int i = 0; i < m; i++)
 	{
 		mBase.quat2matrix(StarX[i].Q1, StarX[i].Q2, StarX[i].Q3, StarX[i].Q0, RA);
 		mBase.quat2matrix(StarYi[i].Q1, StarYi[i].Q2, StarYi[i].Q3, StarYi[i].Q0, RB);//Crj
@@ -2196,9 +2350,9 @@ void ParseSTG::StarAngle(vector<STGData> StarDat, int StarTag)
 //注意：只用到了星敏A
 //日期：2016.12.05
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::ReadStarID(string IDpath, vector<STGData>&APSQ)
+void ParseSTG::ReadStarID(string IDpath, vector<STGData>& APSQ)
 {
-	FILE *fp;
+	FILE* fp;
 	fp = fopen(IDpath.c_str(), "r");
 	int i, m;
 	fscanf(fp, "%d", &m);//星图识别四元数个数 2Hz
@@ -2218,9 +2372,9 @@ void ParseSTG::ReadStarID(string IDpath, vector<STGData>&APSQ)
 //注意：
 //日期：2016.12.08
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::ReadSTAtxt(string STApath, vector<STGData>&STAdat)
+void ParseSTG::ReadSTAtxt(string STApath, vector<STGData>& STAdat)
 {
-	FILE *fp;
+	FILE* fp;
 	fp = fopen(STApath.c_str(), "r");
 	int i, m;
 	STGData STAtemp, STAtemp2;

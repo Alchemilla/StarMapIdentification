@@ -41,6 +41,7 @@ public:
 	void StarMap(vector<STGData> ZY3_02STGdata);
 	void StarMapForLuojia(vector<Quat>LuojiaCam);//仿真珞珈一号恒星拍摄
 	void StarMapForJL01(string txtPath);//仿真吉林一号恒星拍摄
+	void StarMapForJL01(string outPath, vector<Quat>jlCam);
 	void MoonDirectionForLuojia(Orbit_Ep imgOrb, Quat imgAtt, YMD imgTime);//计算月亮指向
 	void CalcLuojiaCamOpt(vector<Quat>&LuojiaCam);//计算珞珈光轴指向
 	void FromLL2XYForLuojia(Star starCatlog, double *R, double &x, double &y);

@@ -205,14 +205,14 @@ void AttDetermination::luojiaAlinFix(vector<Quat>LJCamera, Quat quater, SateEule
 void AttDetermination::jl106AlinFix(double R, double P, double Y, Quat starsensor, Quat camera, SateEuler& ruEuler)
 {
 	double r1[9], r2[9], r3[9], r4[9], Ru[9];
-	mbase.quat2matrix(camera.Q1, camera.Q2, camera.Q3, camera.Q0, r1);//恒星观测的Ccj
+	mbase.quat2matrix(camera.Q1, camera.Q2, camera.Q3, camera.Q0, r1);//恒星观测的Cbj
 	mbase.quat2matrix(starsensor.Q1, starsensor.Q2, starsensor.Q3, starsensor.Q0, r2);//星敏测量转换的Ccj
 	//mbase.rot(0.0081118233393375015, -0.0058250636154377755, 2.3823500922100580, r3);//偏置矩阵Cbc,第一组参数计算所得
 	//mbase.rot(0.0077724624168520199, -0.0064798179838863662, 2.6272696832905043, r3);//偏置矩阵Cbc,第三组参数计算所得
 	mbase.rot(R, P, Y, r3);
 	//mbase.rot(0, 0, 0, r3);//偏置矩阵Cbc
 	mbase.Multi(r3, r2, r4, 3, 3, 3);//星敏测量的Cbj
-	mbase.invers_matrix(r1, 3);//恒星观测的Cjc
+	mbase.invers_matrix(r1, 3);//恒星观测的Cjb
 	mbase.Multi(r4, r1, Ru, 3, 3, 3);//新的Ru参数
 	mbase.Matrix2Eulor(Ru, 213, ruEuler.R, ruEuler.P, ruEuler.Y);
 	//夹角
@@ -227,6 +227,29 @@ void AttDetermination::jl106AlinFix(double R, double P, double Y, Quat starsenso
 	double theta = acos((alpha > 0.999999999999999) ? 0.999999999999999 : (alpha < -0.999999999999999) ? -0.999999999999999 : alpha);
 	ruEuler.UTC = theta / PI * 180 * 3600;//用utc替代一下
 	//printf("%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, theta);
+}
+//////////////////////////////////////////////////////////////////////////
+//功能：吉林一号106相机指向四元数计算
+//输入：
+//输出：
+//注意：
+//作者：GZC
+//日期：2020.10.21
+//////////////////////////////////////////////////////////////////////////
+void AttDetermination::jl106CamQuat(double R, double P, double Y, Quat starsensor, Quat &camera,double &ra,double &dec)
+{
+	double r1[9], r2[9], r3[9], r4[9], Ru[9];
+	mbase.quat2matrix(starsensor.Q1, starsensor.Q2, starsensor.Q3, starsensor.Q0, r2);//星敏测量转换的Ccj
+	mbase.rot(R, P, Y, r3);
+	mbase.Multi(r3, r2, r4, 3, 3, 3);//星敏测量的Cbj
+	mbase.matrix2quat(r4, camera.Q1, camera.Q2, camera.Q3, camera.Q0);
+	mbase.invers_matrix(r4, 3);
+	double opt[3] = { 0,0,1 };
+	double vcam[3];
+	mbase.Multi(r4, opt, vcam, 3, 3, 1);
+	dec = asin(vcam[2]);
+	ra = asin(vcam[1]/cos(dec))/PI*180;
+	dec = dec / PI * 180;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -399,8 +422,9 @@ bool AttDetermination::q_MethodforJL106(vector<StarGCP> getGCP, StarCaliParam Pa
 	for (int a = 0; a < getGCP.size(); a++)
 	{
 		double Xp, Yp;
-		//Xp = Param.x0*2 - getGCP[a].x;		Yp = getGCP[a].y;
-		Xp = getGCP[a].x;		Yp = Param.y0 - getGCP[a].y;
+		//Xp = Param.x0*2 - getGCP[a].x;		
+		//Yp = getGCP[a].y;
+		Xp = getGCP[a].x;  Yp = Param.y0 * 2 - getGCP[a].y;//y坐标是反的
 		//畸变模型(5参数情况)
 		double r2 = (Xp - Param.x0) * (Xp - Param.x0) + (Yp - Param.y0) * (Yp - Param.y0);
 		double xreal = -(Xp - Param.x0) * (1 - Param.k1 * r2 - Param.k2 * r2 * r2);
