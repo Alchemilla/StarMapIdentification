@@ -42,6 +42,7 @@ public:
 	void quat2matrix(double q1, double q2, double q3, double q0, double *R);
 	//四元数乘法，顺序为1234，其中4为标量
 	void quatMult(double *q1, double *q2, double *q3);
+	void quatMult(Quat q1, Quat q2, Quat& q3);
 	void quatMult2(double *q1, double *q2, double *q3);
 	void quatMult3(double *q1, double *q2, double *q3);
 	void Matrix2Eulor(double *R, int rotateOrder, double &eulor1, double &eulor2, double &eulor3);

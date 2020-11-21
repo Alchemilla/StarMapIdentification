@@ -266,11 +266,11 @@ void AttDetermination::CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEu
 	double opt[3] = { 0,0,1 };
 	double vstar[3], vcam[3];
 	mbase.quat2matrix(camera.Q1, camera.Q2, camera.Q3, camera.Q0, r1);//恒星观测的Ccj
-	mbase.quat2matrix(starsensor.Q1, starsensor.Q2, starsensor.Q3, starsensor.Q0, r2);//星敏测量转换的Ccj
+	mbase.quat2matrix(starsensor.Q1, starsensor.Q2, starsensor.Q3, starsensor.Q0, r2);//星敏测量转换的Crj
 	mbase.invers_matrix(r1, 3);
 	mbase.invers_matrix(r2, 3);
 	//夹角
-	mbase.Multi(r1, opt, vcam, 3, 3, 1);
+	mbase.Multi(r1,opt, vcam, 3, 3, 1);
 	mbase.Multi(r2, opt, vstar, 3, 3, 1);
 	double ab = vcam[0] * vstar[0] + vcam[1] * vstar[1] + vcam[2] * vstar[2];
 	double abm = sqrt(vcam[0] * vcam[0] + vcam[1] * vcam[1] + vcam[2] * vcam[2]) * sqrt(vstar[0] * vstar[0] + vstar[1] * vstar[1] + vstar[2] * vstar[2]);
@@ -280,11 +280,11 @@ void AttDetermination::CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEu
 
 	//欧拉角
 	mbase.invers_matrix(r2,3);
-	mbase.Multi(r1, r2, Ru, 3, 3, 3);//r1=A*r2
-	mbase.Matrix2Eulor(Ru, 213, ruEuler.R, ruEuler.P, ruEuler.Y);
-	ruEuler.R = ruEuler.R / PI * 180 * 3600;
-	ruEuler.P = ruEuler.P / PI * 180 * 3600;
-	ruEuler.Y = ruEuler.Y / PI * 180 * 3600;
+	mbase.Multi(r1,r2,  Ru, 3, 3, 3);//r1=A*r2   Crc
+	mbase.Matrix2Eulor(Ru, 123, ruEuler.R, ruEuler.P, ruEuler.Y);
+	//ruEuler.R = ruEuler.R / PI * 180 * 3600;
+	//ruEuler.P = ruEuler.P / PI * 180 * 3600;
+	//ruEuler.Y = ruEuler.Y / PI * 180 * 3600;
 
 
 	//printf("%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, theta);
@@ -313,7 +313,45 @@ void AttDetermination::CalOptAngleforJL107(StarGCP cam, Quat starsensor, double 
 	theta = acos((alpha > 0.999999999999999) ? 0.999999999999999 : (alpha < -0.999999999999999) ? -0.999999999999999 : alpha);
 	theta = theta / PI * 180 * 3600;
 }
+void AttDetermination::compareRes(vector<Quat> attTrue, vector<Quat> attMeas, string resPath)
+{
+	//添加RMS指标(正确做法,2017.11.02)
+	double rmsQ1, rmsQ2, rmsQ3;
+	rmsQ1 = rmsQ2 = rmsQ3 = 0;
+	double aveQ1, aveQ2, aveQ3;
+	aveQ1 = aveQ2 = aveQ3 = 0;
 
+	int num2 = attTrue.size();
+	Quat dq1, dq2;
+	Quat* dq3 = new Quat[num2];
+
+	FILE* fp = fopen(resPath.c_str(), "w");
+	//fprintf(fp, "%d\n", num2);
+	for (int i = 0; i < num2; i++)
+	{
+		dq1.Q0 = -attTrue[i].Q0; dq1.Q1 = attTrue[i].Q1; dq1.Q2 = attTrue[i].Q2; dq1.Q3 = attTrue[i].Q3;
+		dq2.Q0 = attMeas[i].Q0; dq2.Q1 = attMeas[i].Q1; dq2.Q2 = attMeas[i].Q2; dq2.Q3 = attMeas[i].Q3;
+		mbase.quatMult(dq1, dq2, dq3[i]);
+		dq3[i].Q1 = dq3[i].Q1 * 2 / PI * 180 * 3600;
+		dq3[i].Q2 = dq3[i].Q2 * 2 / PI * 180 * 3600;
+		dq3[i].Q3 = dq3[i].Q3 * 2 / PI * 180 * 3600;
+		fprintf(fp, "%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n",
+			attTrue[i].UTC, attTrue[i].Q1, attTrue[i].Q2, attTrue[i].Q3, attTrue[i].Q0,
+			attMeas[i].Q1, attMeas[i].Q2, attMeas[i].Q3, attMeas[i].Q0, dq3[i].Q1, dq3[i].Q2, dq3[i].Q3);
+		aveQ1 += dq3[i].Q1 / num2; aveQ2 += dq3[i].Q2 / num2; aveQ3 += dq3[i].Q3 / num2;
+	}
+	for (int i = 0; i < num2; i++)
+	{
+		rmsQ1 += pow(dq3[i].Q1 - aveQ1, 2);
+		rmsQ2 += pow(dq3[i].Q2 - aveQ2, 2);
+		rmsQ3 += pow(dq3[i].Q3 - aveQ3, 2);
+	}
+	rmsQ1 = sqrt(rmsQ1 / (num2 - 1)); rmsQ2 = sqrt(rmsQ2 / (num2 - 1)); rmsQ3 = sqrt(rmsQ3 / (num2 - 1));
+	double rmsAll = sqrt(rmsQ1 * rmsQ1 + rmsQ2 * rmsQ2 + rmsQ3 * rmsQ3);
+	fprintf(fp, "%.9f\t%.9f\t%.9f\t%.9f\n", rmsQ1, rmsQ2, rmsQ3, rmsAll);
+	fclose(fp);
+	delete[] dq3; dq3 = NULL;
+}
 //////////////////////////////////////////////////////////////////////////
 //功能：读取定标参数
 //输入：定义类的对象时得到workplace的路径
@@ -373,8 +411,9 @@ bool AttDetermination::q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Qua
 		stars_in_celestialframeV.row(a) << getGCP[a].V[0], getGCP[a].V[1], getGCP[a].V[2];
 	}
 	MatrixXd W(3, getGCP.size()), V(3, getGCP.size());
-	W = obs_in_startrackerframe.transpose();
-	V = stars_in_celestialframeV.transpose();
+	//这里的V和W对应关系需要注意，如果是随机星点仿星敏控制点然后乘以R，就是星敏观测量就是V，如果是任意恒星赤经赤纬经过R投影到星图，则星敏观测量是W
+	V = obs_in_startrackerframe.transpose();
+	W = stars_in_celestialframeV.transpose();
 	Matrix3d B, S;
 	B = W * V.transpose();
 	S = B + B.transpose();
@@ -395,13 +434,13 @@ bool AttDetermination::q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Qua
 	//输出顺序为0123，标量为0
 	quater.Q0 = q(3); quater.Q1 = q(0); quater.Q2 = q(1); quater.Q3 = q(2);
 	quater.UTC = getGCP[0].UTC;
-	if (quater.Q0 < 0)
-	{
-		quater.Q0 = -quater.Q0;
-		quater.Q1 = -quater.Q1;
-		quater.Q2 = -quater.Q2;
-		quater.Q3 = -quater.Q3;
-	}
+	//if (quater.Q0 < 0)
+	//{
+	//	quater.Q0 = -quater.Q0;
+	//	quater.Q1 = -quater.Q1;
+	//	quater.Q2 = -quater.Q2;
+	//	quater.Q3 = -quater.Q3;
+	//}
 	return 0;
 }
 

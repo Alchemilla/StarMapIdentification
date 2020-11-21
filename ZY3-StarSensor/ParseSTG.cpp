@@ -1875,7 +1875,7 @@ void ParseSTG::StarMapForJL01(string outPath, vector<Quat>jlCam)
 		mBase.quat2matrix(jlCam[i].Q1, jlCam[i].Q2, jlCam[i].Q3, jlCam[i].Q0, R);//Cbj
 
 		char tmp[256];
-		sprintf_s(tmp, "星图\\像面坐标%04d.txt", i);
+		sprintf_s(tmp, "星图\\像面坐标%04d.txt", i+1);
 		string imgtxt = outPath + tmp;
 		FILE* fptxt = fopen(imgtxt.c_str(), "w+");
 
@@ -1935,7 +1935,7 @@ void ParseSTG::StarMapForJL01(string outPath, vector<Quat>jlCam)
 		double adfGeoTransform[6] = { minx, resolution, 0, maxy, 0, -resolution };
 		//创建影像
 		char tempath[100];
-		sprintf_s(tempath, "星图第%04d帧仿真.tiff", i);
+		sprintf_s(tempath, "星图第%04d帧仿真.tiff", i+1);
 		string imgpath = outPath + "星图\\" + tempath;
 		GeoReadImage m_out;
 		m_out.New(imgpath, outdriver, GDT_Byte, width, height, 1);

@@ -24,6 +24,7 @@ public:
 	void jl106CamQuat(double R, double P, double Y, Quat starsensor, Quat& camera, double& ra, double& dec);//吉林一号相机四元数
 	void CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEuler);//计算光轴夹角
 	void CalOptAngleforJL107(StarGCP cam, Quat starsensor, double& theta);
+	void compareRes(vector<Quat> attTrue, vector<Quat> attMeas, string resPath);
 
 	//卡尔曼滤波
 	void EKF6StateV2(vector<STGData> AttData, vector<Quat> &AttDet, int StarTag);

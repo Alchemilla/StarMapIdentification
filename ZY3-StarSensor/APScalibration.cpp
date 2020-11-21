@@ -1890,7 +1890,7 @@ void APScalibration::SimulateGCP_PreRand(vector<vector<StarGCP>> &getGCP,
 void APScalibration::SimulateGCP_RandomXY(int index, vector<vector<StarGCP>>& realGCP,vector<vector<StarGCP>>& getGCP)
 {
 	//首先构造50个的像面坐标x,y
-	int num = 15;
+	int num = 3;
 	double V[3], x, y;
 	double *xy = new double[num*index * 2];
 	mBase.AverageRand(0, 1024, num*index * 2, xy);
@@ -1904,11 +1904,15 @@ void APScalibration::SimulateGCP_RandomXY(int index, vector<vector<StarGCP>>& re
 	double *k1 = new double[gcpNumAll];
 	double *k2 = new double[gcpNumAll];
 	//设置x和y方向的噪声，并且加在真实数据上
-	mBase.RandomDistribution(0, 0.1, gcpNumAll, 0, randx);
-	mBase.RandomDistribution(0, 0.1, gcpNumAll, 0, randy);
+	mBase.RandomDistribution(0, 0.3, gcpNumAll, 0, randx);
+	mBase.RandomDistribution(0, 0.3, gcpNumAll, 0, randy);
 	mBase.RandomDistribution(0, 0.2, gcpNumAll, 0, f);
 	mBase.RandomDistribution(0, 0, gcpNumAll, 0, k1);
 	mBase.RandomDistribution(0, 0, gcpNumAll, 0, k2);
+	double q0[4];
+	mBase.AverageRand(0,10,4,q0);
+	mBase.NormVector(q0,4);
+	cout <<setprecision(9)<< q0[0] << " " << q0[1] << " " << q0[2] << " " << q0[3] << endl;
 
 	for (int a = 0; a < index; a++)
 	{
@@ -1919,8 +1923,8 @@ void APScalibration::SimulateGCP_RandomXY(int index, vector<vector<StarGCP>>& re
 			realGCPtmp[b].x = x; realGCPtmp[b].y = y;
 			//根据x,y和相机参数得到星点指向V[3]
 			double R[9],W[3];
-			mBase.quat2matrix(0.5,0.5,0.5,0.5,R);
-			mParse.FromXY2LL(x, y, ZY302CaliParam, W);
+			mBase.quat2matrix(q0[0], q0[1], q0[2], q0[3],R);
+			mParse.FromXY2LL(x, y, ZY302CaliParam, W);//Cjb
 			mBase.Multi(R, W, V, 3, 3, 1);
 			realGCPtmp[b].V[0] = V[0]; realGCPtmp[b].V[1] = V[1]; realGCPtmp[b].V[2] = V[2];
 			getGCPtmp[b].V[0] = V[0]; getGCPtmp[b].V[1] = V[1]; getGCPtmp[b].V[2] = V[2];

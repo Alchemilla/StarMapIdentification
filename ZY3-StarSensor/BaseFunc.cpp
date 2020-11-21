@@ -361,6 +361,14 @@ void BaseFunc::quatMult(double *q1, double *q2, double *q3)//ËÄÔªÊýË³ÐòÎª1234£¬Æ
 	q3[3] = -q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2] + q1[3] * q2[3];
 }
 
+void BaseFunc::quatMult(Quat q1, Quat q2, Quat& q3)
+{
+	q3.Q1 = q1.Q0 * q2.Q1 + q1.Q3 * q2.Q2 - q1.Q2 * q2.Q3 + q1.Q1 * q2.Q0;
+	q3.Q2 = -q1.Q3 * q2.Q1 + q1.Q0 * q2.Q2 + q1.Q1 * q2.Q3 + q1.Q2 * q2.Q0;
+	q3.Q3 = q1.Q2 * q2.Q1 - q1.Q1 * q2.Q2 + q1.Q0 * q2.Q3 + q1.Q3 * q2.Q0;
+	q3.Q0 = -q1.Q1 * q2.Q1 - q1.Q2 * q2.Q2 - q1.Q3 * q2.Q3 + q1.Q0 * q2.Q0;
+}
+
 void BaseFunc::quatMult3(double *q1, double *q2, double *q3)//ËÄÔªÊýË³ÐòÎª1234£¬ÆäÖÐ4Îª±êÁ¿£¬Ê×ÏÈÐý×ªq2
 {
 	q3[0] = q1[3] * q2[0] + q1[2] * q2[1] - q1[1] * q2[2] + q1[0] * q2[3];

@@ -22,13 +22,13 @@ int main(int argc, char* argv[])
 		AttDetermination mDeter;
 		vector<vector<StarGCP>> realGCPall;
 		vector<vector<StarGCP>> getGCPall;
-		int nImg = 2;
-		ZY3_calibrate.workpath = "F:\\珞珈一号\\星图仿真\\";
-		ZY3_calibrate.ZY302CaliParam.f = 28790;
-		ZY3_calibrate.ZY302CaliParam.x0 = 530;
-		ZY3_calibrate.ZY302CaliParam.y0 = 504;
-		ZY3_calibrate.ZY302CaliParam.k1 = -1e-8;
-		ZY3_calibrate.ZY302CaliParam.k2 = 8e-15;
+		int nImg = 200;
+		ZY3_calibrate.workpath = "F:\\星图仿真\\";
+		ZY3_calibrate.ZY302CaliParam.f = 43.3 / 0.015;
+		ZY3_calibrate.ZY302CaliParam.x0 = 512;
+		ZY3_calibrate.ZY302CaliParam.y0 = 512;
+		ZY3_calibrate.ZY302CaliParam.k1 = 0;
+		ZY3_calibrate.ZY302CaliParam.k2 = 0;
 		//星点随机分布的控制点仿真
 		//ZY3_calibrate.SimulateGCP_RandomXY5Param(nImg, getGCPall);
 		ZY3_calibrate.SimulateGCP_RandomXY(nImg, realGCPall, getGCPall);//这个反而是5参数
@@ -37,19 +37,30 @@ int main(int argc, char* argv[])
 		//ZY3_calibrate.Calibrate3ParamKalman(getGCPall);
 		//ZY3_calibrate.Calibrate5ParamKalman(getGCPall);
 
-
-		Quat realQuat, estQuat;
-		mDeter.q_Method(realGCPall[0], ZY3_calibrate.ZY302CaliParam, realQuat);
-		StarCaliParam estParam;
-		estParam.f = 2879.029;
-		estParam.x0 = 529.946;
-		estParam.y0 = 504.083;
-		estParam.k1 = -0.995e-8;
-		estParam.k2 = 7.96e-15;
-		estParam = ZY3_calibrate.ZY302CaliParam;
-		mDeter.q_Method(getGCPall[0], estParam, estQuat);
-		SateEuler ruEuler;
-		mDeter.CalOptAngle(estQuat, realQuat, ruEuler);
+		string out = "F:\\星图仿真\\comRealEst.txt";
+		FILE* fp = fopen(out.c_str(), "w");
+		vector<Quat>vecEstQ, vecRealQ;
+		for (int i = 0; i < nImg; i++)
+		{
+			Quat realQuat, estQuat;
+			mDeter.q_Method(realGCPall[i], ZY3_calibrate.ZY302CaliParam, realQuat);
+			vecRealQ.push_back(realQuat);
+			StarCaliParam estParam;
+			estParam.f = 43.3 / 0.015+0.1;
+			estParam.x0 = 512.1;
+			estParam.y0 = 511.9;
+			estParam.k1 = 0;
+			estParam.k2 = 0;
+			//estParam = ZY3_calibrate.ZY302CaliParam;
+			mDeter.q_Method(getGCPall[i], estParam, estQuat);
+			vecEstQ.push_back(estQuat);
+			SateEuler ruEuler;
+			mDeter.CalOptAngle(estQuat, realQuat, ruEuler);
+			fprintf(fp,"%.6f\t%.6f\t%.6f\t%.6f\n",ruEuler.R,ruEuler.P,ruEuler.Y,ruEuler.UTC);
+		}
+		string out2 = "F:\\星图仿真\\comRealEstByQ.txt";
+		mDeter.compareRes(vecRealQ,vecEstQ,out2);
+		fclose(fp);
 	}
 	//////////////////////////////////////////////////////////////////////////
 	//功能：吉林一号视频07星恒星拍摄处理
@@ -158,6 +169,71 @@ int main(int argc, char* argv[])
 		fclose(fp);
 	}
 	//////////////////////////////////////////////////////////////////////////
+	//功能：吉林一号视频07星星图仿真
+	//参数：F:\1.全天区观测\1113拍摄
+	//日期：2020.11.21
+	//////////////////////////////////////////////////////////////////////////	
+	if (argc == 3 && atoi(argv[2]) == 71)
+	{
+		BaseFunc mBase;
+		ParseSTG mStarMap;
+		StarIdentify mStarid;
+		AttDetermination mDeter;
+
+		vector<string>csvPath; vector<string>tifPath;
+		map<int, string>csvMap;	
+		string tmp = string(argv[1]) + "\\";
+		mBase.search_directory(tmp, "csv", csvPath);
+		mBase.search_directory(tmp, "tif", tifPath);
+		for (size_t i = 0; i < csvPath.size(); i++)
+		{
+			string cvsStr = csvPath[i];
+			cvsStr = cvsStr.substr(cvsStr.rfind('.')-3,3);
+			int cvsNum = atoi(cvsStr.c_str());
+			csvMap.insert(pair<int, string>(cvsNum, csvPath[i]));
+		}
+
+		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
+		//param.f = 6500 / tan(0.6360615424140929 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
+		param.f = 3.2 / 5.5 * 1000000;
+		param.x0 = 6000, param.y0 = 2500;
+		vector<Quat>jlcam(tifPath.size());
+
+		for (int j = 0; j < tifPath.size(); j++)
+		{
+			string tifStr = tifPath[j];
+			tifStr = tifStr.substr(tifStr.rfind('\\') + 1);
+			int tifNum = atoi(tifStr.substr(37, 3).c_str());
+			int tifNum2 = atoi(tifStr.substr(41, 4).c_str());
+			string strcsv = csvMap.find(tifNum)->second;
+			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			mStarMap.ReadJL107csv(strcsv, imgJL107, att, sa, sb, sc);
+			double utc;
+			for (size_t i = 0; i < imgJL107.size(); i++)
+			{
+				if (imgJL107[i].id==tifNum2)
+				{
+					utc = imgJL107[i].time;
+				}
+			}
+			Quat attInter;
+			mBase.QuatInterpolation(att, utc, attInter);
+			double R, P, Y;
+			//R = 1.9194016712070836; P = -0.23818053977287398; Y = -1.7246668531659006;
+			R = 0.0058597149324960910;	P = 0.013452610013068774;	Y = 1.5824327890696455;//滤波
+			//R = -0.0037983447189699681;	P = -0.011915083016339232;	Y = 1.5824641318120103;//新滤波
+			//R = P = Y = 0;
+			double r1[9], r2[9], r3[9];
+			mBase.quat2matrix(attInter.Q1, attInter.Q2, attInter.Q3, attInter.Q0, r1);//Crj
+			mBase.rot(P, R, Y, r2);//Crc
+			//mBase.invers_matrix(r2, 3);//Ccr
+			mBase.Multi(r2, r1, r3, 3, 3, 3);//相机的Ccj
+
+			mBase.matrix2quat(r3, jlcam[j].Q1, jlcam[j].Q2, jlcam[j].Q3, jlcam[j].Q0);
+		}
+		mStarMap.StarMapForJL01(tmp, jlcam);
+	}
+	//////////////////////////////////////////////////////////////////////////
 	//功能：吉林一号视频06星恒星拍摄处理
 	//参数：F:\珞珈一号\视频06北极星数据 6
 	//日期：2020.05.06
@@ -256,7 +332,7 @@ int main(int argc, char* argv[])
 					mBase.QuatInterpolation(sc, camQuat.UTC, qc);
 					mDeter.CalOptAngle(qc, camQuat, ruEuler);
 					fprintf(fp, "%.9f\t", ruEuler.UTC);
-					
+
 
 					//星敏A和星敏B
 					mDeter.CalOptAngle(qa, qb, ruEuler);

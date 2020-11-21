@@ -2,6 +2,7 @@
 #define SATEBASE_H
 #define PI 3.1415926535897932384626433832795
 #include <vector>
+#include<map>
 #include <Eigen/Dense>
 #include <iostream>
 using namespace Eigen;
