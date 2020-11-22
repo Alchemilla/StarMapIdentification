@@ -209,15 +209,76 @@ int main(int argc, char* argv[])
 			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
 			mStarMap.ReadJL107csv(strcsv, imgJL107, att, sa, sb, sc);
 			double utc;
-			for (size_t i = 0; i < imgJL107.size(); i++)
-			{
-				if (imgJL107[i].id==tifNum2)
-				{
+			for (size_t i = 0; i < imgJL107.size(); i++)			{
+				if (imgJL107[i].id==tifNum2)				{
 					utc = imgJL107[i].time;
+					break;
 				}
 			}
 			Quat attInter;
-			mBase.QuatInterpolation(att, utc, attInter);
+			mBase.QuatInterpolation(sa, utc, attInter);
+			double R, P, Y;
+			//R = 0.0059250330655504415; P = -0.0085995651608813360; Y = 1.5704067439676139;//滤波参数
+			R = 1.0033330535061187; P = -0.78312230795773907; Y = 1.7717620910145522;//星敏A
+			//R = -2.5482561856221637; P = -0.93958580037967587; Y = -0.89207549048663903;//星敏B
+			//R = 2.0512975188863671; P = -0.28513967534725970; Y = -2.9859023048872020;//星敏C
+			double r1[9], r2[9], r3[9];
+			mBase.quat2matrix(attInter.Q1, attInter.Q2, attInter.Q3, attInter.Q0, r1);//Crj
+			mBase.rot123(R, P, Y, r2);//Crc
+			mBase.Multi(r2, r1, r3, 3, 3, 3);//相机的Ccj
+			mBase.matrix2quat(r3, jlcam[j].Q1, jlcam[j].Q2, jlcam[j].Q3, jlcam[j].Q0);
+		}
+		mStarMap.StarMapForJL01(tmp, jlcam);
+	}
+	if (argc == 3 && atoi(argv[2]) == 72)
+	{
+		BaseFunc mBase;
+		ParseSTG mStarMap;
+		StarIdentify mStarid;
+		AttDetermination mDeter;
+
+		vector<string>csvPath; vector<string>ptsPath;
+		map<int, string>csvMap;
+		string tmp = string(argv[1]) + "\\";
+		mBase.search_directory(tmp, "csv", csvPath);
+		mBase.search_directory(tmp, "pts", ptsPath);
+		for (size_t i = 0; i < csvPath.size(); i++)
+		{
+			string cvsStr = csvPath[i];
+			cvsStr = cvsStr.substr(cvsStr.rfind('.') - 3, 3);
+			int cvsNum = atoi(cvsStr.c_str());
+			csvMap.insert(pair<int, string>(cvsNum, csvPath[i]));
+		}
+
+		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
+		param.f = 6500 / tan(0.632246 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
+		//param.f = 3.2 / 5.5 * 1000000;
+		param.x0 = 6000, param.y0 = 2500;
+
+		for (int j = 0; j < ptsPath.size(); j++)
+		{
+			string tifStr = ptsPath[j];
+			tifStr = tifStr.substr(tifStr.rfind('\\') + 1);
+			int tifNum = atoi(tifStr.substr(37, 3).c_str());
+			int tifNum2 = atoi(tifStr.substr(41, 4).c_str());
+			string strcsv = csvMap.find(tifNum)->second;
+			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			img imgJL107one;
+			mStarMap.ReadJL107csv(strcsv, imgJL107, att, sa, sb, sc);
+			double utc;
+			for (size_t i = 0; i < imgJL107.size(); i++)			{
+				if (imgJL107[i].id == tifNum2)				{
+					utc = imgJL107[i].time;
+					imgJL107one = imgJL107[i];
+					break;
+				}
+			}
+			vector<StarGCP> camGCP; img imgLat;
+			mStarid.GetStarGCPforJL107(ptsPath[j], camGCP, imgJL107one, imgLat);//建立相机与恒星控制点
+			mDeter.q_MethodforJL106(camGCP, param, camQuat);//根据qMethod来建立相机在J2000下姿态
+			Quat attInter;
+			mBase.QuatInterpolation(sb, utc, attInter);
+			mDeter.CalOptAngle(attInter, camQuat, ruEuler);
 			double R, P, Y;
 			//R = 1.9194016712070836; P = -0.23818053977287398; Y = -1.7246668531659006;
 			R = 0.0058597149324960910;	P = 0.013452610013068774;	Y = 1.5824327890696455;//滤波
@@ -226,12 +287,8 @@ int main(int argc, char* argv[])
 			double r1[9], r2[9], r3[9];
 			mBase.quat2matrix(attInter.Q1, attInter.Q2, attInter.Q3, attInter.Q0, r1);//Crj
 			mBase.rot(P, R, Y, r2);//Crc
-			//mBase.invers_matrix(r2, 3);//Ccr
 			mBase.Multi(r2, r1, r3, 3, 3, 3);//相机的Ccj
-
-			mBase.matrix2quat(r3, jlcam[j].Q1, jlcam[j].Q2, jlcam[j].Q3, jlcam[j].Q0);
 		}
-		mStarMap.StarMapForJL01(tmp, jlcam);
 	}
 	//////////////////////////////////////////////////////////////////////////
 	//功能：吉林一号视频06星恒星拍摄处理
@@ -751,7 +808,7 @@ int main(int argc, char* argv[])
 		attDeter1.EKF6StateForStarAB3(m, starB, starC, starTrue, wMeas);
 		delete[] starB, starC, wMeas; starB = starC = NULL;
 	}
-	else
+	else if (atoi(argv[2]) == 100)
 	{
 		//////////////////////////////////////////////////////////////////////////
 		//功能：以下为星敏多景混合定标流程

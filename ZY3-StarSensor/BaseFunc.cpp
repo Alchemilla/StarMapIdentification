@@ -626,6 +626,17 @@ void BaseFunc::rot(double phi, double omg, double kap, double * R)
 	Multi(RY, RX, Tmp, 3, 3, 3);
 	Multi(Tmp, RZ, R, 3, 3, 3);
 }
+void BaseFunc::rot123(double omg, double phi, double kap, double* R)
+{
+	memset(R, 0, 9 * sizeof(double));
+	double RX[9], RY[9], RZ[9], Tmp[9];
+	RotationX(-omg, RX);
+	RotationY(-phi, RY);
+	RotationZ(-kap, RZ);
+
+	Multi(RX, RY, Tmp, 3, 3, 3);
+	Multi(Tmp, RZ, R, 3, 3, 3);
+}
 // 3*3的高斯求解
 bool BaseFunc::solve33(double *A, double *al)
 {

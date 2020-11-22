@@ -259,6 +259,7 @@ void AttDetermination::jl106CamQuat(double R, double P, double Y, Quat starsenso
 //注意：
 //作者：GZC
 //日期：2020.07.28
+//更新：2020.11.21吉林一号107星
 //////////////////////////////////////////////////////////////////////////
 void AttDetermination::CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEuler)
 {
@@ -280,7 +281,7 @@ void AttDetermination::CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEu
 
 	//欧拉角
 	mbase.invers_matrix(r2,3);
-	mbase.Multi(r1,r2,  Ru, 3, 3, 3);//r1=A*r2   Crc
+	mbase.Multi(r2, r1, Ru, 3, 3, 3);//r2*r1t=Ru ---> r2=Ru*r1 ---> Rut*r2=r1
 	mbase.Matrix2Eulor(Ru, 123, ruEuler.R, ruEuler.P, ruEuler.Y);
 	//ruEuler.R = ruEuler.R / PI * 180 * 3600;
 	//ruEuler.P = ruEuler.P / PI * 180 * 3600;

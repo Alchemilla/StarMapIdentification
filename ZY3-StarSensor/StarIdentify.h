@@ -59,6 +59,7 @@ public:
 	//吉林一号恒星控制点获取
 	void GetStarGCPforJL106(string gcpPath, vector<StarGCP>& JLcam, vector<img> imgJL106);
 	void GetStarGCPforJL106(string gcpPath, vector<StarGCP>& JLcam, vector<img> imgJL106, img& imgLat);
+	void GetStarGCPforJL107(string gcpPath, vector<StarGCP>& JLcam, img imgJL107, img& imgLat);
 	void GetCamOptforJL107(string optPath, StarGCP& JLcam, vector<img> imgJL107);
 private: 
 		 //升序降序函数
