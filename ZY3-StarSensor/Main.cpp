@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
 		}
 		mStarMap.StarMapForJL01(tmp, jlcam);
 	}
-	if (argc == 3 && atoi(argv[2]) == 72)
+	if (argc == 3 && atoi(argv[2]) == 72)//针对吉林一号07星MSS2
 	{
 		BaseFunc mBase;
 		ParseSTG mStarMap;
@@ -251,10 +251,12 @@ int main(int argc, char* argv[])
 		}
 
 		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
-		param.f = 6500 / tan(0.632246 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
+		param.f = 6500 / tan(0.632246 / 180 * PI);//焦距长度以像素单位表示，这是107星MSS2星图识别后的估值
 		//param.f = 3.2 / 5.5 * 1000000;
 		param.x0 = 6000, param.y0 = 2500;
 
+		string fresult = (string)argv[1] + "\\result.txt";
+		FILE* fp = fopen(fresult.c_str(), "w");
 		for (int j = 0; j < ptsPath.size(); j++)
 		{
 			string tifStr = ptsPath[j];
@@ -263,8 +265,12 @@ int main(int argc, char* argv[])
 			int tifNum2 = atoi(tifStr.substr(41, 4).c_str());
 			string strcsv = csvMap.find(tifNum)->second;
 			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
-			img imgJL107one;
-			mStarMap.ReadJL107csv(strcsv, imgJL107, att, sa, sb, sc);
+			img imgJL107one; vector<Orbit_Ep>imgOrb;
+			mStarMap.ReadJL107csvOrb(strcsv, imgJL107, att, sa, sb, sc,imgOrb);
+
+			//mDeter.AberrationForJLYHStarSensor(sa,imgOrb);
+			//mDeter.AberrationForJLYHStarSensor(sb, imgOrb);
+			//mDeter.AberrationForJLYHStarSensor(sc, imgOrb);
 			double utc;
 			for (size_t i = 0; i < imgJL107.size(); i++)			{
 				if (imgJL107[i].id == tifNum2)				{
@@ -275,20 +281,40 @@ int main(int argc, char* argv[])
 			}
 			vector<StarGCP> camGCP; img imgLat;
 			mStarid.GetStarGCPforJL107(ptsPath[j], camGCP, imgJL107one, imgLat);//建立相机与恒星控制点
-			mDeter.q_MethodforJL106(camGCP, param, camQuat);//根据qMethod来建立相机在J2000下姿态
-			Quat attInter;
-			mBase.QuatInterpolation(sb, utc, attInter);
-			mDeter.CalOptAngle(attInter, camQuat, ruEuler);
-			double R, P, Y;
-			//R = 1.9194016712070836; P = -0.23818053977287398; Y = -1.7246668531659006;
-			R = 0.0058597149324960910;	P = 0.013452610013068774;	Y = 1.5824327890696455;//滤波
-			//R = -0.0037983447189699681;	P = -0.011915083016339232;	Y = 1.5824641318120103;//新滤波
-			//R = P = Y = 0;
-			double r1[9], r2[9], r3[9];
-			mBase.quat2matrix(attInter.Q1, attInter.Q2, attInter.Q3, attInter.Q0, r1);//Crj
-			mBase.rot(P, R, Y, r2);//Crc
-			mBase.Multi(r2, r1, r3, 3, 3, 3);//相机的Ccj
+			mDeter.q_MethodforJL107(camGCP, param, camQuat,imgOrb);//根据qMethod来建立相机在J2000下姿态
+
+			//相机和J2000姿态
+			Quat q_inter, qa, qb, qc;
+			mBase.QuatInterpolation(att, camQuat.UTC, q_inter);
+			mDeter.CalOptAngle(q_inter, camQuat, ruEuler);
+			fprintf(fp, "%3d\t%.9f\t%.9f\t%.9f\t%.9f\t", tifNum, camQuat.UTC, imgLat.lat, imgLat.lon, ruEuler.UTC);
+
+			//相机和星敏A
+			mBase.QuatInterpolation(sa, camQuat.UTC, qa);
+			mDeter.CalOptAngle(qa, camQuat, ruEuler);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\t", imgLat.sst[0], imgLat.inst[0], ruEuler.UTC);
+
+			//相机和星敏B
+			mBase.QuatInterpolation(sb, camQuat.UTC, qb);
+			mDeter.CalOptAngle(qb, camQuat, ruEuler);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\t", imgLat.sst[1], imgLat.inst[1], ruEuler.UTC);
+
+			//相机和星敏C
+			mBase.QuatInterpolation(sc, camQuat.UTC, qc);
+			mDeter.CalOptAngle(qc, camQuat, ruEuler);
+			fprintf(fp, "%.9f\t%.9f\t%.9f\t", imgLat.sst[2], imgLat.inst[2], ruEuler.UTC);
+
+			//星敏A和星敏B
+			mDeter.CalOptAngle(qa, qb, ruEuler);
+			fprintf(fp, "%.9f\t", ruEuler.UTC);
+			//星敏B和星敏C
+			mDeter.CalOptAngle(qb, qc, ruEuler);
+			fprintf(fp, "%.9f\t", ruEuler.UTC);
+			//星敏C和星敏A
+			mDeter.CalOptAngle(qc, qa, ruEuler);
+			fprintf(fp, "%.9f\n", ruEuler.UTC);
 		}
+		fclose(fp);
 	}
 	//////////////////////////////////////////////////////////////////////////
 	//功能：吉林一号视频06星恒星拍摄处理

@@ -1125,6 +1125,184 @@ void ParseSTG::ReadJL107csv(string csv, vector<img>& imgJL107, vector<Quat>& att
 }
 
 //////////////////////////////////////////////////////////////////////////
+//功能：读取吉林一号07星csv文件内容//06星也可以用这个
+//输入：csv文件路径
+//输出：吉林一号成像时间，J2000姿态，星敏ABC姿态，轨道参数
+//注意：
+//日期：2020.11.22
+//////////////////////////////////////////////////////////////////////////
+void ParseSTG::ReadJL107csvOrb(string csv, vector<img>& imgJL107, 
+	vector<Quat>& att, vector<Quat>& sa, vector<Quat>& sb, vector<Quat>& sc, vector<Orbit_Ep>&imgOrb)
+{
+	FILE* fp = NULL;
+	char* line, * record;
+	char buffer[8192];
+	img imgtmp;
+	Quat qtmp;
+	if ((fp = fopen(csv.c_str(), "r")) != NULL)
+	{
+		line = fgets(buffer, sizeof(buffer), fp);  //跳过第一行
+		int tint, tGPS;
+		double tfloat;
+		int j = 0;
+		while ((line = fgets(buffer, sizeof(buffer), fp)) != NULL)//当没有读取到文件末尾时循环继续
+		{
+			record = strtok(line, ",");
+			record = strtok(NULL, ",");
+			imgtmp.id = atoi(record);
+
+			record = strtok(NULL, ",");
+			record = strtok(NULL, ",");
+			record = strtok(NULL, ",");
+			tGPS = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			imgtmp.time = tGPS + tfloat;
+
+			for (int i = 0; i < 49; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			for (int i = 0; i < 6; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q0 = atof(record);
+			sa.push_back(qtmp);
+
+			record = strtok(NULL, ",");
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			for (int i = 0; i < 6; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q0 = atof(record);
+			sb.push_back(qtmp);
+
+			record = strtok(NULL, ",");
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			for (int i = 0; i < 6; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q0 = atof(record);
+			sc.push_back(qtmp);
+
+			//获取WGS84位置速度
+			Orbit_Ep imgOrbtmp;
+			record = strtok(NULL, ",");
+			imgOrbtmp.X= atof(record);
+			record = strtok(NULL, ",");
+			imgOrbtmp.Y = atof(record);
+			record = strtok(NULL, ",");
+			imgOrbtmp.Z = atof(record);
+			record = strtok(NULL, ",");
+			imgOrbtmp.Xv = atof(record);
+			record = strtok(NULL, ",");
+			imgOrbtmp.Yv = atof(record);
+			record = strtok(NULL, ",");
+			imgOrbtmp.Zv = atof(record);
+			imgOrbtmp.UTC = tGPS;
+			imgOrb.push_back(imgOrbtmp);
+
+			//获取经纬度信息
+			record = strtok(NULL, ",");
+			imgtmp.lat = atof(record) / PI * 180;
+			record = strtok(NULL, ",");
+			imgtmp.lon = atof(record) / PI * 180;
+
+			for (int i = 0; i < 26; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			tint = atoi(record);
+			record = strtok(NULL, ",");
+			tfloat = atof(record) / 1000000.;
+			qtmp.UTC = tint + tfloat;
+			record = strtok(NULL, ",");
+			qtmp.Q1 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q2 = atof(record);
+			record = strtok(NULL, ",");
+			qtmp.Q3 = atof(record);
+			qtmp.Q0 = sqrt(1 - pow(qtmp.Q1, 2) - pow(qtmp.Q2, 2) - pow(qtmp.Q3, 2));
+			att.push_back(qtmp);
+
+			for (int i = 0; i < 96; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.sst[1] = atof(record);
+			record = strtok(NULL, ",");
+			imgtmp.sst[2] = atof(record);
+			for (int i = 0; i < 4; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.inst[0] = atof(record);
+			for (int i = 0; i < 7; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.sst[0] = atof(record);
+			for (int i = 0; i < 5; i++)
+			{
+				record = strtok(NULL, ",");
+			}
+			imgtmp.inst[1] = atof(record);
+			record = strtok(NULL, ",");
+			imgtmp.inst[2] = atof(record);
+
+			imgJL107.push_back(imgtmp);
+		}
+	}
+	fclose(fp);
+	fp = NULL;
+	//轨道去重
+	vector<Orbit_Ep>vecOrb;
+	double utc = imgOrb[0].UTC;
+	vecOrb.push_back(imgOrb[0]);
+	for (size_t i = 1; i < imgOrb.size(); i++)
+	{
+		if (imgOrb[i].UTC != utc)
+		{
+			vecOrb.push_back(imgOrb[i]);
+			utc = imgOrb[i].UTC;
+		}
+	}
+	imgOrb.clear();
+	imgOrb.assign(vecOrb.begin(), vecOrb.end());
+}
+
+//////////////////////////////////////////////////////////////////////////
 //功能：根据恒星赤经赤纬及星敏姿态，计算星敏像面坐标
 //输入：starCatlog，单颗恒星参数，包括J2000系下的单位矢量V[3]
 //		R，星敏坐标系与J2000系的旋转关系，Crj

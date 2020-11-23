@@ -1356,12 +1356,12 @@ void StarIdentify::GetStarGCPforJL107(string gcpPath, vector<StarGCP>& JLcam, im
 		gcptmp.V[0] = cos(ra / 180 * PI) * cos(dec / 180 * PI);
 		gcptmp.V[1] = sin(ra / 180 * PI) * cos(dec / 180 * PI);
 		gcptmp.V[2] = sin(dec / 180 * PI);
+		gcptmp.UTC= imgJL107.time;
 		JLcam.push_back(gcptmp);
 	}
 	fclose(fp);
 	fp = NULL;
-
-	JLcam[0].UTC = imgJL107.time;
+	
 	imgLat.lat = imgJL107.lat;
 	imgLat.lon = imgJL107.lon;
 	imgLat.sst[0] = imgJL107.sst[0];

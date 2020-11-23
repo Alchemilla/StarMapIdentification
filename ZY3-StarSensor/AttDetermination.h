@@ -18,6 +18,7 @@ public:
 	//static attitude determination
 	bool q_Method(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater);
 	bool q_MethodforJL106(vector<StarGCP> getGCP, StarCaliParam Param, Quat& quater);
+	bool q_MethodforJL107(vector<StarGCP> getGCP, StarCaliParam Param, Quat& quater, vector<Orbit_Ep>imgOrb);
 	bool q_MethodForLuojia(vector<StarGCP> getGCP, StarCaliParam Param, Quat &quater, vector<Orbit_Ep>imgOrb);
 	void luojiaAlinFix(vector<Quat>LJCamera, Quat quater, SateEuler &ruEuler);//ÐÞÕýÆ«ÖÃ¾ØÕó
 	void jl106AlinFix(double R, double P, double Y, Quat starsensor, Quat camera, SateEuler& ruEuler);//¼ªÁÖÒ»ºÅÆ«ÖÃ¾ØÕó
@@ -49,6 +50,8 @@ public:
 	void GetImRm(vector<vector<BmImStar >>&BmIm);
 	bool Aberration(vector<vector<BmImStar>>& BmIm, vector<Orbit_Ep> EpDat);
 	bool AberrationForLuojia(StarGCP &Im, vector<Orbit_Ep> EpDat);
+	bool AberrationForJLYH(StarGCP& Im, vector<Orbit_Ep> EpDat);
+	bool AberrationForJLYHStarSensor(vector<Quat>& starsensor, vector<Orbit_Ep> EpDat);
 	bool AberrationForLuojia2(StarGCP &Im, vector<Orbit_Ep> EpDat);
 	void CalcXYaccuracy(vector<StarGCP> starCatlog, Quat quater, vector<Orbit_Ep>imgOrb);
 	void CalcStarExtractAccuracy(vector<StarGCP> starCatlog);

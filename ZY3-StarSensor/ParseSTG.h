@@ -35,6 +35,8 @@ public:
 	//读取吉林一号csv数据
 	void ReadJL106csv(string csv, vector<img>& imgJL106, vector<Quat>& att, vector<Quat>& sa, vector<Quat>& sb, vector<Quat>& sc);
 	void ReadJL107csv(string csv, vector<img>& imgJL106, vector<Quat>& att, vector<Quat>& sa, vector<Quat>& sb, vector<Quat>& sc);
+	void ParseSTG::ReadJL107csvOrb(string csv, vector<img>& imgJL107,
+		vector<Quat>& att, vector<Quat>& sa, vector<Quat>& sb, vector<Quat>& sc, vector<Orbit_Ep>&imgOrb);
 	//解析STI用到的，将5字节40bit转为4个10bit的arr
 	void Get4_10Bit(const unsigned char *p, unsigned short(&arr)[4]);
 	//仿真星图
