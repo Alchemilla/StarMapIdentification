@@ -192,10 +192,23 @@ int main(int argc, char* argv[])
 			int cvsNum = atoi(cvsStr.c_str());
 			csvMap.insert(pair<int, string>(cvsNum, csvPath[i]));
 		}
-
+		vector<string>tifTmp;
+		for (size_t i = 0; i < tifPath.size(); i++)
+		{
+			string mss = tifPath[i].substr(tifPath[i].rfind('\\')+1);
+			mss = mss.substr(mss.find('_')+1);
+			mss = mss.substr(0, mss.find('_'));
+			if (mss=="MSS1")
+			{
+				tifTmp.push_back(tifPath[i]);
+			}
+		}
+		tifPath.empty();
+		tifPath.assign(tifTmp.begin(),tifTmp.end());
 		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
-		//param.f = 6500 / tan(0.6360615424140929 / 180 * PI);//焦距长度以像素单位表示，这是星图识别后的估值
-		param.f = 3.2 / 5.5 * 1000000;
+		param.f = 6500 / tan(0.635364 / 180 * PI);//焦距长度以像素单位表示，这是107星MSS1星图识别后的估值
+		//param.f = 6500 / tan(0.632246 / 180 * PI);//焦距长度以像素单位表示，这是107星MSS2星图识别后的估值
+		//param.f = 3.2 / 5.5 * 1000000;
 		param.x0 = 6000, param.y0 = 2500;
 		vector<Quat>jlcam(tifPath.size());
 
@@ -207,7 +220,11 @@ int main(int argc, char* argv[])
 			int tifNum2 = atoi(tifStr.substr(41, 4).c_str());
 			string strcsv = csvMap.find(tifNum)->second;
 			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
-			mStarMap.ReadJL107csv(strcsv, imgJL107, att, sa, sb, sc);
+			vector<Orbit_Ep>imgOrb;
+			mStarMap.ReadJL107csvOrb(strcsv, imgJL107, att, sa, sb, sc, imgOrb);
+			mDeter.AberrationForJLYHStarSensor(sa, imgOrb);
+			mDeter.AberrationForJLYHStarSensor(sb, imgOrb);
+			mDeter.AberrationForJLYHStarSensor(sc, imgOrb);
 			double utc;
 			for (size_t i = 0; i < imgJL107.size(); i++)			{
 				if (imgJL107[i].id==tifNum2)				{
@@ -216,10 +233,16 @@ int main(int argc, char* argv[])
 				}
 			}
 			Quat attInter;
-			mBase.QuatInterpolation(sa, utc, attInter);
+			mBase.QuatInterpolation(sc, utc, attInter);
 			double R, P, Y;
+			//相机MSS1
+			//R = 0.0067936220757141546; P = 0.0086088500886015318; Y = 1.5801625048077292;//滤波
+			//R=2.2626568731425847; P=0.97050907772505157; Y=2.5420802327784640;//星敏A
+			//R=-2.5441346561139864; P=-0.95872822902100208; Y=-0.88847597589993255;//星敏B
+			R=2.0465047999674870; P=-0.28502464332487132; Y=-3.0061863664092079;//星敏C
+			//相机MSS2
 			//R = 0.0059250330655504415; P = -0.0085995651608813360; Y = 1.5704067439676139;//滤波参数
-			R = 1.0033330535061187; P = -0.78312230795773907; Y = 1.7717620910145522;//星敏A
+			//R = 1.0033330535061187; P = -0.78312230795773907; Y = 1.7717620910145522;//星敏A
 			//R = -2.5482561856221637; P = -0.93958580037967587; Y = -0.89207549048663903;//星敏B
 			//R = 2.0512975188863671; P = -0.28513967534725970; Y = -2.9859023048872020;//星敏C
 			double r1[9], r2[9], r3[9];
@@ -228,7 +251,7 @@ int main(int argc, char* argv[])
 			mBase.Multi(r2, r1, r3, 3, 3, 3);//相机的Ccj
 			mBase.matrix2quat(r3, jlcam[j].Q1, jlcam[j].Q2, jlcam[j].Q3, jlcam[j].Q0);
 		}
-		mStarMap.StarMapForJL01(tmp, jlcam);
+		mStarMap.StarMapForJL01(tmp, jlcam,param);
 	}
 	if (argc == 3 && atoi(argv[2]) == 72)//针对吉林一号07星MSS2
 	{
@@ -251,14 +274,43 @@ int main(int argc, char* argv[])
 		}
 
 		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
-		param.f = 6500 / tan(0.632246 / 180 * PI);//焦距长度以像素单位表示，这是107星MSS2星图识别后的估值
+		param.f = 6500 / tan(0.635364 / 180 * PI);//焦距长度以像素单位表示，这是107星MSS1星图识别后的估值
+		//param.f = 6500 / tan(0.632246 / 180 * PI);//焦距长度以像素单位表示，这是107星MSS2星图识别后的估值
 		//param.f = 3.2 / 5.5 * 1000000;
 		param.x0 = 6000, param.y0 = 2500;
+
+		vector<string>ptsTmp;
+		for (size_t i = 0; i < ptsPath.size(); i++)
+		{
+			string mss = ptsPath[i].substr(ptsPath[i].rfind('\\') + 1);
+			mss = mss.substr(mss.find('_') + 1);
+			mss = mss.substr(0, mss.find('_'));
+			if (mss == "MSS2")
+			{
+				ptsTmp.push_back(ptsPath[i]);
+			}
+		}
+		ptsPath.empty();
+		ptsPath.assign(ptsTmp.begin(), ptsTmp.end());
 
 		string fresult = (string)argv[1] + "\\result.txt";
 		FILE* fp = fopen(fresult.c_str(), "w");
 		for (int j = 0; j < ptsPath.size(); j++)
 		{
+			string mss = ptsPath[j].substr(ptsPath[j].rfind('\\') + 1);
+			mss = mss.substr(mss.find('_') + 1);
+			mss = mss.substr(0, mss.find('_'));
+			if (mss == "MSS1")
+			{
+				param.f = 3.225391 / 5.5 * 1000000;
+				param.x0 = 34.8780 / 5.5 * 1000, param.y0 = -8.0310 / 5.5 * 1000;
+			}
+			if (mss == "MSS2")
+			{
+				param.f = 3.225391 / 5.5 * 1000000;
+				param.x0 = 32.25898 / 5.5 * 1000, param.y0 = -3.900990 / 5.5 * 1000;
+			}
+
 			string tifStr = ptsPath[j];
 			tifStr = tifStr.substr(tifStr.rfind('\\') + 1);
 			int tifNum = atoi(tifStr.substr(37, 3).c_str());
@@ -317,6 +369,194 @@ int main(int argc, char* argv[])
 		fclose(fp);
 	}
 	//////////////////////////////////////////////////////////////////////////
+	//功能：针对吉林一号07星，根据星敏和相机夹角建模，补偿下一次拍摄
+	//参数：E:\1.全天区观测\1113拍摄 73
+	//日期：2020.12.19；2021.01.12
+	//////////////////////////////////////////////////////////////////////////	
+	if (argc == 3 && atoi(argv[2]) == 73)
+	{
+		BaseFunc mBase;
+		ParseSTG mStarMap;
+		StarIdentify mStarid;
+		AttDetermination mDeter;
+
+		vector<string>csvPath; vector<string>ptsPath;
+		map<int, string>csvMap;
+		string tmp = string(argv[1]) + "\\";
+		mBase.search_directory(tmp, "csv", csvPath);
+		mBase.search_directory(tmp, "pts", ptsPath);
+		for (size_t i = 0; i < csvPath.size(); i++)
+		{
+			string cvsStr = csvPath[i];
+			cvsStr = cvsStr.substr(cvsStr.rfind('.') - 3, 3);
+			int cvsNum = atoi(cvsStr.c_str());
+			csvMap.insert(pair<int, string>(cvsNum, csvPath[i]));
+		}
+
+		double R, P, Y;
+		double Crb1[9], Crb2[9], Crb3[9];
+		//相机MSS1
+		//R=2.2626568731425847; P=0.97050907772505157; Y=2.5420802327784640;//星敏A
+		//R=-2.5441346561139864; P=-0.95872822902100208; Y=-0.88847597589993255;//星敏B
+		//R = 2.0465047999674870; P = -0.28502464332487132; Y = -3.0061863664092079;//星敏C
+
+		//相机MSS2
+		R = 1.0033330535061187; P = -0.78312230795773907; Y = 1.7717620910145522;//星敏A
+		mBase.rot123(R, P, Y, Crb1);//Crc
+		R = -2.5482561856221637; P = -0.93958580037967587; Y = -0.89207549048663903;//星敏B
+		mBase.rot123(R, P, Y, Crb2);//Crc
+		R = 2.0512975188863671; P = -0.28513967534725970; Y = -2.9859023048872020;//星敏C
+		mBase.rot123(R, P, Y, Crb3);//Crc
+
+		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
+		vector<string>ptsTmp;
+		for (size_t i = 0; i < ptsPath.size(); i++)
+		{
+			string mss = ptsPath[i].substr(ptsPath[i].rfind('\\') + 1);
+			mss = mss.substr(mss.find('_') + 1);
+			mss = mss.substr(0, mss.find('_'));
+			if (mss == "MSS2")
+			{
+				ptsTmp.push_back(ptsPath[i]);
+			}
+		}
+		ptsPath.empty();
+		ptsPath.assign(ptsTmp.begin(), ptsTmp.end());
+
+		string fresult = (string)argv[1] + "\\StarBC_Cam.txt";
+		FILE* fp = fopen(fresult.c_str(), "w");
+		for (int j = 0; j < ptsPath.size(); j++)
+		{
+			string mss = ptsPath[j].substr(ptsPath[j].rfind('\\') + 1);
+			mss = mss.substr(mss.find('_') + 1);
+			mss = mss.substr(0, mss.find('_'));
+			if (mss == "MSS1")
+			{
+				param.f = 3.225391 / 5.5 * 1000000;
+				param.x0 = 34.8780 / 5.5 * 1000, param.y0 = -8.0310 / 5.5 * 1000;
+			}
+			if (mss == "MSS2")
+			{
+				param.f = 3.225391 / 5.5 * 1000000;
+				param.x0 = 32.25898 / 5.5 * 1000, param.y0 = -3.900990 / 5.5 * 1000;
+			}
+
+			string tifStr = ptsPath[j];
+			tifStr = tifStr.substr(tifStr.rfind('\\') + 1);
+			int tifNum = atoi(tifStr.substr(37, 3).c_str());
+			int tifNum2 = atoi(tifStr.substr(41, 4).c_str());
+			string strcsv = csvMap.find(tifNum)->second;
+			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			img imgJL107one; vector<Orbit_Ep>imgOrb;
+			mStarMap.ReadJL107csvOrb(strcsv, imgJL107, att, sa, sb, sc, imgOrb);
+
+			mDeter.AberrationForJLYHStarSensor(sa, imgOrb);
+			mDeter.AberrationForJLYHStarSensor(sb, imgOrb);
+			mDeter.AberrationForJLYHStarSensor(sc, imgOrb);
+			double utc;
+			for (size_t i = 0; i < imgJL107.size(); i++) {
+				if (imgJL107[i].id == tifNum2) {
+					utc = imgJL107[i].time;
+					imgJL107one = imgJL107[i];
+					break;
+				}
+			}
+			vector<StarGCP> camGCP; img imgLat;
+			mStarid.GetStarGCPforJL107(ptsPath[j], camGCP, imgJL107one, imgLat);//建立相机与恒星控制点
+			mDeter.q_MethodforJL107(camGCP, param, camQuat, imgOrb);//根据qMethod来建立相机在J2000下姿态
+
+			//相机和星敏BC
+			Quat camCal;
+			Quat q_inter, qa, qb, qc;
+			double theta1, theta2, optical[6];
+			mBase.QuatInterpolation(sb, camQuat.UTC, qb);
+			mBase.QuatInterpolation(sc, camQuat.UTC, qc);
+
+			//1128次作为参数拟合
+			theta1 = 0.4652 * imgLat.lat + 429863;//星敏B拟合参数
+			theta2 = 0.0119 * imgLat.lat + 417739;//星敏C拟合参数
+			//theta1 = 429863;//星敏B固定参数
+			//theta2 = 417739;//星敏C固定参数
+
+			//1026次作为参数拟合
+			theta1 = 0.2667 * imgLat.lat + 429874;//星敏B拟合参数
+			theta2 = -0.2125 * imgLat.lat + 417757;//星敏C拟合参数
+			theta1 = 429874;//星敏B固定参数
+			theta2 = 417757;//星敏C固定参数
+
+			double opt[3] = { 0,0,1 }, rCam[9], vCam[3];
+			mDeter.camOpticalCal(qb, qc, theta1, theta2, optical);
+			mBase.quat2matrix(camQuat.Q1, camQuat.Q2, camQuat.Q3, camQuat.Q0, rCam);//恒星观测的Ccj
+			mBase.invers_matrix(rCam, 3);
+			mBase.Multi(rCam, opt, vCam, 3, 3, 1);
+			double ab = vCam[0] * optical[0] + vCam[1] * optical[1] + vCam[2] * optical[2];
+			double cd = vCam[0] * optical[3] + vCam[1] * optical[4] + vCam[2] * optical[5];
+			ab = ab > cd ? ab : cd;
+			double theta = acos(ab) / PI * 180 * 3600;//用utc替代一下
+			fprintf(fp,"%.9f\t%.9f\n", imgLat.lat, theta);
+		}
+		fclose(fp);
+	}
+	//////////////////////////////////////////////////////////////////////////
+//功能：针对吉林一号07星，计算所有星敏夹角
+//参数：E:\1.全天区观测\1113拍摄 74
+//日期：2021.01.12
+//////////////////////////////////////////////////////////////////////////	
+	if (argc == 3 && atoi(argv[2]) == 74)
+	{
+		BaseFunc mBase;
+		ParseSTG mStarMap;
+		StarIdentify mStarid;
+		AttDetermination mDeter;
+
+		vector<string>csvPath; 
+		map<int, string>csvMap;
+		string tmp = string(argv[1]) + "\\";
+		mBase.search_directory(tmp, "csv", csvPath);
+
+		StarCaliParam param; Quat camQuat; SateEuler ruEuler;
+
+		string fresult = (string)argv[1] + "\\StarABC_angle.txt";
+		FILE* fp = fopen(fresult.c_str(), "w");
+		for (int j = 0; j < csvPath.size(); j++)
+		{
+			string cvsStr = csvPath[j];
+			cvsStr = cvsStr.substr(cvsStr.rfind('.') - 3, 3);
+			int cvsNum = atoi(cvsStr.c_str());
+			fprintf(fp, "%d\n", cvsNum);
+
+			vector<img> imgJL107; vector<Quat> att; vector<Quat> sa; vector<Quat> sb; vector<Quat> sc;
+			img imgJL107one; vector<Orbit_Ep>imgOrb;
+			mStarMap.ReadJL107csvOrb(csvPath[j], imgJL107, att, sa, sb, sc, imgOrb);
+			
+			mDeter.AberrationForJLYHStarSensor(sa, imgOrb);
+			mDeter.AberrationForJLYHStarSensor(sb, imgOrb);
+			mDeter.AberrationForJLYHStarSensor(sc, imgOrb);
+
+			for (size_t i = 0; i < sa.size(); i++)
+			{
+				//相机和星敏BC
+				Quat camCal;
+				Quat q_inter, qa, qb, qc;
+				double theta1, theta2, optical[6];
+				mBase.QuatInterpolation(sb, sa[i].UTC, qb);
+				mBase.QuatInterpolation(sc, sa[i].UTC, qc);
+
+				//星敏A和星敏B
+				mDeter.CalOptAngle(sa[i], qb, ruEuler);
+				fprintf(fp, "%.9f\t%.9f\t", sa[i].UTC, ruEuler.UTC);
+				//星敏B和星敏C
+				mDeter.CalOptAngle(qb, qc, ruEuler);
+				fprintf(fp, "%.9f\t", ruEuler.UTC);
+				//星敏C和星敏A
+				mDeter.CalOptAngle(qc, sa[i], ruEuler);
+				fprintf(fp, "%.9f\n", ruEuler.UTC);
+			}
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+	}
+	//////////////////////////////////////////////////////////////////////////
 	//功能：吉林一号视频06星恒星拍摄处理
 	//参数：F:\珞珈一号\视频06北极星数据 6
 	//日期：2020.05.06
@@ -356,7 +596,10 @@ int main(int argc, char* argv[])
 				fprintf(fp, "%s\t%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\t%.9lf\n", csvPath[i].c_str(), jlcam[i].Q1, jlcam[i].Q2, jlcam[i].Q3, jlcam[i].Q0, ra, dec);
 			}
 			fclose(fp);
-			mStarMap.StarMapForJL01(outPath, jlcam);
+			StarCaliParam param;
+			param.f = 3.2 / 5.5 * 1000000;
+			param.x0 = 6000, param.y0 = 2500;
+			mStarMap.StarMapForJL01(outPath, jlcam, param);
 		}
 
 		//mBase.search_directory(path[0].c_str(), "raw", rawPath);

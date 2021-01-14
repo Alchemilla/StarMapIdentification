@@ -290,6 +290,18 @@ void AttDetermination::CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEu
 
 	//printf("%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", ruEuler.R, ruEuler.P, ruEuler.Y, ruEuler.R / PI * 180 * 3600, ruEuler.P / PI * 180 * 3600, ruEuler.Y / PI * 180 * 3600, theta);
 }
+
+void AttDetermination::CalstarB_RPY(double lat, Quat starb, Quat& jlcam)
+{
+	double R = -2e-10 * pow(lat, 4) + 1e-08 * pow(lat, 3) + 5e-07 * lat * lat - 2e-05 * lat - 2.5535;
+	double P = -8e-11 * pow(lat, 4) + 5e-09 * pow(lat, 3) + 2e-07 * lat * lat - 6e-06 * lat - 0.9395;
+	double Y = -3e-10 * pow(lat, 4) + 1e-08 * pow(lat, 3) + 7e-07 * lat * lat - 2e-05 * lat - 0.8921;
+	double r1[9], r2[9], r3[9];
+	mbase.quat2matrix(starb.Q1, starb.Q2, starb.Q3, starb.Q0, r1);//Crj
+	mbase.rot123(R, P, Y, r2);//Crc
+	mbase.Multi(r2, r1, r3, 3, 3, 3);//相机的Ccj
+	mbase.matrix2quat(r3, jlcam.Q1, jlcam.Q2, jlcam.Q3, jlcam.Q0);
+}
 //////////////////////////////////////////////////////////////////////////
 //功能：吉林一号107光轴角度计算
 //输入：
@@ -353,6 +365,181 @@ void AttDetermination::compareRes(vector<Quat> attTrue, vector<Quat> attMeas, st
 	fclose(fp);
 	delete[] dq3; dq3 = NULL;
 }
+
+/// <summary>
+/// 根据双星敏光轴指向和与相机夹角，计算相机光轴
+/// </summary>
+/// <param name="vStarA"></param>3参数
+/// <param name="vStarB"></param>3参数
+/// <param name="theta1"></param>
+/// <param name="theta2"></param>
+/// <param name="vCam"></param>6参数
+/// GZC
+/// 2020.11.04
+void AttDetermination::twoStarCaloneCam(double* vStarA, double* vStarB, double theta1, double theta2, double* vCam)//根据星敏光轴计算相机光轴
+{
+	theta1 = cos(theta1 / 3600 / 180 * PI);
+	theta2 = cos(theta2 / 3600 / 180 * PI);
+	double a1, b1, c1, a2, b2, c2, m, n, p, q, d, e, f;
+	a1 = vStarA[0]; b1 = vStarA[1]; c1 = vStarA[2];
+	a2 = vStarB[0]; b2 = vStarB[1]; c2 = vStarB[2];
+	m = (a2 * c1 - a1 * c2) / (a1 * b2 - a2 * b1);
+	n = (a1 * theta2 - a2 * theta1) / (a1 * b2 - a2 * b1);
+	p = (a1 * b1 * c2 - a2 * b1 * c1) / (a1 * a1 * b2 - a1 * a2 * b1) - c1 / a1;
+	q = theta1 / a1 - (a1 * b1 * theta2 - a2 * b1 * theta1) / (a1 * a1 * b2 - a1 * a2 * b1);
+	d = p * p + m * m + 1;
+	e = 2 * p * q + 2 * m * n;
+	f = q * q + n * n - 1;
+	vCam[2] = (-e + sqrt(e * e - 4 * d * f)) / 2 / d;
+	vCam[1] = m * vCam[2] + n;
+	vCam[0] = p * vCam[2] + q;
+	vCam[5] = (-e - sqrt(e * e - 4 * d * f)) / 2 / d;
+	vCam[4] = m * vCam[5] + n;
+	vCam[3] = p * vCam[5] + q;
+}
+
+/// <summary>
+/// 根据星敏AB测量值和夹角，计算相机光轴指向
+/// </summary>
+/// <param name="StarA"></param>
+/// <param name="StarB"></param>
+/// <param name="theta1"></param>
+/// <param name="theta2"></param>
+/// <param name="optical"></param>
+/// GZC
+/// 2020.11.04
+void AttDetermination::camOpticalCal(Quat StarA, Quat StarB, double theta1, double theta2, double* optical)
+{
+	double mz[3] = { 0,0,1 }, za[3], zb[3], optTmp[3];
+
+	double RA[9], RB[9], vCam[6];
+	mbase.quat2matrix(StarA.Q1, StarA.Q2, StarA.Q3, StarA.Q0, RA);//Crj
+	mbase.quat2matrix(StarB.Q1, StarB.Q2, StarB.Q3, StarB.Q0, RB);
+	mbase.Multi(mz, RA, za, 1, 3, 3);
+	mbase.Multi(mz, RB, zb, 1, 3, 3);//星敏光轴在惯性系中的坐标值
+	twoStarCaloneCam(za, zb, theta1, theta2, vCam);
+	optTmp[0] = vCam[0]; optTmp[1] = vCam[1]; optTmp[2] = vCam[2];
+	mbase.NormVector(optTmp, 3);
+	optical[0] = optTmp[0]; optical[1] = optTmp[1]; optical[2] = optTmp[2];
+	optTmp[0] = vCam[3]; optTmp[1] = vCam[4]; optTmp[2] = vCam[5];
+	mbase.NormVector(optTmp, 3);
+	optical[3] = optTmp[0]; optical[4] = optTmp[1]; optical[5] = optTmp[2];
+
+}
+
+/// <summary>
+/// 2020.10.30,关于光轴变化的计算
+/// </summary>
+/// <param name="StarA"></param>
+/// <param name="StarB"></param>
+/// <param name="optical"></param>
+/// <param name="attRes"></param>
+void AttDetermination::DoubleStarWithOptChange(Quat StarA, Quat StarB, double* starAali, double* starBali,
+	double* optical, Quat& attRes)
+{
+	int i, m;
+	double Aalin[9], Balin[9], AalinFix[9], BalinFix[9], Calin[9];//双星敏各自的安装矩阵
+	double mz[3] = { 0,0,1 }, zc[3], zb[3], za[3], x[3], y[3], z[3], RA[9], RC[9], RB[9], Ainstallz[3], Cinstallz[3], Binstallz[3], CbjA[9], CbjB[9];
+	double cam[3], cosOpt;
+	Quat Q2Vec;
+
+	//根据选择的星敏确定安装矩阵
+	memcpy(Aalin, starAali, sizeof(double) * 9);//Crb
+	memcpy(Balin, starBali, sizeof(double) * 9);//Crb
+	mbase.invers_matrix(Aalin, 3);//Cbr
+	mbase.invers_matrix(Balin, 3);//Cbr
+
+	mbase.quat2matrix(StarA.Q1, StarA.Q2, StarA.Q3, StarA.Q0, RA);//Crj
+	mbase.quat2matrix(StarB.Q1, StarB.Q2, StarB.Q3, StarB.Q0, RB);
+	mbase.Multi(Aalin, RA, CbjA, 3, 3, 3);
+	mbase.Multi(Balin, RB, CbjB, 3, 3, 3);
+	mbase.Multi(mz, CbjA, Ainstallz, 1, 3, 3);//Cjb,相机光轴在惯性系中的坐标值
+	mbase.Multi(mz, CbjB, Binstallz, 1, 3, 3);
+	mbase.NormVector(Ainstallz, 3);
+	mbase.NormVector(Binstallz, 3);
+	double cosOpt1 = Ainstallz[0] * optical[0] + Ainstallz[1] * optical[1] + Ainstallz[2] * optical[2];//选择光轴，同时计算相机和星敏A夹角
+	double cosOpt2 = Binstallz[0] * optical[3] + Binstallz[1] * optical[4] + Binstallz[2] * optical[5];//选择光轴，同时计算相机和星敏B夹角
+	if (cosOpt1 > cosOpt2)
+	{
+		cam[0] = optical[0]; cam[1] = optical[1]; cam[2] = optical[2];
+		cosOpt2 = Binstallz[0] * optical[0] + Binstallz[1] * optical[1] + Binstallz[2] * optical[2];
+	}
+	else
+	{
+		cam[0] = optical[3]; cam[1] = optical[4]; cam[2] = optical[5];
+		cosOpt1 = Ainstallz[0] * optical[3] + Ainstallz[1] * optical[4] + Ainstallz[2] * optical[5];
+	}
+
+	double detAngleA = acos(cosOpt1);
+	double angA = detAngleA / PI * 180 * 3600;
+	double vcross[3];
+	mbase.crossmultnorm(Ainstallz, cam, vcross);
+	double qangle[4];
+	qangle[3] = cos(detAngleA / 2);
+	qangle[0] = vcross[0] * sin(detAngleA / 2);
+	qangle[1] = vcross[1] * sin(detAngleA / 2);
+	qangle[2] = vcross[2] * sin(detAngleA / 2);
+	double detRA[9];
+	mbase.quat2matrix(qangle[0], qangle[1], qangle[2], qangle[3], detRA);//Cjj, 
+	//Multi(detRA, Aalin,  AalinFix, 3, 3, 3);//Cbr
+	double vcameraA[3], vcameraB[3], CbjAt[9], CbjBt[9];
+	mbase.Multi(CbjA, detRA, CbjAt, 3, 3, 3);
+	mbase.invers_matrix(RA, 3);//Cjr
+	mbase.Multi(CbjAt, RA, AalinFix, 3, 3, 3);//Cbr
+	mbase.invers_matrix(RA, 3);//Crj
+	mbase.Multi(AalinFix, RA, CbjA, 3, 3, 3);
+	mbase.Multi(mz, CbjA, vcameraA, 1, 3, 3);
+	double trueAngleA = cam[0] * vcameraA[0] + cam[1] * vcameraA[1] + cam[2] * vcameraA[2];
+	trueAngleA = acos(trueAngleA) / PI * 180 * 3600;
+
+	double detAngleB = acos(cosOpt2);
+	mbase.crossmultnorm(Binstallz, cam, vcross);
+	qangle[3] = cos(detAngleB / 2);
+	qangle[0] = vcross[0] * sin(detAngleB / 2);
+	qangle[1] = vcross[1] * sin(detAngleB / 2);
+	qangle[2] = vcross[2] * sin(detAngleB / 2);
+	double detRB[9];
+	mbase.quat2matrix(qangle[0], qangle[1], qangle[2], qangle[3], detRB);//Cbr
+	mbase.Multi(detRB, Balin, BalinFix, 3, 3, 3);
+	mbase.Multi(CbjB, detRB, CbjBt, 3, 3, 3);
+	mbase.invers_matrix(RB, 3);//Cjr
+	mbase.Multi(CbjBt, RB, BalinFix, 3, 3, 3);//Cbr
+	mbase.invers_matrix(RB, 3);//Crj
+	mbase.Multi(BalinFix, RB, CbjB, 3, 3, 3);
+	mbase.Multi(mz, CbjB, vcameraB, 1, 3, 3);
+	double trueAngleB = cam[0] * vcameraB[0] + cam[1] * vcameraB[1] + cam[2] * vcameraB[2];
+	trueAngleB = acos(trueAngleB) / PI * 180 * 3600;
+
+	//双矢量定姿，
+	mbase.Multi(AalinFix, mz, Ainstallz, 3, 3, 1);//Cbr,星敏光轴在卫星本体系中的坐标值
+	mbase.Multi(BalinFix, mz, Binstallz, 3, 3, 1);
+	mbase.normalvect(Ainstallz, x);
+	mbase.crossmultnorm(Ainstallz, Binstallz, y);//此时产生的X和Y均是本体系下的值
+	mbase.crossmultnorm(x, y, z);//Crb,以本体系下的星敏A和B的Z轴作为新坐标系的X和Y轴，此坐标系组成的旋转矩阵也在本体系下
+	double Cbr[9], Crj[9], Cbj[9];
+	Cbr[0] = x[0], Cbr[1] = x[1], Cbr[2] = x[2];
+	Cbr[3] = y[0], Cbr[4] = y[1], Cbr[5] = y[2];
+	Cbr[6] = z[0], Cbr[7] = z[1], Cbr[8] = z[2];
+	mbase.invers_matrix(Cbr, 3);
+
+	mbase.quat2matrix(StarA.Q1, StarA.Q2, StarA.Q3, StarA.Q0, RA);//Crj
+	mbase.quat2matrix(StarB.Q1, StarB.Q2, StarB.Q3, StarB.Q0, RB);
+	mbase.invers_matrix(RA, 3);//Cjr
+	mbase.invers_matrix(RB, 3);
+	mbase.Multi(RA, mz, za, 3, 3, 1);//星敏光轴在惯性系中的坐标值
+	mbase.Multi(RB, mz, zb, 3, 3, 1);
+	mbase.normalvect(za, x);
+	mbase.crossmultnorm(za, zb, y);
+	mbase.crossmultnorm(x, y, z);//Crj
+	Crj[0] = x[0], Crj[1] = x[1], Crj[2] = x[2];
+	Crj[3] = y[0], Crj[4] = y[1], Crj[5] = y[2];
+	Crj[6] = z[0], Crj[7] = z[1], Crj[8] = z[2];
+	mbase.Multi(Cbr, Crj, Cbj, 3, 3, 3);
+	mbase.matrix2quat(CbjB, attRes.Q1, attRes.Q2, attRes.Q3, attRes.Q0);
+	attRes.UTC = StarB.UTC;
+
+}
+
 //////////////////////////////////////////////////////////////////////////
 //功能：读取定标参数
 //输入：定义类的对象时得到workplace的路径

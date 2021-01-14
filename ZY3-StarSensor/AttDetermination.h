@@ -24,6 +24,7 @@ public:
 	void jl106AlinFix(double R, double P, double Y, Quat starsensor, Quat camera, SateEuler& ruEuler);//吉林一号偏置矩阵
 	void jl106CamQuat(double R, double P, double Y, Quat starsensor, Quat& camera, double& ra, double& dec);//吉林一号相机四元数
 	void CalOptAngle(Quat starsensor, Quat camera, SateEuler& ruEuler);//计算光轴夹角
+	void CalstarB_RPY(double lat, Quat starb, Quat& jlcam);//根据星敏B按照内插RPY
 	void CalOptAngleforJL107(StarGCP cam, Quat starsensor, double& theta);
 	void compareRes(vector<Quat> attTrue, vector<Quat> attMeas, string resPath);
 
@@ -84,6 +85,12 @@ public:
 	void DoubleStar(vector<STGData> StarDat, vector<Quat> &AttDet, int StarTag);
 	void GyroAtt(vector<STGData> AttData, vector<Quat> &AttDet, string Res, int StarTag);
 	//bool Aberration(vector<STGData> StarDat, vector<Orbit_Ep> EpDat, string Res, int StarTag);
+
+	//根据双星敏计算光轴
+	void twoStarCaloneCam(double* vStarA, double* vStarB, double theta1, double theta2, double* vCam);//根据星敏光轴计算相机光轴
+	void camOpticalCal(Quat StarA, Quat StarB, double theta1, double theta2, double* optical);//根据星敏光轴计算相机光轴
+	void DoubleStarWithOptChange(Quat StarA, Quat StarB, double *starAali, double *starBali, double* optical, Quat & attRes);
+
 	//读取定标参数文件
 	void ReadCaliParam(vector<StarCaliParam>&caliParam);
 	//输出文件

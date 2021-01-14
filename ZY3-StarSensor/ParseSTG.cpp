@@ -1368,17 +1368,17 @@ void ParseSTG::FromLL2XYForLuojia(Star starCatlog, double* R, double& x, double&
 //		R，星敏坐标系与J2000系的旋转关系，Crj
 //输出：x,y，像面坐标
 //注意：
-//日期：2020.07.26
+//日期：2020.07.26 更新 2020.12.08
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::FromLL2XYForJL01(Star starCatlog, double* R, double& x, double& y)
+void ParseSTG::FromLL2XYForJL01(Star starCatlog, double* R, double& x, double& y, StarCaliParam param)
 {
 	double V[3], W[3];
 	V[0] = starCatlog.V[0]; V[1] = starCatlog.V[1]; V[2] = starCatlog.V[2];
 	mBase.Multi(R, V, W, 3, 3, 1);
 	//x0=y0=512,f=43.3mm,像元大小0.015mm
-	double x0 = 12000 / 2, y0 = 5000 / 2;
+	double x0 = param.x0, y0 = param.y0;
 	double f, pixel;
-	double fpixel = 3.2 / 5.5 * 1000000;
+	double fpixel = param.f;
 	if (W[2] > 0)
 	{
 		x = (x0 - W[0] / W[2] * fpixel);
@@ -1849,7 +1849,9 @@ void ParseSTG::StarMapForJL01(string txtPath)
 	_mkdir(imgpath);//创建星图文件夹
 	string imgtxt = mapPath + "星图\\像面坐标.txt";
 
-
+	StarCaliParam param; 
+	param.f = 3.2 / 5.5 * 1000000;
+	param.x0 = 6000, param.y0 = 2500;
 	//根据姿态仿出星图
 	for (i = 0; i < num; i++)
 	{
@@ -1860,7 +1862,7 @@ void ParseSTG::StarMapForJL01(string txtPath)
 		FILE* fptxt = fopen(imgtxt.c_str(), "w+");
 		for (j = 0; j < n; j++)
 		{
-			FromLL2XYForJL01(starCatlog[j], R, x, y);//对星表每颗星遍历，计算像面坐标
+			FromLL2XYForJL01(starCatlog[j], R, x, y, param);//对星表每颗星遍历，计算像面坐标
 			int edge = 16;
 			if (x > edge && x < width - edge && y>edge && y < height - edge && starCatlog[j].mag < 6)
 			{
@@ -2003,7 +2005,7 @@ void ParseSTG::StarMapForJL01(string txtPath)
 //注意：
 //日期：2020.10.21
 //////////////////////////////////////////////////////////////////////////
-void ParseSTG::StarMapForJL01(string outPath, vector<Quat>jlCam)
+void ParseSTG::StarMapForJL01(string outPath, vector<Quat>jlCam, StarCaliParam param)
 {
 	//打开星表文件
 	string starCatlogpath = "C:\\Users\\GZC\\OneDrive\\2-CProject\\18-Att_LFreq\\Data\\star_cat_lt10.txt";
@@ -2059,7 +2061,7 @@ void ParseSTG::StarMapForJL01(string outPath, vector<Quat>jlCam)
 
 		for (j = 0; j < n; j++)
 		{
-			FromLL2XYForJL01(starCatlog[j], R, x, y);
+			FromLL2XYForJL01(starCatlog[j], R, x, y, param);
 			int edge = 41;
 			if (x > edge && x < width - edge && y>edge && y < height - edge)
 			{
